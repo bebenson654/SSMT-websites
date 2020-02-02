@@ -1,0 +1,144 @@
+{% extends 'layout.html' %}
+
+{% block title %}
+    <title>System Monitoring Tool</title>
+{% endblock title %}
+
+{% block content %}
+    <div class="row mt-3 text-center">
+        <div class="col-12 ml-auto p-3 mb-2 bg-secondary text-white">
+            <h1>Server System Monitoring Tool</h1>
+        </div>
+    </div>
+    <div class="row mt-3 text-center">
+        <div class="col-10 ml-auto">
+            <div class="dropdown">
+                <button class="btn btn-secondary dropdown-toggle float-md-right" type="button" id="dropdownMenuButton"
+                        data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                    Server Type
+                </button>
+                <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                    <a class="dropdown-item text-center" href="#">All</a>
+                    <a class="dropdown-item text-center" href="#">Database</a>
+                    <a class="dropdown-item text-center" href="#">File</a>
+                    <a class="dropdown-item text-center" href="#">License</a>
+                    <a class="dropdown-item text-center" href="#">Logging</a>
+                    <a class="dropdown-item text-center" href="#">Node</a>
+                    <a class="dropdown-item text-center" href="#">Page</a>
+                    <a class="dropdown-item text-center" href="#">Scanning</a>
+                    <a class="dropdown-item text-center" href="#">Web</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row mt-3 text-center">
+        <div class="col-3 ml-auto">
+            <div class="list-group">
+                <a href="#" class="list-group-item list-group-item-action active text-center" tabindex="-1"
+                   aria-disabled="true">Rack A </a>
+                <a href="#" class="list-group-item list-group-item-action text-center">Fs-01<img src="WebApp\Red X.png"
+                                                                                                 class="float-right"></a>
+                <a href="#" class="list-group-item list-group-item-action text-center">Head-01<img
+                        src="WebApp\Red X.png" class="float-right"></a>
+                <a href="#" class="list-group-item list-group-item-action text-center">Log-01<img src="WebApp\Red X.png"
+                                                                                                  class="float-right"></a>
+                <a href="#" class="list-group-item list-group-item-action text-center">Scan-01<img
+                        src="WebApp\Red X.png" class="float-right"></a>
+                <a href="#" class="list-group-item list-group-item-action text-center">Lic-01<img
+                        src="C:\Users\Mia\Documents\Spring2020\WebApp\Red.png" class="float-right"></a>
+            </div>
+
+        </div>
+        <div class="col-3 ml-auto">
+            <div class="list-group">
+                <a href="#" class="list-group-item list-group-item-action active text-center" tabindex="-1"
+                   aria-disabled="true">Rack B</a>
+                <a href="#" class="list-group-item list-group-item-action text-center">Web-01<img src="WebApp\Red X.png"
+                                                                                                  class="float-right"></a>
+                <a href="#" class="list-group-item list-group-item-action text-center">Web-02<img src="WebApp\Red X.png"
+                                                                                                  class="float-right"></a>
+                <a href="#" class="list-group-item list-group-item-action text-center">Db-01<img src="WebApp\Red X.png"
+                                                                                                 class="float-right"></a>
+                <a href="#" class="list-group-item list-group-item-action text-center">Db-02<img src="WebApp\Red X.png"
+                                                                                                 class="float-right"></a>
+            </div>
+
+        </div>
+        <div class="col-3 ml-auto">
+            <div class="list-group">
+                <a href="#" class="list-group-item list-group-item-action active text-center" tabindex="-1"
+                   aria-disabled="true">Rack C</a>
+                <a href="#" class="list-group-item list-group-item-action text-center">Web-03<img src="WebApp\Red X.png"
+                                                                                                  class="float-right"></a>
+                <a href="#" class="list-group-item list-group-item-action text-center">Db-03<img src="WebApp\Red X.png"
+                                                                                                 class="float-right"></a>
+                <a href="#" class="list-group-item list-group-item-action text-center">Db-04<img src="WebApp\Red X.png"
+                                                                                                 class="float-right"></a>
+            </div>
+
+        </div>
+    </div>
+    <div class="row mt-4 text-center">
+        <div class="col-3 ml-auto">
+            <div class="list-group">
+                <a href="#" class="list-group-item list-group-item-action active text-center" tabindex="-1"
+                   aria-disabled="true">Rack D</a>
+                <a href="#" class="list-group-item list-group-item-action text-center">Node-01<img
+                        src="WebApp\Red X.png" class="float-right"></a>
+                <a href="#" class="list-group-item list-group-item-action text-center">Node-02<img
+                        src="WebApp\Red X.png" class="float-right"></a>
+                <a href="#" class="list-group-item list-group-item-action text-center">Node-03<img
+                        src="WebApp\Red X.png" class="float-right"></a>
+                <a href="#" class="list-group-item list-group-item-action text-center">Node-04<img
+                        src="WebApp\Red X.png" class="float-right"></a>
+                <a href="#" class="list-group-item list-group-item-action text-center">Node-05<img
+                        src="WebApp\Red X.png" class="float-right"></a>
+                <a href="#" class="list-group-item list-group-item-action text-center">Node-06<img
+                        src="WebApp\Red X.png" class="float-right"></a>
+                <a href="#" class="list-group-item list-group-item-action text-center">Node-07<img
+                        src="WebApp\Red X.png" class="float-right"></a>
+                <a href="#" class="list-group-item list-group-item-action text-center">Node-08<img
+                        src="WebApp\Red X.png" class="float-right"></a>
+            </div>
+
+        </div>
+        <div class="col-3 ml-auto">
+            <div class="list-group">
+                <a href="#" class="list-group-item list-group-item-action active text-center" tabindex="-1"
+                   aria-disabled="true">Rack E</a>
+                <a href="#" class="list-group-item list-group-item-action text-center">Node-09<img
+                        src="WebApp\Red X.png" class="float-right"></a>
+                <a href="#" class="list-group-item list-group-item-action text-center">Node-10<img
+                        src="WebApp\Red X.png" class="float-right"></a>
+                <a href="#" class="list-group-item list-group-item-action text-center">Node-11<img
+                        src="WebApp\Red X.png" class="float-right"></a>
+                <a href="#" class="list-group-item list-group-item-action text-center">Node-12<img
+                        src="WebApp\Red X.png" class="float-right"></a>
+                <a href="#" class="list-group-item list-group-item-action text-center">Node-13<img
+                        src="WebApp\Red X.png" class="float-right"></a>
+                <a href="#" class="list-group-item list-group-item-action text-center">Node-14<img
+                        src="WebApp\Red X.png" class="float-right"></a>
+                <a href="#" class="list-group-item list-group-item-action text-center">Node-15<img
+                        src="WebApp\Red X.png" class="float-right"></a>
+            </div>
+
+        </div>
+        <div class="col-3 ml-auto">
+            <div class="list-group">
+                <a href="#" class="list-group-item list-group-item-action active text-center" tabindex="-1"
+                   aria-disabled="true">Rack F</a>
+                <a href="#" class="list-group-item list-group-item-action text-center">Node-16<img
+                        src="WebApp\Red X.png" class="float-right"></a>
+                <a href="#" class="list-group-item list-group-item-action text-center">Node-17<img
+                        src="WebApp\Red X.png" class="float-right"></a>
+                <a href="#" class="list-group-item list-group-item-action text-center">Node-18<img
+                        src="WebApp\Red X.png" class="float-right"></a>
+                <a href="#" class="list-group-item list-group-item-action text-center">Node-19<img
+                        src="WebApp\Red X.png" class="float-right"></a>
+                <a href="#" class="list-group-item list-group-item-action text-center">Node-20<img
+                        src="WebApp\Red X.png" class="float-right"></a>
+            </div>
+
+        </div>
+    </div>
+{% endblock content %}
