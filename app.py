@@ -2,9 +2,6 @@ from flask import Flask, render_template
 from flask_sqlalchemy import SQLAlchemy
 import json
 
-# with open('Db-01.json') as f:
-#     datas = json.load(f)
-
 
 app = Flask(__name__)
 
@@ -19,6 +16,14 @@ class Server(db.Model):
     __tablename__ = 'Server'
     __table_args__ = {'extend_existing': True}
     ServerId = db.Column(db.Text, primary_key=True)
+    Metrics = db.relationship('Metric', backref='Server', lazy=True)
+
+
+class Metric(db.Model):
+    __tablename__ = 'Metric'
+    __table_args__ = {'extend_existing': True}
+    MetricId = db.Column(db.Text, primary_key=True)
+    ServerID = db.Column(db.Text, db.ForeignKey('Server.ServerId'))  # n,ullable=False)
 
 
 # 5:30 of video 2 importing data (JSON)
