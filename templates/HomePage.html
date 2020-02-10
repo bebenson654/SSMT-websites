@@ -34,20 +34,25 @@
     <div class="row mt-3 text-center">
         <div class="col-3 ml-auto">
             <div class="list-group">
-               #  for data in datas
                 <a href="#" class="list-group-item list-group-item-action active text-center" tabindex="-1"
                    aria-disabled="true">Rack A </a>
-                <a href="#" class="list-group-item list-group-item-action text-center">DB-01<img src="WebApp\Red X.png"     # datas.ServerName
-                                                                                                 class="float-right"></a>
-                <a href="#" class="list-group-item list-group-item-action text-center">Head-01<img
-                        src="WebApp\Red X.png" class="float-right"></a>
-                <a href="#" class="list-group-item list-group-item-action text-center">Log-01<img src="WebApp\Red X.png"
-                                                                                                  class="float-right"></a>
-                <a href="#" class="list-group-item list-group-item-action text-center">Scan-01<img
-                        src="WebApp\Red X.png" class="float-right"></a>
-                <a href="#" class="list-group-item list-group-item-action text-center">Lic-01<img
-                        src="C:\Users\Mia\Documents\Spring2020\WebApp\Red.png" class="float-right"></a>
-                #  endfor %}
+
+                {% for server in server %}
+                    <a href="/real-time-data-overview/{{ server.ServerId }}"
+                       class="list-group-item list-group-item-action text-center">{{ server.ServerName }}<img
+                            src="WebApp\Red X.png" class="float-right"></a>
+                {% endfor %}
+
+                {#                <a href="#" class="list-group-item list-group-item-action text-center">DB-01<img src="WebApp\Red X.png"    #}
+                {#                                                                                                 class="float-right"></a>#}
+                {#                <a href="#" class="list-group-item list-group-item-action text-center">Head-01<img#}
+                {#                        src="WebApp\Red X.png" class="float-right"></a>#}
+                {#                <a href="#" class="list-group-item list-group-item-action text-center">Log-01<img src="WebApp\Red X.png"#}
+                {#                                                                                                  class="float-right"></a>#}
+                {#                <a href="#" class="list-group-item list-group-item-action text-center">Scan-01<img#}
+                {#                        src="WebApp\Red X.png" class="float-right"></a>#}
+                {#                <a href="#" class="list-group-item list-group-item-action text-center">Lic-01<img#}
+                {#                        src="C:\Users\Mia\Documents\Spring2020\WebApp\Red.png" class="float-right"></a>#}
             </div>
 
         </div>

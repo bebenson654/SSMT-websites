@@ -33,8 +33,9 @@ class Server(db.Model):
 @app.route('/')
 @app.route('/home')
 def home():
+    server_table = Server.query.all()
     print("Total number of servers is: ", Server.query.count())
-    return render_template('HomePage.html')
+    return render_template('HomePage.html', server=server_table)
 
 
 @app.route('/masterlist')
@@ -45,6 +46,12 @@ def master_list():
 @app.route('/real-time-data-overview')
 def RTDO():
     return render_template('RealTimeDataOverview.html')
+
+
+@app.route('/real-time-data-overview/<slug>')
+def RT(slug):
+    server = Server.query.filter_by(ServerId=slug).first()
+    return render_template('RealTimeDataOverviewTemp.html', server=server)
 
 
 @app.route('/usage-cpu')
