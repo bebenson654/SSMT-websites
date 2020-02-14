@@ -2,11 +2,9 @@ from flask import Flask, render_template
 from flask_sqlalchemy import SQLAlchemy
 import json
 
-
 app = Flask(__name__)
 
-
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///StubServersDB.db'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///StubServersDB_V2.db'
 db = SQLAlchemy(app)
 
 db.Model.metadata.reflect(db.engine)
@@ -17,6 +15,7 @@ class Server(db.Model):
     __table_args__ = {'extend_existing': True}
     ServerId = db.Column(db.Text, primary_key=True)
     Metrics = db.relationship('Metric', backref='Server', lazy=True)
+    ServerID = db.Column(db.Text, db.ForeignKey('server.ServerId'))
 
 
 class Metric(db.Model):
@@ -26,21 +25,55 @@ class Metric(db.Model):
     ServerID = db.Column(db.Text, db.ForeignKey('server.ServerId'))  # ,nullable=False)
 
 
-# 5:30 of video 2 importing data (JSON)
-''' 
-7:40 of vid 2 code block (for loop) - 
-    {% for post in posts %} 
-        <h1>{{ post.title }} </h1>
-    {% end for %}
-'''
+class Rack(db.Model):
+    __tablename__ = 'Rack'
+    __table_args__ = {'extend_existing': True}
+    RackId = db.Column(db.Text, primary_key=True)
+    LocationId = db.Column(db.Text, db.ForeignKey('location.LocationId'))
+
+
+class Location(db.Model):
+    __tablename__ = 'Location'
+    __table_args__ = {'extend_existing': True}
+    LocationId = db.Column(db.Text, primary_key=True)
+
+
+class Database(db.Model):
+    __tablename__ = 'Database'
+    __table_args__ = {'extend_existing': True}
+    DatabaseId = db.Column(db.Text, primary_key=True)
+    ServerID = db.Column(db.Text, db.ForeignKey('Server.ServerId'))
+
+
+class RunningJob(db.Model):
+    __tablename__ = 'RunningJob'
+    __table_args__ = {'extend_existing': True}
+    ServerId = db.Column(db.Text, primary_key=True)
+    JobName = db.Column(db.Text, primary_key=True)
+    StartTime = db.Column(db.Text, primary_key=True)
+    ServerID = db.Column(db.Text, db.ForeignKey('Server.ServerId'))
+
+
+class ServerType(db.Model):
+    __tablename__ = 'ServerType'
+    __table_args__ = {'extend_existing': True}
+    TypeId = db.Column(db.Text, primary_key=True)
+
+
+class Service(db.Model):
+    __tablename__ = 'Service'
+    __table_args__ = {'extend_existing': True}
+    ServiceId = db.Column(db.Text, primary_key=True)
+    ServerID = db.Column(db.Text, db.ForeignKey('Server.ServerId'))
 
 
 @app.route('/')
 @app.route('/home')
 def home():
+    rack_table = Rack.query.all()
+
     server_table = Server.query.all()
-    # print("Total number of servers is: ", Server.query.count())
-    return render_template('HomePage.html', server=server_table)
+    return render_template('HomePage.html', server=server_table, rack=rack_table)
 
 
 @app.route('/masterlist')
@@ -55,31 +88,16 @@ def RTDO():
 
 @app.route('/real-time-data-overview/<slug>')
 def RT(slug):
-    # print(Server.query.join(Metric, Metric.ServerID == Server.ServerId).Cpu)
-    # records = session.query(Customer).join(Order, Order.customer_id == Customer.id).all()
-    # metric = Metric.query.filter(Metric.ServerID == Server.ServerId)
-
     server = Server.query.filter_by(ServerId=slug).first()
-    print(slug)
-    # peter = User.query.filter_by(username='peter').first()
-    # peter.id
-    tmp = Metric.query.filter_by(ServerID=slug).scalar()
-    print(tmp.MetricId)
-    metric_table = Metric.query.get(
-        tmp.MetricId)  # Metric.query.filter(Metric.ServerID == Server.ServerId).max(Metric.Time)
-    # cpu = Metric.Cpu.query.filter_by(ServerID=slug)
 
+    tmp = Metric.query.order_by(Metric.Time).filter_by(ServerID=slug).first()
+    metric_table = Metric.query.get(tmp.MetricId)
     return render_template('RealTimeDataOverviewTemp.html', server=server, metric=metric_table)
 
 
 @app.route('/usage-cpu')
 def usage_CPU():
     return render_template('Usage-CPU.html')
-
-
-# @app.route('/' + str(datas.ServerName).lower() + '-rt')
-# def RTDO():
-#     return render_template('RealTimeDataOverview.html', datas=datas)
 
 
 if __name__ == '__main__':
