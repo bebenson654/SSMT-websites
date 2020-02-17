@@ -67,13 +67,20 @@ class Service(db.Model):
     ServerID = db.Column(db.Text, db.ForeignKey('Server.ServerId'))
 
 
+class MasterList(db.Model):
+    __tablename__ = 'MasterList'
+    __table_args__ = {'extend_existing': True}
+    Type = db.Column(db.Text, primary_key=True)
+    Name = db.Column(db.Text, primary_key=True)
+
+
 @app.route('/')
 @app.route('/home')
 def home():
-    rack_table = Rack.query.all()
+    # rack_table = Rack.query.all()
 
     server_table = Server.query.all()
-    return render_template('HomePage.html', server=server_table, rack=rack_table)
+    return render_template('HomePageV2.html', server=server_table)  # , rack=rack_table)
 
 
 @app.route('/masterlist')
@@ -81,23 +88,41 @@ def master_list():
     return render_template('MasterList.html')
 
 
-@app.route('/real-time-data-overview')
-def RTDO():
-    return render_template('RealTimeDataOverview.html')
+# @app.route('/real-time-data-overview')
+# def RTDO():
+#     return render_template('RealTimeDataOverview.html')
 
 
 @app.route('/real-time-data-overview/<slug>')
 def RT(slug):
     server = Server.query.filter_by(ServerId=slug).first()
 
+    services = Service.query.filter_by(ServerId=slug)
+
     tmp = Metric.query.order_by(Metric.Time).filter_by(ServerID=slug).first()
-    metric_table = Metric.query.get(tmp.MetricId)
-    return render_template('RealTimeDataOverviewTemp.html', server=server, metric=metric_table)
+    metric_row = Metric.query.get(tmp.MetricId)
+    return render_template('RealTimeDataOverviewTemp.html', server=server, metric=metric_row, service=services)
 
 
-@app.route('/usage-cpu')
-def usage_CPU():
-    return render_template('Usage-CPU.html')
+@app.route('/usage-cpu/<slug>')
+def CPU(slug):
+    server = Server.query.filter_by(ServerId=slug).first()
+
+    tmp = Metric.query.order_by(Metric.Time).filter_by(ServerID=slug).first()
+    metric_row = Metric.query.get(tmp.MetricId)
+
+    # mtable = Metric.query.order_by(Metric.Time).filter_by(ServerId=slug)
+    # cpuDate = []
+    # for date in mtable.Time:
+    #     cpuDate = cpuDate.append(date)
+    cpuDate = [metrics.Time for metrics in Metric.query.order_by(Metric.Time).filter_by(ServerId=slug)]
+    cpuUse = [metrics.Cpu for metrics in Metric.query.order_by(Metric.Time).filter_by(ServerId=slug)]
+    return render_template('Usage-CPUTemp.html', server=server, ametric=metric_row, date=cpuDate, usage=cpuUse)
+
+
+# @app.route('/usage-cpu')
+# def usage_CPU():
+#     return render_template('Usage-CPU.html')
 
 
 if __name__ == '__main__':
