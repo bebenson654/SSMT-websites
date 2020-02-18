@@ -1,10 +1,14 @@
-from flask import Flask, render_template
+from flask import Flask, render_template, request
+from flask_wtf import Form
+from wtforms import StringField, DateField
+from wtforms.validators import input_required
 from flask_sqlalchemy import SQLAlchemy
 import json
 
 app = Flask(__name__)
 
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///StubServersDB_V2.db'
+app.config['SECRET_KEY'] = 'secret ssmt'
 db = SQLAlchemy(app)
 
 db.Model.metadata.reflect(db.engine)
@@ -74,6 +78,11 @@ class MasterList(db.Model):
     Name = db.Column(db.Text, primary_key=True)
 
 
+class ChartForm(Form):
+    startdate = StringField('startdate', validators=[input_required()])
+    enddate = StringField('enddate', validators=[input_required()])
+
+
 @app.route('/')
 @app.route('/home')
 def home():
@@ -104,20 +113,37 @@ def RT(slug):
     return render_template('RealTimeDataOverviewTemp.html', server=server, metric=metric_row, service=services)
 
 
-@app.route('/usage-cpu/<slug>')
+@app.route('/usage-cpu/<slug>', methods=['POST', 'GET'])
 def CPU(slug):
+    form = ChartForm()
     server = Server.query.filter_by(ServerId=slug).first()
 
     tmp = Metric.query.order_by(Metric.Time).filter_by(ServerID=slug).first()
     metric_row = Metric.query.get(tmp.MetricId)
 
-    # mtable = Metric.query.order_by(Metric.Time).filter_by(ServerId=slug)
-    # cpuDate = []
-    # for date in mtable.Time:
-    #     cpuDate = cpuDate.append(date)
     cpuDate = [metrics.Time for metrics in Metric.query.order_by(Metric.Time).filter_by(ServerId=slug)]
     cpuUse = [metrics.Cpu for metrics in Metric.query.order_by(Metric.Time).filter_by(ServerId=slug)]
-    return render_template('Usage-CPUTemp.html', server=server, ametric=metric_row, date=cpuDate, usage=cpuUse)
+
+    if form.validate_on_submit():
+        cpuDate = [metrics.Time for metrics in Metric.query.order_by(Metric.Time).filter_by(ServerId=slug)]
+        cpuUse = [metrics.Cpu for metrics in Metric.query.order_by(Metric.Time).filter_by(ServerId=slug)]
+
+    return render_template('Usage-CPUTemp.html', server=server, ametric=metric_row, date=cpuDate, usage=cpuUse, form=form)
+
+
+# @app.route('/usage-cpu/<slug>', methods=['POST', 'GET'])
+# def CPU_post(slug):
+#     server = Server.query.filter_by(ServerId=slug).first()
+#
+#     tmp = Metric.query.order_by(Metric.Time).filter_by(ServerID=slug).first()
+#     metric_row = Metric.query.get(tmp.MetricId)
+#
+#     cpuUse = [metrics.Cpu for metrics in Metric.query.order_by(Metric.Time).filter_by(ServerId=slug)]
+
+    # sdate = request.form['start date']
+    # edate = request.form['end date']
+    # cpuDate = [metrics.Time for metrics in
+    #            Metric.query.order_by(Metric.Time).filter_by(ServerId=slug).between(Metric.Time, sdate, edate)]
 
 
 # @app.route('/usage-cpu')
