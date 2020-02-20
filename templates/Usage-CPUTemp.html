@@ -1,40 +1,49 @@
-{% from '_formhelpers.html' import render_field %}
-{% extends 'layout.html' %}
 
-{% block title %}
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@2.8.0"></script>
+{# NEW NON HARD-CODED VERSION #}
 
-    <title>CPU-Usage - {{ server.ServerName }}</title>
+{% from '_formhelpers.html' import render_field %} {# import neede for chard range forms #}
+
+{% extends 'layout.html' %} {# inherits format from layout.html #}
+
+{% block title %}{# Overides layout.html default title #}
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@2.8.0"></script> {# Script needed for chart.js #}
+
+    <title>CPU-Usage - {{ server.ServerName }}</title> {# Title - shown in tab on browser #}
 {% endblock title %}
 
-{% block content %}
-    <div class="row mt-3 text-center">
+{% block content %} {# Overides layout.html body section #}
+
+    <div class="row mt-3 text-center"> {# Row for page header #}
         <div class="col-12 ml-auto p-3 mb-2 bg-secondary text-white">
             <h1>Server System Monitoring Tool</h1>
         </div>
     </div>
 
     <!--Home Button and Server-->
-    <div class="row mt-3 text-center">
-        <div class="col-2">
+    <div class="row mt-3 text-center"> {# {# Home button & Rack & Server Names  #}
+
+        <div class="col-2"> {# Home Button #}
             <a class="btn btn-secondary btn-lg" href="/" role="button">Home</a>
         </div>
-        <div class="col-10 ">
+
+        <div class="col-10 "> {# Rack & Server Names #}
             <div class="card">
                 <div class="card-body border border-dark font-weight-bold">
                     <h5>Rack A | {{ server.ServerName }}</h5>
                 </div>
             </div>
         </div>
-    </div>
 
     </div>
-    <div class="row text-center m-2">
+
+{#    </div>#}
+    <div class="row text-center m-2"> {# Displays this servers CPU usage #}
         <div class="col-12">
             <h2 class="text-danger"> CPU Usage: <b>{{ ametric.Cpu }}%</b></h2>
         </div>
     </div>
-    <div class="row text-center mt-3 ml-auto">
+
+    <div class="row text-center mt-3 ml-auto"> {# forms for chard date range | NOT CURRENTLY WORKING #}
         <div class="col-10">
             <form method="post">
                 {{ form.csrf_token }}
@@ -59,7 +68,7 @@
     </div>
 
 
-        <div class="row ml-2">
+        <div class="row ml-2"> {# Lists the dates in date range in order | FOR TESTING/DEBUGGING #}
             <ol>
                 {% for d in date %}
                     <li> {{ d }} </li>
@@ -67,33 +76,35 @@
             </ol>
         </div>
 
-        <div class="row text-center m-5">
+        <div class="row text-center m-5">{# Chart for usage #}
+
             <div class="col">
                 <canvas id="myChart"></canvas>
             </div>
             <script>
                 var ctx = document.getElementById('myChart').getContext('2d');
                 var chart = new Chart(ctx, {
-                    // The type of chart we want to create
+                    {# The type of chart we want to create #}
                     type: 'line',
 
-                    // The data for our dataset
+                    {# The data for our dataset #}
                     data: {
-                        labels: [{% for d in date %} "{{ d }}", {% endfor %}],
+                        labels: [{% for d in date %} "{{ d }}", {% endfor %}], {# Dates #}
                         datasets: [{
                             label: 'My First dataset',
                             backgroundColor: 'rgb(99, 255, 132)',
                             borderColor: 'rgb(0, 0, 0)',
-                            data: [{% for u in usage %} "{{ u }}", {% endfor %}]
+                            data: [{% for u in usage %} "{{ u }}", {% endfor %}] {# Usages #}
                         }]
                     },
 
-                    // Configuration options go here
+                    {# Configuration options go here #}
                     options: {}
                 });
             </script>
         </div>
-        <div class="row">
+
+        <div class="row"> {# CPU Usage table #}
             <div class="col mt-5 mb-5">
                 <table class="table table-striped table-bordered">
                     <thead class="table-dark">

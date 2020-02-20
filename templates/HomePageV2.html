@@ -1,20 +1,25 @@
-{% extends 'layout.html' %}
+{# New Home Page #}
+{% extends 'layout.html' %} {# inherits format from layout.html #}
 
-{% block title %}
-    <title>System Monitoring Tool</title>
+{% block title %} {# Overides layout.html default title #}
+    <title>System Monitoring Tool</title> {# Title - shown in tab on browser #}
 {% endblock title %}
 
-{% block content %}
-    <div class="row mt-3 text-center">
+{% block content %} {# Overides layout.html body section #}
+
+    <div class="row mt-3 text-center"> {# Row for page header #}
         <div class="col-12 ml-auto p-3 mb-2 bg-secondary text-white">
             <h1>Server System Monitoring Tool</h1>
         </div>
     </div>
-    <div class="row mt-3 text-center">
-        <div class="col-2">
+
+    <div class="row mt-3 text-center"> {# Row for Master list button and dropdown #}
+
+        <div class="col-2"> {# master list button #}
             <a class="btn btn-secondary btn-lg" href="/masterlist" role="button">Master List</a>
         </div>
-        <div class="col-10 ml-auto">
+
+        <div class="col-10 ml-auto"> {# dropdown for filter | filter does not work #}
             <div class="dropdown">
                 <button class="btn btn-secondary dropdown-toggle float-md-right" type="button" id="dropdownMenuButton"
                         data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
@@ -32,33 +37,41 @@
                     <a class="dropdown-item text-center" href="#">Web</a>
                 </div>
             </div>
+
         </div>
+
     </div>
-    <div class="card-columns">
-        <div class="card mt-3" style="width: 18rem;">
-            <div class="card-header text-center p-3 mb-2 bg-primary text-white">
-                Rack A
+
+    {# Racks == Cards #}
+    <div class="card-columns"> {# formats cards into special columns #}
+
+        <div class="card mt-3" style="width: 18rem;"> {# card containing a rack #}
+
+            <div class="card-header text-center p-3 mb-2 bg-primary text-white"> {# card header #}
+                Rack A {# rack name #}
             </div>
 
             {% for server in server %}
-                <ul class="list-group list-group-flush">
+                {# grabs all servers in DB | NEEDS TO BE CHANGED TO ONLY GRAB SERVERS IN THIS RACK #}
+                <ul class="list-group list-group-flush"> {# lists servers that link to their Real Time page #}
                     <a href="/real-time-data-overview/{{ server.ServerId }}"
                        class="list-group-item list-group-item-action text-center">{{ server.ServerName }}<img
                             src="WebApp\Red X.png" class="float-right"></a>
                 </ul>
             {% endfor %}
-        </div>
-    </div>
-    {#                <a href="#" class="list-group-item list-group-item-action text-center">DB-01<img src="WebApp\Red X.png"    #}
-    {#                                                                                                 class="float-right"></a>#}
-    {#                <a href="#" class="list-group-item list-group-item-action text-center">Head-01<img#}
-    {#                        src="WebApp\Red X.png" class="float-right"></a>#}
-    {#                <a href="#" class="list-group-item list-group-item-action text-center">Log-01<img src="WebApp\Red X.png"#}
-    {#                                                                                                  class="float-right"></a>#}
-    {#                <a href="#" class="list-group-item list-group-item-action text-center">Scan-01<img#}
-    {#                        src="WebApp\Red X.png" class="float-right"></a>#}
-    {#                <a href="#" class="list-group-item list-group-item-action text-center">Lic-01<img#}
-    {#                        src="C:\Users\Mia\Documents\Spring2020\WebApp\Red.png" class="float-right"></a>#}
-    </div>
 
+        </div>
+
+    </div>
 {% endblock content %}
+
+{#                <a href="#" class="list-group-item list-group-item-action text-center">DB-01<img src="WebApp\Red X.png"    #}
+{#                                                                                                 class="float-right"></a>#}
+{#                <a href="#" class="list-group-item list-group-item-action text-center">Head-01<img#}
+{#                        src="WebApp\Red X.png" class="float-right"></a>#}
+{#                <a href="#" class="list-group-item list-group-item-action text-center">Log-01<img src="WebApp\Red X.png"#}
+{#                                                                                                  class="float-right"></a>#}
+{#                <a href="#" class="list-group-item list-group-item-action text-center">Scan-01<img#}
+{#                        src="WebApp\Red X.png" class="float-right"></a>#}
+{#                <a href="#" class="list-group-item list-group-item-action text-center">Lic-01<img#}
+{#                        src="C:\Users\Mia\Documents\Spring2020\WebApp\Red.png" class="float-right"></a>#}

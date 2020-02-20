@@ -3,153 +3,158 @@ from flask_wtf import Form
 from wtforms import StringField, DateField
 from wtforms.validators import input_required
 from flask_sqlalchemy import SQLAlchemy
-import json
 
-app = Flask(__name__)
+app = Flask(__name__)  # something for flask
 
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///StubServersDB_V2.db'
-app.config['SECRET_KEY'] = 'secret ssmt'
-db = SQLAlchemy(app)
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///StubServersDB_V2.db'  # sets the DB to the stubDB
 
-db.Model.metadata.reflect(db.engine)
+app.config['SECRET_KEY'] = 'secret ssmt'  # secret key used for by WTforms for forms
+
+db = SQLAlchemy(app)  # something SQL Alchemy needs
+db.Model.metadata.reflect(db.engine)  # Allows SQL alchemy to look into the DB for info on the tables
 
 
-class Server(db.Model):
+# -----------------------------------------------------------------------------------------------------------
+# Tables for SQL alchemy
+
+
+class Server(db.Model):  # Server Table
     __tablename__ = 'Server'
     __table_args__ = {'extend_existing': True}
-    ServerId = db.Column(db.Text, primary_key=True)
-    Metrics = db.relationship('Metric', backref='Server', lazy=True)
-    ServerID = db.Column(db.Text, db.ForeignKey('server.ServerId'))
+    ServerId = db.Column(db.Text, primary_key=True)  # primary key column
+    Metrics = db.relationship('Metric', backref='Server', lazy=True)  # pseudo column for relationship
+    ServerID = db.Column(db.Text, db.ForeignKey('server.ServerId'))  # foreign key column? **********************
 
 
-class Metric(db.Model):
+class Metric(db.Model):  # metric table
     __tablename__ = 'Metric'
     __table_args__ = {'extend_existing': True}
-    MetricId = db.Column(db.Text, primary_key=True)
-    ServerID = db.Column(db.Text, db.ForeignKey('server.ServerId'))  # ,nullable=False)
+    MetricId = db.Column(db.Text, primary_key=True)  # primary key column
+    ServerID = db.Column(db.Text, db.ForeignKey('server.ServerId'))  # foreign key column
 
 
-class Rack(db.Model):
+class Rack(db.Model):  # Rack table
     __tablename__ = 'Rack'
     __table_args__ = {'extend_existing': True}
-    RackId = db.Column(db.Text, primary_key=True)
-    LocationId = db.Column(db.Text, db.ForeignKey('location.LocationId'))
+    RackId = db.Column(db.Text, primary_key=True)  # primary key column
+    LocationId = db.Column(db.Text, db.ForeignKey('location.LocationId'))  # foreign key column
 
 
-class Location(db.Model):
+class Location(db.Model):  # Location Table
     __tablename__ = 'Location'
     __table_args__ = {'extend_existing': True}
-    LocationId = db.Column(db.Text, primary_key=True)
+    LocationId = db.Column(db.Text, primary_key=True)  # primary key column
 
 
-class Database(db.Model):
+class Database(db.Model):  # Databases table
     __tablename__ = 'Database'
     __table_args__ = {'extend_existing': True}
-    DatabaseId = db.Column(db.Text, primary_key=True)
-    ServerID = db.Column(db.Text, db.ForeignKey('Server.ServerId'))
+    DatabaseId = db.Column(db.Text, primary_key=True)  # primary key column
+    ServerID = db.Column(db.Text, db.ForeignKey('Server.ServerId'))  # foreign key column
 
 
-class RunningJob(db.Model):
+class RunningJob(db.Model):  # Running jobs table
     __tablename__ = 'RunningJob'
     __table_args__ = {'extend_existing': True}
-    ServerId = db.Column(db.Text, primary_key=True)
-    JobName = db.Column(db.Text, primary_key=True)
-    StartTime = db.Column(db.Text, primary_key=True)
-    ServerID = db.Column(db.Text, db.ForeignKey('Server.ServerId'))
+    ServerId = db.Column(db.Text, primary_key=True)  # primary key column
+    JobName = db.Column(db.Text, primary_key=True)  # primary key column
+    StartTime = db.Column(db.Text, primary_key=True)  # primary key column
+    ServerID = db.Column(db.Text, db.ForeignKey('Server.ServerId'))  # foreign key column
 
 
-class ServerType(db.Model):
+class ServerType(db.Model):  # Server Type table
     __tablename__ = 'ServerType'
     __table_args__ = {'extend_existing': True}
-    TypeId = db.Column(db.Text, primary_key=True)
+    TypeId = db.Column(db.Text, primary_key=True)  # primary key column
 
 
-class Service(db.Model):
+class Service(db.Model):  # Service table
     __tablename__ = 'Service'
     __table_args__ = {'extend_existing': True}
-    ServiceId = db.Column(db.Text, primary_key=True)
-    ServerID = db.Column(db.Text, db.ForeignKey('Server.ServerId'))
+    ServiceId = db.Column(db.Text, primary_key=True)  # primary key column
+    ServerID = db.Column(db.Text, db.ForeignKey('Server.ServerId'))  # foreign key column
 
 
-class MasterList(db.Model):
+class MasterList(db.Model):  # Master list table
     __tablename__ = 'MasterList'
     __table_args__ = {'extend_existing': True}
-    Type = db.Column(db.Text, primary_key=True)
-    Name = db.Column(db.Text, primary_key=True)
+    Type = db.Column(db.Text, primary_key=True)  # primary key column
+    Name = db.Column(db.Text, primary_key=True)  # primary key column
 
 
-class ChartForm(Form):
-    startdate = StringField('startdate', validators=[input_required()])
-    enddate = StringField('enddate', validators=[input_required()])
+# --------------------------------------------------------------------------------------------------------------------
 
 
-@app.route('/')
-@app.route('/home')
+class ChartForm(Form):  # form for the chart range
+    startdate = StringField('startdate', validators=[input_required()])  # start date field
+    enddate = StringField('enddate', validators=[input_required()])  # End date field
+
+
+# ----------------------------------------------------------------------------------------------------------------------
+# Routes for the pages
+
+
+@app.route('/')  # this is whats at the end of the URL to get to the home page
+@app.route('/home')  # or this
 def home():
-    # rack_table = Rack.query.all()
-
-    server_table = Server.query.all()
-    return render_template('HomePageV2.html', server=server_table)  # , rack=rack_table)
+    server_table = Server.query.all()  # query that gets all of the servers in the Server table
+    return render_template('HomePageV2.html', server=server_table)  # returns V2 home page html doc with that variable
 
 
-@app.route('/masterlist')
+@app.route('/masterlist')  # master list route
 def master_list():
-    return render_template('MasterList.html')
+    return render_template('MasterList.html')  # only returns the hard-coded master list for now
 
 
-# @app.route('/real-time-data-overview')
+# @app.route('/real-time-data-overview')    **** this is the route for the hard coded Real time Data Overview ****
 # def RTDO():
 #     return render_template('RealTimeDataOverview.html')
 
 
-@app.route('/real-time-data-overview/<slug>')
-def RT(slug):
-    server = Server.query.filter_by(ServerId=slug).first()
+@app.route('/real-time-data-overview/<slug>')  # route for the realtime data overview for a specific server
+def RT(slug):  # Slug is the Server Id
+    server = Server.query.filter_by(ServerId=slug).first()  # query for the server specs
 
-    services = Service.query.filter_by(ServerId=slug)
+    services = Service.query.filter_by(ServerId=slug)  # query for the services on this server
 
     tmp = Metric.query.order_by(Metric.Time).filter_by(ServerID=slug).first()
-    metric_row = Metric.query.get(tmp.MetricId)
+    metric_row = Metric.query.get(tmp.MetricId)  # gets the most recent metrics for server
+
     return render_template('RealTimeDataOverviewTemp.html', server=server, metric=metric_row, service=services)
+    #   returns the template for real time data overview with ^ variables passed to it
 
 
-@app.route('/usage-cpu/<slug>', methods=['POST', 'GET'])
-def CPU(slug):
-    form = ChartForm()
-    server = Server.query.filter_by(ServerId=slug).first()
+@app.route('/usage-cpu/<slug>', methods=['POST', 'GET'])  # route for cpu usage for a specific server
+def CPU(slug):  # Slug is the Server Id
+    form = ChartForm()  # instantiate the chart form class
+    server = Server.query.filter_by(ServerId=slug).first()  # query for the server specs
 
     tmp = Metric.query.order_by(Metric.Time).filter_by(ServerID=slug).first()
-    metric_row = Metric.query.get(tmp.MetricId)
+    metric_row = Metric.query.get(tmp.MetricId)  # gets the most recent metrics for server
 
+    # gets all dates for this server
     cpuDate = [metrics.Time for metrics in Metric.query.order_by(Metric.Time).filter_by(ServerId=slug)]
+    # gets all cpu usages for this server
     cpuUse = [metrics.Cpu for metrics in Metric.query.order_by(Metric.Time).filter_by(ServerId=slug)]
 
-    if form.validate_on_submit():
-        cpuDate = [metrics.Time for metrics in Metric.query.order_by(Metric.Time).filter_by(ServerId=slug)]
-        cpuUse = [metrics.Cpu for metrics in Metric.query.order_by(Metric.Time).filter_by(ServerId=slug)]
-
-    return render_template('Usage-CPUTemp.html', server=server, ametric=metric_row, date=cpuDate, usage=cpuUse, form=form)
-
-
-# @app.route('/usage-cpu/<slug>', methods=['POST', 'GET'])
-# def CPU_post(slug):
-#     server = Server.query.filter_by(ServerId=slug).first()
-#
-#     tmp = Metric.query.order_by(Metric.Time).filter_by(ServerID=slug).first()
-#     metric_row = Metric.query.get(tmp.MetricId)
-#
-#     cpuUse = [metrics.Cpu for metrics in Metric.query.order_by(Metric.Time).filter_by(ServerId=slug)]
-
-    # sdate = request.form['start date']
-    # edate = request.form['end date']
-    # cpuDate = [metrics.Time for metrics in
-    #            Metric.query.order_by(Metric.Time).filter_by(ServerId=slug).between(Metric.Time, sdate, edate)]
+    # if form.validate_on_submit():  *** EXPERIMENTING TO IMPLEMENT CHART DATE RANGE LIMITATION ***
+    #     result = request.form
+    #     startdate = result.startdate
+    #     enddate = result.enddate
+    #
+    #     cpuDate = [metrics.Time for metrics in Metric.query.order_by(Metric.Time).filter_by(ServerId=slug)]
+    #     cpuUse = [metrics.Cpu for metrics in Metric.query.order_by(Metric.Time).filter_by(ServerId=slug)]
+    #     return render_template('Usage-CPUTemp.html', server=server, ametric=metric_row, date=dateRange, usage=cpuUse,
+    #                           form=form)
+    return render_template('Usage-CPUTemp.html', server=server, ametric=metric_row, date=cpuDate, usage=cpuUse,
+                           form=form)
+    #   returns the template for real time data overview with ^ variables passed to it
 
 
-# @app.route('/usage-cpu')
+# @app.route('/usage-cpu')     *** THIS IS THE ROUTE FOR THE HARD-CODED CPU USAGE PAGE ***
 # def usage_CPU():
 #     return render_template('Usage-CPU.html')
 
 
-if __name__ == '__main__':
+if __name__ == '__main__':  # something for flask
     app.run()
