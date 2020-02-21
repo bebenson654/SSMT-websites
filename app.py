@@ -6,7 +6,7 @@ from flask_sqlalchemy import SQLAlchemy
 
 app = Flask(__name__)  # something for flask
 
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///StubServersDB_V2.db'  # sets the DB to the stubDB
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///StubServersDB_V3.db'  # sets the DB to the stubDB
 
 app.config['SECRET_KEY'] = 'secret ssmt'  # secret key used for by WTforms for forms
 
@@ -31,6 +31,7 @@ class Metric(db.Model):  # metric table
     __table_args__ = {'extend_existing': True}
     MetricId = db.Column(db.Text, primary_key=True)  # primary key column
     ServerID = db.Column(db.Text, db.ForeignKey('server.ServerId'))  # foreign key column
+    # Time = db.column(db.DATETIME)
 
 
 class Rack(db.Model):  # Rack table
