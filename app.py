@@ -100,16 +100,19 @@ class ChartForm(Form):  # form for the chart range
 def home():
     server_table = Server.query.all()  # query that gets all of the servers in the Server table
     return render_template('HomePageV2.html', server=server_table)  # returns V2 home page html doc with that variable
+# ----------------------------------------------------------------------------------------------------------------------
 
 
 @app.route('/masterlist')  # master list route
 def master_list():
     return render_template('MasterList.html')  # only returns the hard-coded master list for now
+# ----------------------------------------------------------------------------------------------------------------------
 
 
 # @app.route('/real-time-data-overview')    **** this is the route for the hard coded Real time Data Overview ****
 # def RTDO():
 #     return render_template('RealTimeDataOverview.html')
+# ----------------------------------------------------------------------------------------------------------------------
 
 
 @app.route('/real-time-data-overview/<slug>')  # route for the realtime data overview for a specific server
@@ -123,6 +126,7 @@ def RT(slug):  # Slug is the Server Id
 
     return render_template('RealTimeDataOverviewTemp.html', server=server, metric=metric_row, service=services)
     #   returns the template for real time data overview with ^ variables passed to it
+# ----------------------------------------------------------------------------------------------------------------------
 
 
 @app.route('/usage-cpu/<slug>', methods=['POST', 'GET'])  # route for cpu usage for a specific server
@@ -135,27 +139,124 @@ def CPU(slug):  # Slug is the Server Id
 
     # gets all dates for this server
     cpuDate = [metrics.Time for metrics in Metric.query.order_by(Metric.Time).filter_by(ServerId=slug)]
+    print(cpuDate)
     # gets all cpu usages for this server
     cpuUse = [metrics.Cpu for metrics in Metric.query.order_by(Metric.Time).filter_by(ServerId=slug)]
+    print(cpuUse)
 
-    # if form.validate_on_submit():  *** EXPERIMENTING TO IMPLEMENT CHART DATE RANGE LIMITATION ***
-    #     result = request.form
-    #     startdate = result.startdate
-    #     enddate = result.enddate
-    #
-    #     cpuDate = [metrics.Time for metrics in Metric.query.order_by(Metric.Time).filter_by(ServerId=slug)]
-    #     cpuUse = [metrics.Cpu for metrics in Metric.query.order_by(Metric.Time).filter_by(ServerId=slug)]
-    #     return render_template('Usage-CPUTemp.html', server=server, ametric=metric_row, date=dateRange, usage=cpuUse,
-    #                           form=form)
+    if form.validate_on_submit():  # *** EXPERIMENTING TO IMPLEMENT CHART DATE RANGE LIMITATION ***
+        form = ChartForm(request.form)
+        print(form)
+        startdate = form.startdate.data
+        enddate = form.enddate.data
+        # allMetrics = Metric.query.order_by(Metric.Time).filter_by(ServerId=slug)
+        dateRange = [metrics.Time for metrics in Metric.query.filter(Metric.MetricId == tmp.MetricId).filter(Metric.Time <= enddate, Metric.Time >= startdate)]
+        print(dateRange)
+        useRange = [metrics.Cpu for metrics in Metric.query.filter(Metric.MetricId == tmp.MetricId).filter(Metric.Time <= enddate, Metric.Time >= startdate)]
+        print(useRange)
+
+        # dateRange = [metrics.Time for metrics in Metric.query.order_by(Metric.Time).filter_by(ServerId=slug)
+        #     .filter(Metric.Time >= enddate, Metric.Time <= startdate)]
+        # print(dateRange)
+        # cpuUseInRange = [metrics.Cpu for metrics in Metric.query.order_by(Metric.Time).filter_by(ServerId=slug)
+        #     .filter(Metric.Time >= enddate, Metric.Time <= startdate)]
+        # print(cpuUseInRange)
+        return render_template('Usage-CPUTemp.html', server=server, ametric=metric_row, date=dateRange, usage=useRange,
+                               form=form)
     return render_template('Usage-CPUTemp.html', server=server, ametric=metric_row, date=cpuDate, usage=cpuUse,
                            form=form)
     #   returns the template for real time data overview with ^ variables passed to it
+# ----------------------------------------------------------------------------------------------------------------------
 
+
+@app.route('/usage-Disk/<slug>', methods=['POST', 'GET'])  # route for cpu usage for a specific server
+def disk(slug):  # Slug is the Server Id
+    form = ChartForm()  # instantiate the chart form class
+    server = Server.query.filter_by(ServerId=slug).first()  # query for the server specs
+
+    tmp = Metric.query.order_by(Metric.Time.desc()).filter_by(ServerID=slug).first()
+    metric_row = Metric.query.get(tmp.MetricId)  # gets the most recent metrics for server
+
+    # gets all dates for this server
+    cpuDate = [metrics.Time for metrics in Metric.query.order_by(Metric.Time).filter_by(ServerId=slug)]
+    # gets all cpu usages for this server
+    diskUse = [metrics.Disk for metrics in Metric.query.order_by(Metric.Time).filter_by(ServerId=slug)]
+
+    if form.validate_on_submit():  # *** EXPERIMENTING TO IMPLEMENT CHART DATE RANGE LIMITATION ***
+        form = ChartForm(request.form)
+        startdate = form.startdate.data
+        enddate = form.enddate.data
+        # allMetrics = Metric.query.order_by(Metric.Time).filter_by(ServerId=slug)
+        dateRange = [metrics.Time for metrics in Metric.query.filter(Metric.MetricId == tmp.MetricId).filter(Metric.Time <= enddate, Metric.Time >= startdate)]
+        useRange = [metrics.Disk for metrics in Metric.query.filter(Metric.MetricId == tmp.MetricId).filter(Metric.Time <= enddate, Metric.Time >= startdate)]
+
+        return render_template('Usage-Disk.html', server=server, ametric=metric_row, date=dateRange, usage=useRange,
+                               form=form)
+    return render_template('Usage-Disk.html', server=server, ametric=metric_row, date=cpuDate, usage=diskUse,
+                           form=form)
+# ----------------------------------------------------------------------------------------------------------------------
+
+
+@app.route('/usage-GPU/<slug>', methods=['POST', 'GET'])  # route for cpu usage for a specific server
+def gpu(slug):  # Slug is the Server Id
+    form = ChartForm()  # instantiate the chart form class
+    server = Server.query.filter_by(ServerId=slug).first()  # query for the server specs
+
+    tmp = Metric.query.order_by(Metric.Time.desc()).filter_by(ServerID=slug).first()
+    metric_row = Metric.query.get(tmp.MetricId)  # gets the most recent metrics for server
+
+    # gets all dates for this server
+    cpuDate = [metrics.Time for metrics in Metric.query.order_by(Metric.Time).filter_by(ServerId=slug)]
+    # gets all cpu usages for this server
+    gpuUse = [metrics.Gpu for metrics in Metric.query.order_by(Metric.Time).filter_by(ServerId=slug)]
+
+    if form.validate_on_submit():  # *** EXPERIMENTING TO IMPLEMENT CHART DATE RANGE LIMITATION ***
+        form = ChartForm(request.form)
+        startdate = form.startdate.data
+        enddate = form.enddate.data
+        # allMetrics = Metric.query.order_by(Metric.Time).filter_by(ServerId=slug)
+        dateRange = [metrics.Time for metrics in Metric.query.filter(Metric.MetricId == tmp.MetricId).filter(Metric.Time <= enddate, Metric.Time >= startdate)]
+        useRange = [metrics.Gpu for metrics in Metric.query.filter(Metric.MetricId == tmp.MetricId).filter(Metric.Time <= enddate, Metric.Time >= startdate)]
+
+        return render_template('Usage-GPU.html', server=server, ametric=metric_row, date=dateRange, usage=useRange,
+                               form=form)
+    return render_template('Usage-GPU.html', server=server, ametric=metric_row, date=cpuDate, usage=gpuUse,
+                           form=form)
+# ----------------------------------------------------------------------------------------------------------------------
+
+
+@app.route('/usage-RAM/<slug>', methods=['POST', 'GET'])  # route for cpu usage for a specific server
+def ram(slug):  # Slug is the Server Id
+    form = ChartForm()  # instantiate the chart form class
+    server = Server.query.filter_by(ServerId=slug).first()  # query for the server specs
+
+    tmp = Metric.query.order_by(Metric.Time.desc()).filter_by(ServerID=slug).first()
+    metric_row = Metric.query.get(tmp.MetricId)  # gets the most recent metrics for server
+
+    # gets all dates for this server
+    cpuDate = [metrics.Time for metrics in Metric.query.order_by(Metric.Time).filter_by(ServerId=slug)]
+    # gets all cpu usages for this server
+    ramUse = [metrics.Ram for metrics in Metric.query.order_by(Metric.Time).filter_by(ServerId=slug)]
+
+    if form.validate_on_submit():  # *** EXPERIMENTING TO IMPLEMENT CHART DATE RANGE LIMITATION ***
+        form = ChartForm(request.form)
+        startdate = form.startdate.data
+        enddate = form.enddate.data
+        # allMetrics = Metric.query.order_by(Metric.Time).filter_by(ServerId=slug)
+        dateRange = [metrics.Time for metrics in Metric.query.filter(Metric.MetricId == tmp.MetricId).filter(Metric.Time <= enddate, Metric.Time >= startdate)]
+        useRange = [metrics.Ram for metrics in Metric.query.filter(Metric.MetricId == tmp.MetricId).filter(Metric.Time <= enddate, Metric.Time >= startdate)]
+
+        return render_template('Usage-RAM.html', server=server, ametric=metric_row, date=dateRange, usage=useRange,
+                               form=form)
+    return render_template('Usage-RAM.html', server=server, ametric=metric_row, date=cpuDate, usage=ramUse,
+                           form=form)
 
 # @app.route('/usage-cpu')     *** THIS IS THE ROUTE FOR THE HARD-CODED CPU USAGE PAGE ***
 # def usage_CPU():
 #     return render_template('Usage-CPU.html')
 
 
+# ----------------------------------------------------------------------------------------------------------------------
+# ----------------------------------------------------------------------------------------------------------------------
 if __name__ == '__main__':  # something for flask
     app.run()

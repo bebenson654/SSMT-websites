@@ -75,18 +75,18 @@
     <tr>
         <th scope="row"><h3><img src="WebApp\Red X.png" class="float-left"></h3></th>
          <td><h3>RAM Usage:</h3></td>
-        <td><h3 class="text-success">{{ metric.Ram }}%</h3></td>
+        <td><h3 class="text-danger"><a href="/usage-RAM/{{ server.ServerId }}">{{ metric.Ram }}%</a></h3></td>
 
     </tr>
     <tr>
         <th scope="row"><h3><img src="WebApp\Red X.png" class="float-left"></h3></th>
         <td><h3>Disk Usage:</h3></td>
-        <td><h3 class="text-success">{{ metric.Disk }}%</h3></td>
+        <td><h3 class="text-danger"><a href="/usage-Disk/{{ server.ServerId }}">{{ metric.Disk }}%</a></h3></td>
     </tr>
     <tr>
       <th scope="row"><h3><img src="WebApp\Red X.png" class="float-left"></h3></th>
       <td><h3>GPU Usage:</h3></td>
-      <td><h3 class="text-warning">{{ metric.Gpu }}%</h3></td>
+        <td><h3 class="text-danger"><a href="/usage-GPU/{{ server.ServerId }}">{{ metric.Gpu }}%</a></h3></td>
     </tr>
     <tr>
       <th scope="row"><h3><img src="WebApp\Red X.png" class="float-left"></h3></th>
