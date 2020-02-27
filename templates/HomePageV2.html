@@ -45,22 +45,27 @@
     {# Racks == Cards #}
     <div class="card-columns"> {# formats cards into special columns #}
 
+    {% for rack in rack %}
         <div class="card mt-3" style="width: 18rem;"> {# card containing a rack #}
 
             <div class="card-header text-center p-3 mb-2 bg-primary text-white"> {# card header #}
-                Rack A {# rack name #}
+                {{ rack.Name }}{# rack name #}
             </div>
 
             {% for server in server %}
+                {% if server.RackID == rack.RackID %}
                 {# grabs all servers in DB | NEEDS TO BE CHANGED TO ONLY GRAB SERVERS IN THIS RACK #}
                 <ul class="list-group list-group-flush"> {# lists servers that link to their Real Time page #}
                     <a href="/real-time-data-overview/{{ server.ServerId }}"
                        class="list-group-item list-group-item-action text-center">{{ server.ServerName }}<img
                             src="WebApp\Red X.png" class="float-right"></a>
                 </ul>
+                {% endif %}
             {% endfor %}
 
         </div>
+    {% endfor %}
+
 
     </div>
 {% endblock content %}

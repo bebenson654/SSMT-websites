@@ -1,10 +1,12 @@
 from flask import Flask, render_template, request
 from flask_wtf import Form
 from wtforms import StringField, DateField
-from wtforms.validators import input_required
+from wtforms.validators import input_required, length
 from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy import between
 
 app = Flask(__name__)  # something for flask
+app.jinja_env.globals.update(zip=zip)
 
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///StubServersDB_V3.db'  # sets the DB to the stubDB
 
@@ -87,8 +89,8 @@ class MasterList(db.Model):  # Master list table
 
 
 class ChartForm(Form):  # form for the chart range
-    startdate = StringField('startdate', validators=[input_required()])  # start date field
-    enddate = StringField('enddate', validators=[input_required()])  # End date field
+    startdate = StringField('startdate', validators=[input_required(), length(min=10, max=10)])  # start date field
+    enddate = StringField('enddate', validators=[input_required(), length(min=10, max=10)])  # End date field
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -99,7 +101,15 @@ class ChartForm(Form):  # form for the chart range
 @app.route('/home')  # or this
 def home():
     server_table = Server.query.all()  # query that gets all of the servers in the Server table
-    return render_template('HomePageV2.html', server=server_table)  # returns V2 home page html doc with that variable
+    rack_table = Rack.query.order_by(Rack.Name).all()
+
+    # for r in rack_table:
+    #     for s in server_table:
+    #         if s.RackId == r.RackId:
+    #             print(s.Name)
+    #     print(r.Name)
+
+    return render_template('HomePageV2.html', server=server_table, rack=rack_table)  # returns V2 home page html doc with that variable
 # ----------------------------------------------------------------------------------------------------------------------
 
 
@@ -121,7 +131,7 @@ def RT(slug):  # Slug is the Server Id
 
     services = Service.query.filter_by(ServerId=slug)  # query for the services on this server
 
-    tmp = Metric.query.order_by(Metric.Time).filter_by(ServerID=slug).first()
+    tmp = Metric.query.order_by(Metric.Time.desc()).filter_by(ServerID=slug).first()
     metric_row = Metric.query.get(tmp.MetricId)  # gets the most recent metrics for server
 
     return render_template('RealTimeDataOverviewTemp.html', server=server, metric=metric_row, service=services)
@@ -134,7 +144,7 @@ def CPU(slug):  # Slug is the Server Id
     form = ChartForm()  # instantiate the chart form class
     server = Server.query.filter_by(ServerId=slug).first()  # query for the server specs
 
-    tmp = Metric.query.order_by(Metric.Time).filter_by(ServerID=slug).first()
+    tmp = Metric.query.order_by(Metric.Time.desc()).filter_by(ServerID=slug).first()
     metric_row = Metric.query.get(tmp.MetricId)  # gets the most recent metrics for server
 
     # gets all dates for this server
@@ -149,11 +159,14 @@ def CPU(slug):  # Slug is the Server Id
         print(form)
         startdate = form.startdate.data
         enddate = form.enddate.data
-        # allMetrics = Metric.query.order_by(Metric.Time).filter_by(ServerId=slug)
-        dateRange = [metrics.Time for metrics in Metric.query.filter(Metric.MetricId == tmp.MetricId).filter(Metric.Time <= enddate, Metric.Time >= startdate)]
-        print(dateRange)
-        useRange = [metrics.Cpu for metrics in Metric.query.filter(Metric.MetricId == tmp.MetricId).filter(Metric.Time <= enddate, Metric.Time >= startdate)]
-        print(useRange)
+        print(startdate)
+        print(enddate)
+        dateRange = [metrics.Time for metrics in Metric.query.order_by(Metric.Time).filter_by(ServerId=slug).filter(between(Metric.Time, startdate, enddate))]
+        useRange = [metrics.Cpu for metrics in Metric.query.order_by(Metric.Time).filter_by(ServerId=slug).filter(between(Metric.Time, startdate, enddate))]
+
+
+        # dateRange = [metrics.Time for metrics in Metric.query.filter(Metric.MetricId == tmp.MetricId).filter(Metric.Time < enddate, Metric.Time > startdate)]
+        # useRange = [metrics.Cpu for metrics in Metric.query.filter(Metric.MetricId == tmp.MetricId).filter(Metric.Time < enddate, Metric.Time > startdate)]
 
         # dateRange = [metrics.Time for metrics in Metric.query.order_by(Metric.Time).filter_by(ServerId=slug)
         #     .filter(Metric.Time >= enddate, Metric.Time <= startdate)]
