@@ -53,7 +53,7 @@
             </div>
 
             {% for server in server %}
-                {% if server.RackID == rack.RackID %}
+                {% if server.RackID == rack.RackId %}
                 {# grabs all servers in DB | NEEDS TO BE CHANGED TO ONLY GRAB SERVERS IN THIS RACK #}
                 <ul class="list-group list-group-flush"> {# lists servers that link to their Real Time page #}
                     <a href="/real-time-data-overview/{{ server.ServerId }}"

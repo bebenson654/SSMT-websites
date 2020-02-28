@@ -4,11 +4,12 @@ from wtforms import StringField, DateField
 from wtforms.validators import input_required, length
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import between
+from datetime import date
 
 app = Flask(__name__)  # something for flask
 app.jinja_env.globals.update(zip=zip)
 
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///StubServersDB_V3.db'  # sets the DB to the stubDB
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///StubServersDB_V4.db'  # sets the DB to the stubDB
 
 app.config['SECRET_KEY'] = 'secret ssmt'  # secret key used for by WTforms for forms
 
@@ -92,6 +93,11 @@ class ChartForm(Form):  # form for the chart range
     startdate = StringField('startdate', validators=[input_required(), length(min=10, max=10)])  # start date field
     enddate = StringField('enddate', validators=[input_required(), length(min=10, max=10)])  # End date field
 
+# ----------------------------------------------------------------------------------------------------------------------
+
+
+date = date.today()  # gets today's date for use in default range for chart
+today = date.strftime("%m/%d/%Y")  # reformat date to mm/dd/yyyy
 
 # ----------------------------------------------------------------------------------------------------------------------
 # Routes for the pages
@@ -101,11 +107,11 @@ class ChartForm(Form):  # form for the chart range
 @app.route('/home')  # or this
 def home():
     server_table = Server.query.all()  # query that gets all of the servers in the Server table
-    rack_table = Rack.query.order_by(Rack.Name).all()
+    rack_table = Rack.query.all()
 
     # for r in rack_table:
     #     for s in server_table:
-    #         if s.RackId == r.RackId:
+    #         if s.RackID == r.RackID:
     #             print(s.Name)
     #     print(r.Name)
 
@@ -147,64 +153,72 @@ def CPU(slug):  # Slug is the Server Id
     tmp = Metric.query.order_by(Metric.Time.desc()).filter_by(ServerID=slug).first()
     metric_row = Metric.query.get(tmp.MetricId)  # gets the most recent metrics for server
 
-    # gets all dates for this server
-    cpuDate = [metrics.Time for metrics in Metric.query.order_by(Metric.Time).filter_by(ServerId=slug)]
-    print(cpuDate)
-    # gets all cpu usages for this server
-    cpuUse = [metrics.Cpu for metrics in Metric.query.order_by(Metric.Time).filter_by(ServerId=slug)]
-    print(cpuUse)
+    # gets all dates for this server between dates
+    cpuDate = [metrics.Time for metrics in Metric.query.order_by(Metric.Time).filter_by(ServerId=slug).filter(
+        between(Metric.Time, '07/06/2019', '07/07/2019'))]
 
-    if form.validate_on_submit():  # *** EXPERIMENTING TO IMPLEMENT CHART DATE RANGE LIMITATION ***
+    # gets all cpu usages for this server between dates
+    cpuUse = [metrics.Cpu for metrics in Metric.query.order_by(Metric.Time).filter_by(ServerId=slug).filter(
+        between(Metric.Time, '07/06/2019', '07/07/2019'))]
+
+    if form.validate_on_submit():  # implementation of user input limiting date range for chart
+
         form = ChartForm(request.form)
-        print(form)
-        startdate = form.startdate.data
+        startdate = form.startdate.data  # gets start and end date from form
         enddate = form.enddate.data
-        print(startdate)
-        print(enddate)
-        dateRange = [metrics.Time for metrics in Metric.query.order_by(Metric.Time).filter_by(ServerId=slug).filter(between(Metric.Time, startdate, enddate))]
-        useRange = [metrics.Cpu for metrics in Metric.query.order_by(Metric.Time).filter_by(ServerId=slug).filter(between(Metric.Time, startdate, enddate))]
 
+        # Returns list of dates within start and end date
+        dateRange = [metrics.Time for metrics in Metric.query.order_by(Metric.Time).filter_by(ServerId=slug).filter(
+            between(Metric.Time, startdate, enddate))]
 
-        # dateRange = [metrics.Time for metrics in Metric.query.filter(Metric.MetricId == tmp.MetricId).filter(Metric.Time < enddate, Metric.Time > startdate)]
-        # useRange = [metrics.Cpu for metrics in Metric.query.filter(Metric.MetricId == tmp.MetricId).filter(Metric.Time < enddate, Metric.Time > startdate)]
+        # Returns usages that within  start and end date
+        useRange = [metrics.Cpu for metrics in Metric.query.order_by(Metric.Time).filter_by(ServerId=slug).filter(
+            between(Metric.Time, startdate, enddate))]
 
-        # dateRange = [metrics.Time for metrics in Metric.query.order_by(Metric.Time).filter_by(ServerId=slug)
-        #     .filter(Metric.Time >= enddate, Metric.Time <= startdate)]
-        # print(dateRange)
-        # cpuUseInRange = [metrics.Cpu for metrics in Metric.query.order_by(Metric.Time).filter_by(ServerId=slug)
-        #     .filter(Metric.Time >= enddate, Metric.Time <= startdate)]
-        # print(cpuUseInRange)
+        # return for if user provides input
         return render_template('Usage-CPUTemp.html', server=server, ametric=metric_row, date=dateRange, usage=useRange,
                                form=form)
+    # return for default date range
     return render_template('Usage-CPUTemp.html', server=server, ametric=metric_row, date=cpuDate, usage=cpuUse,
                            form=form)
-    #   returns the template for real time data overview with ^ variables passed to it
 # ----------------------------------------------------------------------------------------------------------------------
 
 
-@app.route('/usage-Disk/<slug>', methods=['POST', 'GET'])  # route for cpu usage for a specific server
+@app.route('/usage-Disk/<slug>', methods=['POST', 'GET'])  # route for Disk usage for a specific server
 def disk(slug):  # Slug is the Server Id
+
     form = ChartForm()  # instantiate the chart form class
     server = Server.query.filter_by(ServerId=slug).first()  # query for the server specs
 
     tmp = Metric.query.order_by(Metric.Time.desc()).filter_by(ServerID=slug).first()
     metric_row = Metric.query.get(tmp.MetricId)  # gets the most recent metrics for server
 
-    # gets all dates for this server
-    cpuDate = [metrics.Time for metrics in Metric.query.order_by(Metric.Time).filter_by(ServerId=slug)]
-    # gets all cpu usages for this server
-    diskUse = [metrics.Disk for metrics in Metric.query.order_by(Metric.Time).filter_by(ServerId=slug)]
+    # gets all dates for this server between dates
+    cpuDate = [metrics.Time for metrics in Metric.query.order_by(Metric.Time).filter_by(ServerId=slug).filter(
+        between(Metric.Time, '07/06/2019', '07/07/2019'))]
 
-    if form.validate_on_submit():  # *** EXPERIMENTING TO IMPLEMENT CHART DATE RANGE LIMITATION ***
+    # gets all disk usages for this server between dates
+    diskUse = [metrics.Disk for metrics in Metric.query.order_by(Metric.Time).filter_by(ServerId=slug).filter(
+        between(Metric.Time, '07/06/2019', '07/07/2019'))]
+
+    if form.validate_on_submit():  # implementation of user input limiting date range for chart
+
         form = ChartForm(request.form)
-        startdate = form.startdate.data
+        startdate = form.startdate.data  # gets start and end date from form
         enddate = form.enddate.data
-        # allMetrics = Metric.query.order_by(Metric.Time).filter_by(ServerId=slug)
-        dateRange = [metrics.Time for metrics in Metric.query.filter(Metric.MetricId == tmp.MetricId).filter(Metric.Time <= enddate, Metric.Time >= startdate)]
-        useRange = [metrics.Disk for metrics in Metric.query.filter(Metric.MetricId == tmp.MetricId).filter(Metric.Time <= enddate, Metric.Time >= startdate)]
 
+        # Returns list of dates within start and end date
+        dateRange = [metrics.Time for metrics in Metric.query.order_by(Metric.Time).filter_by(ServerId=slug).filter(
+            between(Metric.Time, startdate, enddate))]
+
+        # Returns usages that within  start and end date
+        useRange = [metrics.Disk for metrics in Metric.query.order_by(Metric.Time).filter_by(ServerId=slug).filter(
+            between(Metric.Time, startdate, enddate))]
+
+        # return for if user provides input
         return render_template('Usage-Disk.html', server=server, ametric=metric_row, date=dateRange, usage=useRange,
                                form=form)
+    # return for default date range
     return render_template('Usage-Disk.html', server=server, ametric=metric_row, date=cpuDate, usage=diskUse,
                            form=form)
 # ----------------------------------------------------------------------------------------------------------------------
@@ -212,27 +226,39 @@ def disk(slug):  # Slug is the Server Id
 
 @app.route('/usage-GPU/<slug>', methods=['POST', 'GET'])  # route for cpu usage for a specific server
 def gpu(slug):  # Slug is the Server Id
+
     form = ChartForm()  # instantiate the chart form class
     server = Server.query.filter_by(ServerId=slug).first()  # query for the server specs
 
     tmp = Metric.query.order_by(Metric.Time.desc()).filter_by(ServerID=slug).first()
     metric_row = Metric.query.get(tmp.MetricId)  # gets the most recent metrics for server
 
-    # gets all dates for this server
-    cpuDate = [metrics.Time for metrics in Metric.query.order_by(Metric.Time).filter_by(ServerId=slug)]
-    # gets all cpu usages for this server
-    gpuUse = [metrics.Gpu for metrics in Metric.query.order_by(Metric.Time).filter_by(ServerId=slug)]
+    # gets all dates for this server between dates
+    cpuDate = [metrics.Time for metrics in Metric.query.order_by(Metric.Time).filter_by(ServerId=slug).filter(
+        between(Metric.Time, '07/06/2019', '07/07/2019'))]
 
-    if form.validate_on_submit():  # *** EXPERIMENTING TO IMPLEMENT CHART DATE RANGE LIMITATION ***
+    # gets all disk usages for this server between dates
+    gpuUse = [metrics.Gpu for metrics in Metric.query.order_by(Metric.Time).filter_by(ServerId=slug).filter(
+        between(Metric.Time, '07/06/2019', '07/07/2019'))]
+
+    if form.validate_on_submit():  # implementation of user input limiting date range for chart
+
         form = ChartForm(request.form)
-        startdate = form.startdate.data
+        startdate = form.startdate.data  # gets start and end date from form
         enddate = form.enddate.data
-        # allMetrics = Metric.query.order_by(Metric.Time).filter_by(ServerId=slug)
-        dateRange = [metrics.Time for metrics in Metric.query.filter(Metric.MetricId == tmp.MetricId).filter(Metric.Time <= enddate, Metric.Time >= startdate)]
-        useRange = [metrics.Gpu for metrics in Metric.query.filter(Metric.MetricId == tmp.MetricId).filter(Metric.Time <= enddate, Metric.Time >= startdate)]
 
-        return render_template('Usage-GPU.html', server=server, ametric=metric_row, date=dateRange, usage=useRange,
+        # Returns list of dates within start and end date
+        dateRange = [metrics.Time for metrics in Metric.query.order_by(Metric.Time).filter_by(ServerId=slug).filter(
+            between(Metric.Time, startdate, enddate))]
+
+        # Returns usages that within  start and end date
+        useRange = [metrics.Gpu for metrics in Metric.query.order_by(Metric.Time).filter_by(ServerId=slug).filter(
+            between(Metric.Time, startdate, enddate))]
+
+        # return for if user provides input
+        return render_template('Usage-GPUTemp.html', server=server, ametric=metric_row, date=dateRange, usage=useRange,
                                form=form)
+    # return for default date range
     return render_template('Usage-GPU.html', server=server, ametric=metric_row, date=cpuDate, usage=gpuUse,
                            form=form)
 # ----------------------------------------------------------------------------------------------------------------------
@@ -240,27 +266,39 @@ def gpu(slug):  # Slug is the Server Id
 
 @app.route('/usage-RAM/<slug>', methods=['POST', 'GET'])  # route for cpu usage for a specific server
 def ram(slug):  # Slug is the Server Id
+
     form = ChartForm()  # instantiate the chart form class
     server = Server.query.filter_by(ServerId=slug).first()  # query for the server specs
 
     tmp = Metric.query.order_by(Metric.Time.desc()).filter_by(ServerID=slug).first()
     metric_row = Metric.query.get(tmp.MetricId)  # gets the most recent metrics for server
 
-    # gets all dates for this server
-    cpuDate = [metrics.Time for metrics in Metric.query.order_by(Metric.Time).filter_by(ServerId=slug)]
-    # gets all cpu usages for this server
-    ramUse = [metrics.Ram for metrics in Metric.query.order_by(Metric.Time).filter_by(ServerId=slug)]
+    # gets all dates for this server between dates
+    cpuDate = [metrics.Time for metrics in Metric.query.order_by(Metric.Time).filter_by(ServerId=slug).filter(
+        between(Metric.Time, '07/06/2019', '07/07/2019'))]
 
-    if form.validate_on_submit():  # *** EXPERIMENTING TO IMPLEMENT CHART DATE RANGE LIMITATION ***
+    # gets all disk usages for this server between dates
+    ramUse = [metrics.Ram for metrics in Metric.query.order_by(Metric.Time).filter_by(ServerId=slug).filter(
+        between(Metric.Time, '07/06/2019', '07/07/2019'))]
+
+    if form.validate_on_submit():  # implementation of user input limiting date range for chart
+
         form = ChartForm(request.form)
-        startdate = form.startdate.data
+        startdate = form.startdate.data  # gets start and end date from form
         enddate = form.enddate.data
-        # allMetrics = Metric.query.order_by(Metric.Time).filter_by(ServerId=slug)
-        dateRange = [metrics.Time for metrics in Metric.query.filter(Metric.MetricId == tmp.MetricId).filter(Metric.Time <= enddate, Metric.Time >= startdate)]
-        useRange = [metrics.Ram for metrics in Metric.query.filter(Metric.MetricId == tmp.MetricId).filter(Metric.Time <= enddate, Metric.Time >= startdate)]
 
+        # Returns list of dates within start and end date
+        dateRange = [metrics.Time for metrics in Metric.query.order_by(Metric.Time).filter_by(ServerId=slug).filter(
+            between(Metric.Time, startdate, enddate))]
+
+        # Returns usages that within  start and end date
+        useRange = [metrics.Ram for metrics in Metric.query.order_by(Metric.Time).filter_by(ServerId=slug).filter(
+            between(Metric.Time, startdate, enddate))]
+
+        # return for if user provides input
         return render_template('Usage-RAM.html', server=server, ametric=metric_row, date=dateRange, usage=useRange,
                                form=form)
+    # return for default date range
     return render_template('Usage-RAM.html', server=server, ametric=metric_row, date=cpuDate, usage=ramUse,
                            form=form)
 
