@@ -90,8 +90,9 @@ class MasterList(db.Model):  # Master list table
 
 
 class ChartForm(Form):  # form for the chart range
-    startdate = StringField('startdate', validators=[input_required(), length(min=10, max=10)])  # start date field
-    enddate = StringField('enddate', validators=[input_required(), length(min=10, max=10)])  # End date field
+    startdate = StringField('startdate', validators=[input_required(), length(min=10, max=19)])  # start date field
+    enddate = StringField('enddate', validators=[input_required(), length(min=10, max=19)])  # End date field
+
 
 # ----------------------------------------------------------------------------------------------------------------------
 
@@ -107,13 +108,9 @@ today = date.strftime("%m/%d/%Y")  # reformat date to mm/dd/yyyy
 @app.route('/home')  # or this
 def home():
     server_table = Server.query.all()  # query that gets all of the servers in the Server table
-    rack_table = Rack.query.all()
+    rack_table = Rack.query.order_by(Rack.Name).all()
 
-    # for r in rack_table:
-    #     for s in server_table:
-    #         if s.RackID == r.RackID:
-    #             print(s.Name)
-    #     print(r.Name)
+
 
     return render_template('HomePageV2.html', server=server_table, rack=rack_table)  # returns V2 home page html doc with that variable
 # ----------------------------------------------------------------------------------------------------------------------
@@ -155,11 +152,11 @@ def CPU(slug):  # Slug is the Server Id
 
     # gets all dates for this server between dates
     cpuDate = [metrics.Time for metrics in Metric.query.order_by(Metric.Time).filter_by(ServerId=slug).filter(
-        between(Metric.Time, '07/06/2019', '07/07/2019'))]
+        between(Metric.Time, '07/06/2019 00:00:00', '07/06/2019 12:00:00'))]
 
     # gets all cpu usages for this server between dates
     cpuUse = [metrics.Cpu for metrics in Metric.query.order_by(Metric.Time).filter_by(ServerId=slug).filter(
-        between(Metric.Time, '07/06/2019', '07/07/2019'))]
+        between(Metric.Time, '07/06/2019 00:00:00', '07/06/2019 12:00:00'))]
 
     if form.validate_on_submit():  # implementation of user input limiting date range for chart
 
