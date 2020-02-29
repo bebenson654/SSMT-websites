@@ -43,45 +43,47 @@
                 </thead>
                 <tbody>
                 <tr>
+                    {% for m in mList %}
                     <td scope="row">
                         <div class="form-check">
                             <input class="form-check-input position-static" type="checkbox" id="blankCheckbox"
                                    value="option1" aria-label="...">
                         </div>
                     </td>
-                    <td>Database</td>
-                    <td>01</td>
+                    <td>{{ m.Type }}</td>
+                    <td>{{ m.Name }}</td>
                 </tr>
-                <tr>
-                    <td scope="row">
-                        <div class="form-check">
-                            <input class="form-check-input position-static" type="checkbox" id="blankCheckbox"
-                                   value="option1" aria-label="...">
-                        </div>
-                    </td>
-                    <td>License</td>
-                    <td>01</td>
-                </tr>
-                <tr>
-                    <td scope="row">
-                        <div class="form-check">
-                            <input class="form-check-input position-static" type="checkbox" id="blankCheckbox"
-                                   value="option1" aria-label="...">
-                        </div>
-                    </td>
-                    <td>Node</td>
-                    <td>01</td>
-                </tr>
-                <tr>
-                    <td scope="row">
-                        <div class="form-check">
-                            <input class="form-check-input position-static" type="checkbox" id="blankCheckbox"
-                                   value="option1" aria-label="...">
-                        </div>
-                    </td>
-                    <td>Log</td>
-                    <td>01</td>
-                </tr>
+                {% endfor %}
+{#                <tr>#}
+{#                    <td scope="row">#}
+{#                        <div class="form-check">#}
+{#                            <input class="form-check-input position-static" type="checkbox" id="blankCheckbox"#}
+{#                                   value="option1" aria-label="...">#}
+{#                        </div>#}
+{#                    </td>#}
+{#                    <td>License</td>#}
+{#                    <td>01</td>#}
+{#                </tr>#}
+{#                <tr>#}
+{#                    <td scope="row">#}
+{#                        <div class="form-check">#}
+{#                            <input class="form-check-input position-static" type="checkbox" id="blankCheckbox"#}
+{#                                   value="option1" aria-label="...">#}
+{#                        </div>#}
+{#                    </td>#}
+{#                    <td>Node</td>#}
+{#                    <td>01</td>#}
+{#                </tr>#}
+{#                <tr>#}
+{#                    <td scope="row">#}
+{#                        <div class="form-check">#}
+{#                            <input class="form-check-input position-static" type="checkbox" id="blankCheckbox"#}
+{#                                   value="option1" aria-label="...">#}
+{#                        </div>#}
+{#                    </td>#}
+{#                    <td>Log</td>#}
+{#                    <td>01</td>#}
+{#                </tr>#}
                 <tr class="table-light">
                     <td scope="row"></td>
                     <td>

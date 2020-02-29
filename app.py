@@ -110,15 +110,15 @@ def home():
     server_table = Server.query.all()  # query that gets all of the servers in the Server table
     rack_table = Rack.query.order_by(Rack.Name).all()
 
-
-
-    return render_template('HomePageV2.html', server=server_table, rack=rack_table)  # returns V2 home page html doc with that variable
+    return render_template('HomePageV2.html',
+                           server=server_table, rack=rack_table)  # returns V2 home page html doc with that variable
 # ----------------------------------------------------------------------------------------------------------------------
 
 
 @app.route('/masterlist')  # master list route
 def master_list():
-    return render_template('MasterList.html')  # only returns the hard-coded master list for now
+    mList = MasterList.query.all()
+    return render_template('MasterList.html', mList=mList)  # only returns the hard-coded master list for now
 # ----------------------------------------------------------------------------------------------------------------------
 
 
