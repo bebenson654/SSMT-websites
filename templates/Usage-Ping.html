@@ -8,7 +8,7 @@
 {% block title %}{# Overides layout.html default title #}
     <script src="https://cdn.jsdelivr.net/npm/chart.js@2.8.0"></script> {# Script needed for chart.js #}
 
-    <title>Disk-Usage - {{ server.ServerName }}</title> {# Title - shown in tab on browser #}
+    <title>Ping-Usage - {{ server.ServerName }}</title> {# Title - shown in tab on browser #}
 {% endblock title %}
 
 {% block content %} {# Overides layout.html body section #}
@@ -29,7 +29,7 @@
         <div class="col-10 "> {# Rack & Server Names #}
             <div class="card">
                 <div class="card-body border border-dark font-weight-bold">
-                    <h5>{{ server.RackID }} | {{ server.ServerName }}</h5>
+                    <h5>Fix This | {{ server.ServerName }}</h5>
                 </div>
             </div>
         </div>
@@ -37,9 +37,9 @@
     </div>
 
 {#    </div>#}
-    <div class="row text-center m-2"> {# Displays this servers Disk usage #}
+    <div class="row text-center m-2"> {# Displays this servers RAM usage #}
         <div class="col-12">
-            <h2 class="text-danger"> Disk Usage: <b>{{ ametric.Disk }}%</b></h2>
+            <h2 class="text-danger"> Ping Status: <b>{{ ametric.PingLatency }}%</b></h2>
         </div>
     </div>
 
@@ -92,7 +92,7 @@
                         labels: [{% for d in date %} "{{ d }}", {% endfor %}], {# Dates #}
                         datasets: [{
                             label: 'My First dataset',
-                            backgroundColor: 'rgb(255,201,111)',
+                            backgroundColor: 'rgb(255,249,142)',
                             borderColor: 'rgb(0, 0, 0)',
                             data: [{% for u in usage %} "{{ u }}", {% endfor %}] {# Usages #}
                         }]
@@ -104,17 +104,13 @@
             </script>
         </div>
 
-        <div class="row"> {# Disk Usage table #}
+        <div class="row"> {# Ping Usage table #}
             <div class="col mt-5 mb-5">
                 <table class="table table-striped table-bordered">
                     <thead class="table-dark">
                     <tr>
                         <th scope="col">Date/Time</th>
-                        <th scope="col">Total</th>
-                        <th scope="col">Disk A (%): Hi-Avg-Low</th>
-                        <th scope="col">Disk B (%): Hi-Avg-Low</th>
-                        <th scope="col">Disk C (%): Hi-Avg-Low</th>
-                        <th scope="col">Disk D (%): Hi-Avg-Low</th>
+                        <th scope="col">Ping Latency (ms)</th>
                     </tr>
                     </thead>
                     <tbody>
@@ -122,17 +118,12 @@
                             <tr>
                                 <td>{{ d }}</td>
                                 <td>{{ u }}%</td>
-                                <td>{{ u }}%</td>
-                                <td>{{ u }}%</td>
-                                <td>{{ u }}%</td>
-                                <td>{{ u }}%</td>
                             </tr>
                         {% endfor %}
-
-
                     </tbody>
                 </table>
             </div>
         </div>
+
 
 {% endblock content %}
