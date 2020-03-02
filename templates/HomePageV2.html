@@ -1,4 +1,7 @@
 {# New Home Page #}
+
+{% from '_formhelpers.html' import render_field %} {# import neede for chard range forms #}
+
 {% extends 'layout.html' %} {# inherits format from layout.html #}
 
 {% block title %} {# Overides layout.html default title #}
@@ -20,23 +23,14 @@
         </div>
 
         <div class="col-10 ml-auto"> {# dropdown for filter | filter does not work #}
-            <div class="dropdown">
-                <button class="btn btn-secondary dropdown-toggle float-md-right" type="button" id="dropdownMenuButton"
-                        data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                    Server Type
-                </button>
-                <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
-                    <a class="dropdown-item text-center" href="#">All</a>
-                    <a class="dropdown-item text-center" href="#">Database</a>
-                    <a class="dropdown-item text-center" href="#">File</a>
-                    <a class="dropdown-item text-center" href="#">License</a>
-                    <a class="dropdown-item text-center" href="#">Logging</a>
-                    <a class="dropdown-item text-center" href="#">Node</a>
-                    <a class="dropdown-item text-center" href="#">Page</a>
-                    <a class="dropdown-item text-center" href="#">Scanning</a>
-                    <a class="dropdown-item text-center" href="#">Web</a>
-                </div>
-            </div>
+            <form method="post">
+
+                {{ form.csrf_token }}
+                {{ render_field(form.filter) }}
+                {{ render_field(form.sub) }}
+                <a class="btn btn-primary" href={{ url_for('home') }} role="button">Un-filter</a>
+
+            </form>
 
         </div>
 
@@ -45,8 +39,8 @@
     {# Racks == Cards #}
     <div class="card-columns"> {# formats cards into special columns #}
 
-    {% for rack in rack %}
-        <div class="card mt-3" style="width: 18rem;"> {# card containing a rack #}
+        {% for rack in rack %}
+            <div class="card mt-3" style="width: 18rem;"> {# card containing a rack #}
 
             <div class="card-header text-center p-3 mb-2 bg-primary text-white"> {# card header #}
                 {{ rack.Name }}{# rack name #}

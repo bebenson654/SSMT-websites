@@ -1,9 +1,10 @@
-from flask import Flask, render_template, request
-from flask_wtf import Form
-from wtforms import StringField, DateField
-from wtforms.validators import input_required, length
+from flask import Flask, render_template, request, redirect, flash, url_for
+from flask_wtf import FlaskForm
+from wtforms import StringField, DateField, SelectField, BooleanField, SubmitField
+from wtforms.validators import input_required, length, none_of
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import between
+from sqlalchemy.orm.exc import FlushError
 from datetime import date
 
 app = Flask(__name__)  # something for flask
@@ -89,9 +90,23 @@ class MasterList(db.Model):  # Master list table
 # --------------------------------------------------------------------------------------------------------------------
 
 
-class ChartForm(Form):  # form for the chart range
+class ChartForm(FlaskForm):  # form for the chart range
     startdate = StringField('startdate', validators=[input_required(), length(min=10, max=19)])  # start date field
     enddate = StringField('enddate', validators=[input_required(), length(min=10, max=19)])  # End date field
+
+
+class MasterListForm(FlaskForm):
+    type = SelectField('type', choices=[(st.TypeId, st.TypeName) for st in ServerType.query.all()],
+                       validators=[input_required()])
+    name = StringField('name', validators=[input_required()])
+    add = SubmitField()
+
+
+class HomeFilter(FlaskForm):
+    filter = SelectField('filter', choices=[(st.TypeId, st.TypeName) for st in ServerType.query.all()],
+                         # , ('', 'All')],
+                         validators=[input_required()], )
+    sub = SubmitField('Filter')
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -100,27 +115,73 @@ class ChartForm(Form):  # form for the chart range
 date = date.today()  # gets today's date for use in default range for chart
 today = date.strftime("%m/%d/%Y")  # reformat date to mm/dd/yyyy
 
+
 # ----------------------------------------------------------------------------------------------------------------------
 # Routes for the pages
 
 
-@app.route('/')  # this is whats at the end of the URL to get to the home page
-@app.route('/home')  # or this
+@app.route('/', methods=['GET', 'POST'])  # this is whats at the end of the URL to get to the home page
+@app.route('/home', methods=['GET', 'POST'])  # or this
 def home():
-    server_table = Server.query.all()  # query that gets all of the servers in the Server table
+    form = HomeFilter()
+    server_table = Server.query.all()
+
+    if form.validate_on_submit():
+        # if form.filter.data == '':
+        #     pass
+        # else:
+        server_table = Server.query.filter_by(
+            ServerTypeID=form.filter.data)  # query that gets all of the servers in the Server table
     rack_table = Rack.query.order_by(Rack.Name).all()
 
     return render_template('HomePageV2.html',
-                           server=server_table, rack=rack_table)  # returns V2 home page html doc with that variable
+                           server=server_table, rack=rack_table,
+                           form=form)  # returns V2 home page html doc with that variable
 # ----------------------------------------------------------------------------------------------------------------------
 
 
-@app.route('/masterlist')  # master list route
+@app.route('/masterlist', methods=['GET', 'POST'])  # master list route
 def master_list():
+    form = MasterListForm()
+
     mList = MasterList.query.all()
-    return render_template('MasterList.html', mList=mList)  # only returns the hard-coded master list for now
+
+    if form.validate_on_submit():
+        mlType = ServerType.query.get(form.type.data)
+
+        try:
+            ML = MasterList(Type=mlType.TypeName, Name=form.name.data, num=form.type.data)
+            db.session.add(ML)
+            db.session.commit()
+        except FlushError:
+            db.session.rollback()
+            print('Error 1234')
+        print(form.name.data)
+        print(form.type.data)
+        print(mlType.TypeName)
+        return redirect(url_for('master_list'))
+    return render_template('MasterList.html', mList=mList, form=form)  # only returns the hard-coded master list for now
+
+
 # ----------------------------------------------------------------------------------------------------------------------
 
+
+@app.route("/masterlist/<mlType>&<mlName>/delete", methods=['POST'])
+def deleteServer(mlType, mlName):
+    print(mlName)
+    print(mlType)
+    tmp = MasterList.query.get_or_404((mlType, mlName))
+    print(tmp.Type)
+    print(tmp.Name)
+    print(tmp.num)
+
+    db.session.delete(tmp)
+    db.session.commit()
+    flash('The Server has been deleted!', 'success')
+    return redirect(url_for('master_list'))
+
+
+# ----------------------------------------------------------------------------------------------------------------------
 
 # @app.route('/real-time-data-overview')    **** this is the route for the hard coded Real time Data Overview ****
 # def RTDO():
@@ -307,4 +368,4 @@ def ram(slug):  # Slug is the Server Id
 # ----------------------------------------------------------------------------------------------------------------------
 # ----------------------------------------------------------------------------------------------------------------------
 if __name__ == '__main__':  # something for flask
-    app.run()
+    app.run(debug=True)

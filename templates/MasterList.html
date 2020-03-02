@@ -1,3 +1,4 @@
+{% from '_formhelpers.html' import render_field %} {# import neede for chard range forms #}
 
 {% extends 'layout.html' %} {# Inherits format from layout.html #}
 
@@ -44,68 +45,58 @@
                 <tbody>
                 <tr>
                     {% for m in mList %}
-                    <td scope="row">
-                        <div class="form-check">
-                            <input class="form-check-input position-static" type="checkbox" id="blankCheckbox"
-                                   value="option1" aria-label="...">
-                        </div>
-                    </td>
-                    <td>{{ m.Type }}</td>
-                    <td>{{ m.Name }}</td>
-                </tr>
-                {% endfor %}
-{#                <tr>#}
-{#                    <td scope="row">#}
-{#                        <div class="form-check">#}
-{#                            <input class="form-check-input position-static" type="checkbox" id="blankCheckbox"#}
-{#                                   value="option1" aria-label="...">#}
-{#                        </div>#}
-{#                    </td>#}
-{#                    <td>License</td>#}
-{#                    <td>01</td>#}
-{#                </tr>#}
-{#                <tr>#}
-{#                    <td scope="row">#}
-{#                        <div class="form-check">#}
-{#                            <input class="form-check-input position-static" type="checkbox" id="blankCheckbox"#}
-{#                                   value="option1" aria-label="...">#}
-{#                        </div>#}
-{#                    </td>#}
-{#                    <td>Node</td>#}
-{#                    <td>01</td>#}
-{#                </tr>#}
-{#                <tr>#}
-{#                    <td scope="row">#}
-{#                        <div class="form-check">#}
-{#                            <input class="form-check-input position-static" type="checkbox" id="blankCheckbox"#}
-{#                                   value="option1" aria-label="...">#}
-{#                        </div>#}
-{#                    </td>#}
-{#                    <td>Log</td>#}
-{#                    <td>01</td>#}
-{#                </tr>#}
+                        <td scope="row">
+                            <button type="button" class="btn btn-danger btn-sm m-1" data-toggle="modal"
+                                    data-target="#{{ m.Type | safe }}{{ m.Name | safe }}">Delete
+                            </button>
+
+
+                            {#                            <input class="form-check-input position-static" type="checkbox" id="blankCheckbox"#}
+                            {#                                   value="option1" aria-label="...">#}
+                            {#                        </div>#}
+
+
+                        </td>
+                        <td>{{ m.Type }}</td>
+                        <td>{{ m.Name }}</td>
+                        </tr>
+                    {% endfor %}
+
                 <tr class="table-light">
                     <td scope="row"></td>
-                    <td>
-                        <div class="input-group"> {# Server Type dropdown #}
-                            <select class="custom-select" id="inputGroupSelect04"
-                                    aria-label="Example select with button addon">
-                                <option selected>Choose Server Type</option>
-                                <option value="1">Database</option>
-                                <option value="2">File</option>
-                                <option value="3">Logging</option>
-                                <option value="3">Node</option>
-                                <option value="3">Page</option>
-                                <option value="3">Scanning</option>
-                                <option value="3">Web</option>
-                            </select>
-                        </div>
-                    </td>
-                    <td class="table-active">
-                        <div class="input-group mb-3"> {# Text Box Input #}
-                            <input type="text" class="form-control"
-                                   aria-label="Text input with segmented dropdown button">
-                        </div>
+                    <form method="post">
+                        <td>
+                            <div class="input-group"> {# Server Type dropdown #}
+                                {{ form.csrf_token }}
+
+                                {{ render_field(form.type) }}
+
+
+                                {#                            <select class="custom-select" id="inputGroupSelect04"#}
+                                {#                                    aria-label="Example select with button addon">#}
+                                {#                                <option selected>Choose Server Type</option>#}
+                                {#                                <option value="1">Database</option>#}
+                                {#                                <option value="2">File</option>#}
+                                {#                                <option value="3">Logging</option>#}
+                                {#                                <option value="3">Node</option>#}
+                                {#                                <option value="3">Page</option>#}
+                                {#                                <option value="3">Scanning</option>#}
+                                {#                                <option value="3">Web</option>#}
+                                {#                            </select>#}
+                            </div>
+                        </td>
+                        <td class="table-active">
+                            {#                        <form method="post">#}
+                            {#                            {{ form.csrf_token }}#}
+                            <div class="input-group mb-3"> {# Text Box Input #}
+                                {{ render_field(form.name) }}
+                                {{ render_field(form.add) }}
+                                {#                                <input type="submit" value="submit"> {# Add button#}
+
+                                {#                            <input type="text" class="form-control"#}
+                                {#                                   aria-label="Text input with segmented dropdown button">#}
+                            </div>
+                    </form>
                     </td>
                 </tr>
                 </tbody>
@@ -114,7 +105,9 @@
     </div>
     <div class="row mt-3 text-center"> {# Add Delete Buttons #}
         <div class="col-09">
-            <a class="btn btn-danger btn-lg float-md-right" href="#" role="button">Delete</a> {# Delete Button #}
+            <form method="post">
+                <input type="submit" name="Delete" value="Delete">{# Delete Button #}
+            </form>
         </div>
         <div class="col-11 ml-auto">
 
@@ -122,6 +115,30 @@
         </div>
     </div>
 
+    {% for m in mList %}
+        <div class="modal fade" id="{{ m.Type | safe }}{{ m.Name | safe }}" tabindex="-1" role="dialog"
+             aria-labelledby="deleteModalLabel" aria-hidden="true">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="deleteModalLabel">Are you sure you want to
+                            DELETE {{ m.Type }}-{{ m.Name }}?</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close
+                        </button>
+                        <form action="{{ url_for('deleteServer', mlType=m.Type, mlName=m.Name) }}"
+                              method="POST">
+                            <input class="btn btn-danger" type="submit" value="Delete">
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% endfor %}
 {% endblock content %}
 
 <!--
