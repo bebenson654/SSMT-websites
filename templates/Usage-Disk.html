@@ -29,7 +29,7 @@
         <div class="col-10 "> {# Rack & Server Names #}
             <div class="card">
                 <div class="card-body border border-dark font-weight-bold">
-                    <h5>Rack A | {{ server.ServerName }}</h5>
+                    <h5>Rack: {{ rack.Name }} | Server: {{ server.ServerName }}</h5>
                 </div>
             </div>
         </div>
@@ -110,6 +110,7 @@
                     <thead class="table-dark">
                     <tr>
                         <th scope="col">Date/Time</th>
+                        <th scope="col">Total</th>
                         <th scope="col">Disk A (%): Hi-Avg-Low</th>
                         <th scope="col">Disk B (%): Hi-Avg-Low</th>
                         <th scope="col">Disk C (%): Hi-Avg-Low</th>
@@ -117,12 +118,18 @@
                     </tr>
                     </thead>
                     <tbody>
-                        {% for d, u in zip(date, usage) %}
+                        {% for date, u, a, b, c, d in zip(date, usage, aUsage, bUsage, cUsage, dUsage) %}
                             <tr>
-                                <td>{{ d }}</td>
+                                <td>{{ date }}</td>
                                 <td>{{ u }}%</td>
+                                <td>{{ a }}%</td>
+                                <td>{{ b }}%</td>
+                                <td>{{ c }}%</td>
+                                <td>{{ d }}%</td>
                             </tr>
                         {% endfor %}
+
+
                     </tbody>
                 </table>
             </div>

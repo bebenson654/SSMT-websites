@@ -7,5 +7,11 @@
       <jdbc-driver>org.sqlite.JDBC</jdbc-driver>
       <jdbc-url>jdbc:sqlite:C:\Users\ID140\Dropbox\AU Class\Spring 2020\Senior Design\PycharmProjects\SSMT-websites\StubServersDB.db</jdbc-url>
     </data-source>
+    <data-source source="LOCAL" name="StubServersDB_V4" uuid="9b0e8c47-ed83-419a-9c16-e836a248398f">
+      <driver-ref>sqlite.xerial</driver-ref>
+      <synchronize>true</synchronize>
+      <jdbc-driver>org.sqlite.JDBC</jdbc-driver>
+      <jdbc-url>jdbc:sqlite:C:\Users\Roger\PycharmProjects\SSMT-websites\StubServersDB_V4.db</jdbc-url>
+    </data-source>
   </component>
 </project>
