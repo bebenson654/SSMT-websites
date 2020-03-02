@@ -23,7 +23,7 @@
         <div class="col-10 "> {# Rack & Server Names  #}
             <div class="card">
                 <div class="card-body border border-dark font-weight-bold">
-                    <h5>{{ rack.Name }} | Server: {{ server.ServerName }}</h5>
+                    <h5>Rack: {{ rack.Name }} | Server: {{ server.ServerName }}</h5>
                 </div>
             </div>
         </div>
@@ -56,8 +56,8 @@
                     <td>{{ server.Gpu }}</td>
                     <td>{{ server.Memory }}GB</td>
                     <td>{{ server.Model }}</td>
-                    {#<td>{{ location.BuildingNumber }}</td>
-                    <td>{{ location.Room }}</td>#}
+                    <td>{{ location.BuildingNumber }}</td>
+                    <td>{{ location.Room }}</td>
                     <td>{{ metric.Time }}</td>
 
                 </tr>
