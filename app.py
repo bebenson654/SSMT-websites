@@ -140,6 +140,8 @@ def RT(slug):  # Slug is the Server Id
 
     runningjobs = RunningJob.query.filter_by(ServerId=slug)  # query for the runningjobs on this server
 
+    #racks = Rack.query.filter_by(ServerId=slug)  # query for the rack of this server
+
     #locations = Location.query.filter_by(ServerId=slug)  # query for the location of this server
 
     tmp = Metric.query.order_by(Metric.Time.desc()).filter_by(ServerID=slug).first()
