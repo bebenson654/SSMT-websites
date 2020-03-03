@@ -185,11 +185,6 @@ def deleteServer(mlType, mlName):
 
 # ----------------------------------------------------------------------------------------------------------------------
 
-# @app.route('/real-time-data-overview')    **** this is the route for the hard coded Real time Data Overview ****
-# def RTDO():
-#     return render_template('RealTimeDataOverview.html')
-# ----------------------------------------------------------------------------------------------------------------------
-
 
 @app.route('/real-time-data-overview/<slug>')  # route for the realtime data overview for a specific server
 def RT(slug):  # Slug is the Server Id
