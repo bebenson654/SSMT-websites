@@ -1,4 +1,5 @@
 {# NON HARD-CODED VERSION #}
+{% from '_formhelpers.html' import render_field %} {# import neede for chard range forms #}
 
 {% extends 'layout.html' %} {# inherits format from layout.html #}
 
@@ -33,24 +34,25 @@
     <div class="row mt-3 text-center"> {# Server Specs #}
         <div class="col-12 ">
 
-            <table class="table table-borderless  table-secondary ">
+            <table class="table table-borderless table-secondary">
+                <thead>
+                <th colspan="12">Server Specifications</th>
+                </thead>
                 <thead>
                 <tr> {# Spec's names #}
-                    <th scope="col">Server Specifications</th>
-                    <th scope="col">Operating System</th>
-                    <th scope="col">CPU | Cores</th>
-                    <th scope="col">GPU</th>
-                    <th scope="col">Memory</th>
-                    <th scope="col">Model</th>
-                    <th scope="col">Building</th>
-                    <th scope="col">Room</th>
-                    <th scope="col">Last Updated</th>
+                    <th>Operating System</th>
+                    <th>CPU | Cores</th>
+                    <th>GPU</th>
+                    <th>Memory</th>
+                    <th>Model</th>
+                    <th>Building</th>
+                    <th>Room</th>
+                    <th>Last Updated</th>
 
                 </tr>
                 </thead>
                 <tbody>
                 <tr> {# Spec's Values #}
-                    <td scope="row"></td>
                     <td>{{ server.Os }}</td>
                     <td>{{ server.Cpu }} | {{ server.CpuCores }}</td>
                     <td>{{ server.Gpu }}</td>
@@ -97,7 +99,7 @@
     <tr>
       <th scope="row"><h3><img src="WebApp\Red X.png" class="float-left"></h3></th>
        <td><h3>Ping Status:</h3></td>
-      <td><h3 class="text-success"><a href="/usage-Ping/{{ server.ServerId }}">{{ metric.PingLatency }}ms - Responding </a> </h3></td>
+      <td><h3 class="text-success"><a href="/usage-Ping/{{ server.ServerId }}">{{ metric.PingLatency }} ms - {{status}} </a> </h3></td>
 
     </tr>
   </tbody>

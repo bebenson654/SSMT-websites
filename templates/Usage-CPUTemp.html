@@ -43,7 +43,7 @@
     </div>
 
     <div class="row text-center mt-3 ml-auto"> {# forms for chard date range | NOT CURRENTLY WORKING #}
-        <div class="col-10">
+        <div class="col-12">
             <form method="post">
                 {{ form.csrf_token }}
                 {{ render_field(form.startdate) }}
@@ -91,7 +91,9 @@
                 },
 
                 {# Configuration options go here #}
-                options: {}
+                options: {
+                        legend: {display: false}
+                    }
             });
         </script>
     </div>
