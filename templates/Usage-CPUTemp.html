@@ -83,11 +83,24 @@
                 data: {
                     labels: [{% for d in date %} "{{ d }}", {% endfor %}], {# Dates #}
                     datasets: [{
-                        label: 'My First dataset',
+                        label: 'usage',
                         backgroundColor: 'rgb(173, 216, 230)',
-                        borderColor: 'rgb(0, 0, 0)',
+                        borderColor: 'rgb(0,0,0)',
                         data: [{% for u in usage %} "{{ u }}", {% endfor %}] {# Usages #}
-                    }]
+                    }
+                    {#{#}
+                    {#    label: 'Hi',#}
+                    {#    backgroundColor: 'rgb(173, 216, 230)',#}
+                    {#    borderColor: 'rgb(255,37,0)',#}
+                    {#    data: [{% for u in usage %} "{{ u }}", {% endfor %}] {# Usages #}
+                    {##}
+                    {#{#}
+                    {#    label: 'Lo',#}
+                    {#    backgroundColor: 'rgb(173, 216, 230)',#}
+                    {#    borderColor: 'rgb(78,255,0)',#}
+                    {#    data: [{% for u in usage %} "{{ u }}", {% endfor %}] {# Usages #}
+                    {##}
+                    ]
                 },
 
                 {# Configuration options go here #}

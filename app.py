@@ -4,9 +4,10 @@ from wtforms import StringField, DateField, SelectField, BooleanField, SubmitFie
 from wtforms.validators import input_required, length, none_of
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import between
+from sqlalchemy.sql import func
 from sqlalchemy.orm.exc import FlushError
-from datetime import date
-
+from datetime import date, datetime, timedelta
+import pandas as pd
 app = Flask(__name__)  # something for flask
 app.jinja_env.globals.update(zip=zip)
 
@@ -139,6 +140,8 @@ def home():
     return render_template('HomePageV2.html',
                            server=server_table, rack=rack_table,
                            form=form)  # returns V2 home page html doc with that variable
+
+
 # ----------------------------------------------------------------------------------------------------------------------
 
 
@@ -202,7 +205,7 @@ def RT(slug):  # Slug is the Server Id
 
     tmpLoc3 = Location.query.filter_by(LocationId=tmpLoc2.LocationId).first()
 
-    #racks = Rack.query.filter_by(ServerId=slug)  # query for the rack of this server
+    # racks = Rack.query.filter_by(ServerId=slug)  # query for the rack of this server
 
     tmp = Metric.query.order_by(Metric.Time.desc()).filter_by(ServerId=slug).first()
     metric_row = Metric.query.get(tmp.MetricId)  # gets the most recent metrics for server
@@ -210,6 +213,8 @@ def RT(slug):  # Slug is the Server Id
     return render_template('RealTimeDataOverviewTemp.html', server=server, metric=metric_row, service=services,
                            database=databases, runningjob=runningjobs, location=tmpLoc3, rack=tmpLoc2)
     #   returns the template for real time data overview with ^ variables passed to it
+
+
 # ----------------------------------------------------------------------------------------------------------------------
 
 
@@ -239,20 +244,51 @@ def CPU(slug):  # Slug is the Server Id
         startdate = form.startdate.data  # gets start and end date from form
         enddate = form.enddate.data
 
-        # Returns list of dates within start and end date
-        dateRange = [metrics.Time for metrics in Metric.query.order_by(Metric.Time).filter_by(ServerId=slug).filter(
-            between(Metric.Time, startdate, enddate))]
+        try:
+            sDate = datetime.strptime(startdate, '%m/%d/%Y %H:%M:%S')
+        except ValueError:
+            sDate = datetime.strptime(startdate, '%m/%d/%Y')
+        try:
+            eDate = datetime.strptime(enddate, '%m/%d/%Y %H:%M:%S')
+        except ValueError:
+            eDate = datetime.strptime(enddate, '%m/%d/%Y')
 
-        # Returns usages that within  start and end date
-        useRange = [metrics.Cpu for metrics in Metric.query.order_by(Metric.Time).filter_by(ServerId=slug).filter(
-            between(Metric.Time, startdate, enddate))]
+        difference = eDate - sDate
+
+        if difference.total_seconds() <= 86400:
+            # Returns list of dates within start and end date
+            dateRange = [metrics.Time for metrics in Metric.query.order_by(Metric.Time).filter_by(ServerId=slug).filter(
+                between(Metric.Time, startdate, enddate))]
+
+            # Returns usages that within  start and end date
+            useRange = [metrics.Cpu for metrics in Metric.query.order_by(Metric.Time).filter_by(ServerId=slug).filter(
+                between(Metric.Time, startdate, enddate))]
+        else:
+            dateRange = []
+            useRange = []
+            x = sDate
+            y = timedelta(days=1)
+            while x <= eDate:
+                for m in pd.date_range(sDate, eDate):
+                    # x = sDate.date()
+                    z = x + y
+                    metric = db.session.query(db.func.avg(Metric.Cpu).label('average')).order_by(Metric.Time).filter_by(
+                        ServerId=slug).filter(Metric.Time.between(x.strftime('%m/%d/%Y'), z.strftime('%m/%d/%Y'))).scalar()
+                    dateRange.append(x)
+                    useRange.append(metric)
+                    x = x + y
+            print(dateRange)
+            print(useRange)
+
 
         # return for if user provides input
         return render_template('Usage-CPUTemp.html', server=server, ametric=metric_row, date=dateRange, usage=useRange,
-                               form=form)
+                               form=form, rack=tmpLoc2)
     # return for default date range
     return render_template('Usage-CPUTemp.html', server=server, ametric=metric_row, date=cpuDate, usage=cpuUse,
                            form=form, rack=tmpLoc2)
+
+
 # ----------------------------------------------------------------------------------------------------------------------
 
 
@@ -305,6 +341,8 @@ def disk(slug):  # Slug is the Server Id
     # return for default date range
     return render_template('Usage-Disk.html', server=server, ametric=metric_row, date=cpuDate, usage=diskUse,
                            form=form, aUsage=partAUse, bUsage=partBUse, cUsage=partCUse, dUsage=partDUse, rack=tmpLoc2)
+
+
 # ----------------------------------------------------------------------------------------------------------------------
 
 
@@ -349,6 +387,8 @@ def gpu(slug):  # Slug is the Server Id
     # return for default date range
     return render_template('Usage-GPU.html', server=server, ametric=metric_row, date=cpuDate, usage=gpuUse,
                            form=form, rack=tmpLoc2)
+
+
 # ----------------------------------------------------------------------------------------------------------------------
 
 
@@ -393,6 +433,8 @@ def ram(slug):  # Slug is the Server Id
     # return for default date range
     return render_template('Usage-RAM.html', server=server, ametric=metric_row, date=cpuDate, usage=ramUse,
                            form=form, rack=tmpLoc2)
+
+
 # ----------------------------------------------------------------------------------------------------------------------
 
 
@@ -433,10 +475,11 @@ def ping(slug):  # Slug is the Server Id
 
         # return for if user provides input
         return render_template('Usage-Ping.html', server=server, ametric=metric_row, date=dateRange, usage=useRange,
-                               form=form)
+                               form=form, rack=tmpLoc2)
     # return for default date range
     return render_template('Usage-Ping.html', server=server, ametric=metric_row, date=cpuDate, usage=pingUse,
                            form=form, rack=tmpLoc2)
+
 
 # @app.route('/usage-cpu')     *** THIS IS THE ROUTE FOR THE HARD-CODED CPU USAGE PAGE ***
 # def usage_CPU():
