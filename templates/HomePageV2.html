@@ -16,51 +16,25 @@
         </div>
     </div>
 
-{#    <div class="row mt-3 text-center"> {# Row for Master list button and dropdown #}
-{##}
-{#        <div class="col-2"> {# master list button #}
-{#            <a class="btn btn-secondary btn-lg" href="/masterlist" role="button">Master List</a>#}
-{#        </div>#}
-{##}
-{#        <div class="col-10 ml-auto"> {# dropdown for filter | filter does not work #}
-{#            <form method="post">#}
-{##}
-{#                {{ form.csrf_token }}#}
-{#                {{ render_field(form.filter) }}#}
-{#                {{ render_field(form.sub) }}#}
-{#                <a class="btn btn-primary" href={{ url_for('home') }} role="button">Un-filter</a>#}
-{##}
-{#            </form>#}
-{##}
-{#        </div>#}
-{##}
-{#    </div>#}
     <div class="row mt-3 text-center"> {# Row for Master list button and dropdown #}
-
-        <div class="col-2"> {# master list button #}
+        <div class="col-2 text-left"> {# master list button #}
             <a class="btn btn-secondary btn-lg" href="/masterlist" role="button">Master List</a>
         </div>
-
-        <div class="col-10 ml-auto text-right"> {# dropdown for filter | filter does not work #}
+        <div class="col-10 text-right"> {# dropdown for filter | filter does not work #}
             <form method="post">
-                {{ form.csrf_token }}
-                {{ form.filter }}
-                <div class="btn btn-secondary" role="button">
-                {{ form.sub }}
-                </div>
+                <a>{{ form.csrf_token }}
+                {{ form.filter }}</a>
+                <button type="submit" class="btn btn-secondary" name="form.sub">Filter</button>
                 <a class="btn btn-secondary" href={{ url_for('home') }} role="button">Reset</a>
 
             </form>
-
         </div>
-
     </div>
 
     {# Racks == Cards #}
-    <div class="card-columns"> {# formats cards into special columns #}
-
+    <div class="col-12 card-columns text-center"> {# formats cards into special columns #}
         {% for rack in rack %}
-            <div class="card mt-3" style="width: 18rem;"> {# card containing a rack #}
+            <div class="card mt-3 " style="width: 19rem;"> {# card containing a rack #}
 
                 <div class="card-header text-center p-3 mb-2 bg-primary text-white"> {# card header #}
                     {{ rack.Name }}
