@@ -3,10 +3,11 @@ from flask_wtf import FlaskForm
 from wtforms import StringField, DateField, SelectField, BooleanField, SubmitField
 from wtforms.validators import input_required, length, none_of
 from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy import between, null
+from sqlalchemy import between
+from sqlalchemy.sql import func
 from sqlalchemy.orm.exc import FlushError
-from datetime import date
-
+from datetime import date, datetime, timedelta
+import pandas as pd
 app = Flask(__name__)  # something for flask
 app.jinja_env.globals.update(zip=zip)
 
@@ -134,12 +135,13 @@ def home():
         # else:
         server_table = Server.query.filter_by(
             ServerTypeID=form.filter.data)  # query that gets all of the servers in the Server table
-
-    rack_table = Rack.query.filter(Rack.RackId == Server.RackID).order_by(Rack.Name) #Show only racks that have servers on them
+    rack_table = Rack.query.order_by(Rack.Name).all()
 
     return render_template('HomePageV2.html',
                            server=server_table, rack=rack_table,
                            form=form)  # returns V2 home page html doc with that variable
+
+
 # ----------------------------------------------------------------------------------------------------------------------
 
 
@@ -186,11 +188,6 @@ def deleteServer(mlType, mlName):
 
 # ----------------------------------------------------------------------------------------------------------------------
 
-# @app.route('/real-time-data-overview')    **** this is the route for the hard coded Real time Data Overview ****
-# def RTDO():
-#     return render_template('RealTimeDataOverview.html')
-# ----------------------------------------------------------------------------------------------------------------------
-
 
 @app.route('/real-time-data-overview/<slug>')  # route for the realtime data overview for a specific server
 def RT(slug):  # Slug is the Server Id
@@ -202,21 +199,22 @@ def RT(slug):  # Slug is the Server Id
 
     runningjobs = RunningJob.query.filter_by(ServerId=slug)  # query for the runningjobs on this server
 
-    racks = Rack.query.filter_by(RackId=server.RackID).first()
+    tmpLoc = Server.query.filter_by(ServerId=slug).first()
 
-    locations = Location.query.filter_by(LocationId=racks.LocationId).first()
+    tmpLoc2 = Rack.query.filter_by(RackId=tmpLoc.RackID).first()
+
+    tmpLoc3 = Location.query.filter_by(LocationId=tmpLoc2.LocationId).first()
+
+    # racks = Rack.query.filter_by(ServerId=slug)  # query for the rack of this server
 
     tmp = Metric.query.order_by(Metric.Time.desc()).filter_by(ServerId=slug).first()
     metric_row = Metric.query.get(tmp.MetricId)  # gets the most recent metrics for server
 
-    if metric_row.PingLatency != null:
-        status = "Responding"
-    else:
-        status = "Not Responding"
-
     return render_template('RealTimeDataOverviewTemp.html', server=server, metric=metric_row, service=services,
-                           database=databases, runningjob=runningjobs, location=locations, rack=racks, status=status)
+                           database=databases, runningjob=runningjobs, location=tmpLoc3, rack=tmpLoc2)
     #   returns the template for real time data overview with ^ variables passed to it
+
+
 # ----------------------------------------------------------------------------------------------------------------------
 
 
@@ -236,7 +234,9 @@ def CPU(slug):  # Slug is the Server Id
     cpuUse = [metrics.Cpu for metrics in Metric.query.order_by(Metric.Time).filter_by(ServerId=slug).filter(
         between(Metric.Time, '07/06/2019 00:00:00', '07/06/2019 12:00:00'))]
 
-    racks = Rack.query.filter_by(RackId=server.RackID).first()
+    tmpLoc = Server.query.filter_by(ServerId=slug).first()
+
+    tmpLoc2 = Rack.query.filter_by(RackId=tmpLoc.RackID).first()
 
     if form.validate_on_submit():  # implementation of user input limiting date range for chart
 
@@ -244,20 +244,51 @@ def CPU(slug):  # Slug is the Server Id
         startdate = form.startdate.data  # gets start and end date from form
         enddate = form.enddate.data
 
-        # Returns list of dates within start and end date
-        dateRange = [metrics.Time for metrics in Metric.query.order_by(Metric.Time).filter_by(ServerId=slug).filter(
-            between(Metric.Time, startdate, enddate))]
+        try:
+            sDate = datetime.strptime(startdate, '%m/%d/%Y %H:%M:%S')
+        except ValueError:
+            sDate = datetime.strptime(startdate, '%m/%d/%Y')
+        try:
+            eDate = datetime.strptime(enddate, '%m/%d/%Y %H:%M:%S')
+        except ValueError:
+            eDate = datetime.strptime(enddate, '%m/%d/%Y')
 
-        # Returns usages that within  start and end date
-        useRange = [metrics.Cpu for metrics in Metric.query.order_by(Metric.Time).filter_by(ServerId=slug).filter(
-            between(Metric.Time, startdate, enddate))]
+        difference = eDate - sDate
+
+        if difference.total_seconds() <= 86400:
+            # Returns list of dates within start and end date
+            dateRange = [metrics.Time for metrics in Metric.query.order_by(Metric.Time).filter_by(ServerId=slug).filter(
+                between(Metric.Time, startdate, enddate))]
+
+            # Returns usages that within  start and end date
+            useRange = [metrics.Cpu for metrics in Metric.query.order_by(Metric.Time).filter_by(ServerId=slug).filter(
+                between(Metric.Time, startdate, enddate))]
+        else:
+            dateRange = []
+            useRange = []
+            x = sDate
+            y = timedelta(days=1)
+            while x <= eDate:
+                for m in pd.date_range(sDate, eDate):
+                    # x = sDate.date()
+                    z = x + y
+                    metric = db.session.query(db.func.avg(Metric.Cpu).label('average')).order_by(Metric.Time).filter_by(
+                        ServerId=slug).filter(Metric.Time.between(x.strftime('%m/%d/%Y'), z.strftime('%m/%d/%Y'))).scalar()
+                    dateRange.append(x)
+                    useRange.append(metric)
+                    x = x + y
+            print(dateRange)
+            print(useRange)
+
 
         # return for if user provides input
         return render_template('Usage-CPUTemp.html', server=server, ametric=metric_row, date=dateRange, usage=useRange,
-                               form=form, rack=racks)
+                               form=form, rack=tmpLoc2)
     # return for default date range
     return render_template('Usage-CPUTemp.html', server=server, ametric=metric_row, date=cpuDate, usage=cpuUse,
-                           form=form, rack=racks)
+                           form=form, rack=tmpLoc2)
+
+
 # ----------------------------------------------------------------------------------------------------------------------
 
 
@@ -274,7 +305,9 @@ def disk(slug):  # Slug is the Server Id
     cpuDate = [metrics.Time for metrics in Metric.query.order_by(Metric.Time).filter_by(ServerId=slug).filter(
         between(Metric.Time, '07/06/2019', '07/07/2019'))]
 
-    racks = Rack.query.filter_by(RackId=server.RackID).first()
+    tmpLoc = Server.query.filter_by(ServerId=slug).first()
+
+    tmpLoc2 = Rack.query.filter_by(RackId=tmpLoc.RackID).first()
 
     # gets all disk usages for this server between dates
     diskUse = [metrics.Disk for metrics in Metric.query.order_by(Metric.Time).filter_by(ServerId=slug).filter(
@@ -304,10 +337,12 @@ def disk(slug):  # Slug is the Server Id
 
         # return for if user provides input
         return render_template('Usage-Disk.html', server=server, ametric=metric_row, date=dateRange, usage=useRange,
-                               form=form, rack=racks)
+                               form=form)
     # return for default date range
     return render_template('Usage-Disk.html', server=server, ametric=metric_row, date=cpuDate, usage=diskUse,
-                           form=form, aUsage=partAUse, bUsage=partBUse, cUsage=partCUse, dUsage=partDUse, rack=racks)
+                           form=form, aUsage=partAUse, bUsage=partBUse, cUsage=partCUse, dUsage=partDUse, rack=tmpLoc2)
+
+
 # ----------------------------------------------------------------------------------------------------------------------
 
 
@@ -328,7 +363,9 @@ def gpu(slug):  # Slug is the Server Id
     gpuUse = [metrics.Gpu for metrics in Metric.query.order_by(Metric.Time).filter_by(ServerId=slug).filter(
         between(Metric.Time, '07/06/2019', '07/07/2019'))]
 
-    racks = Rack.query.filter_by(RackId=server.RackID).first()
+    tmpLoc = Server.query.filter_by(ServerId=slug).first()
+
+    tmpLoc2 = Rack.query.filter_by(RackId=tmpLoc.RackID).first()
 
     if form.validate_on_submit():  # implementation of user input limiting date range for chart
 
@@ -346,10 +383,12 @@ def gpu(slug):  # Slug is the Server Id
 
         # return for if user provides input
         return render_template('Usage-GPUTemp.html', server=server, ametric=metric_row, date=dateRange, usage=useRange,
-                               form=form, rack=racks)
+                               form=form)
     # return for default date range
     return render_template('Usage-GPU.html', server=server, ametric=metric_row, date=cpuDate, usage=gpuUse,
-                           form=form, rack=racks)
+                           form=form, rack=tmpLoc2)
+
+
 # ----------------------------------------------------------------------------------------------------------------------
 
 
@@ -362,7 +401,9 @@ def ram(slug):  # Slug is the Server Id
     tmp = Metric.query.order_by(Metric.Time.desc()).filter_by(ServerID=slug).first()
     metric_row = Metric.query.get(tmp.MetricId)  # gets the most recent metrics for server
 
-    racks = Rack.query.filter_by(RackId=server.RackID).first()
+    tmpLoc = Server.query.filter_by(ServerId=slug).first()
+
+    tmpLoc2 = Rack.query.filter_by(RackId=tmpLoc.RackID).first()
 
     # gets all dates for this server between dates
     cpuDate = [metrics.Time for metrics in Metric.query.order_by(Metric.Time).filter_by(ServerId=slug).filter(
@@ -388,10 +429,12 @@ def ram(slug):  # Slug is the Server Id
 
         # return for if user provides input
         return render_template('Usage-RAM.html', server=server, ametric=metric_row, date=dateRange, usage=useRange,
-                               form=form, rack=racks)
+                               form=form)
     # return for default date range
     return render_template('Usage-RAM.html', server=server, ametric=metric_row, date=cpuDate, usage=ramUse,
-                           form=form, rack=racks)
+                           form=form, rack=tmpLoc2)
+
+
 # ----------------------------------------------------------------------------------------------------------------------
 
 
@@ -404,7 +447,9 @@ def ping(slug):  # Slug is the Server Id
     tmp = Metric.query.order_by(Metric.Time.desc()).filter_by(ServerID=slug).first()
     metric_row = Metric.query.get(tmp.MetricId)  # gets the most recent metrics for server
 
-    racks = Rack.query.filter_by(RackId=server.RackID).first()
+    tmpLoc = Server.query.filter_by(ServerId=slug).first()
+
+    tmpLoc2 = Rack.query.filter_by(RackId=tmpLoc.RackID).first()
 
     # gets all dates for this server between dates
     cpuDate = [metrics.Time for metrics in Metric.query.order_by(Metric.Time).filter_by(ServerId=slug).filter(
@@ -413,11 +458,6 @@ def ping(slug):  # Slug is the Server Id
     # gets all disk usages for this server between dates
     pingUse = [metrics.PingLatency for metrics in Metric.query.order_by(Metric.Time).filter_by(ServerId=slug).filter(
         between(Metric.Time, '07/06/2019 00:00:00', '07/06/2019 12:00:00'))]
-
-    if metric_row.PingLatency != null:
-        status = "Responding"
-    else:
-        status = "Not Responding"
 
     if form.validate_on_submit():  # implementation of user input limiting date range for chart
 
@@ -435,11 +475,11 @@ def ping(slug):  # Slug is the Server Id
 
         # return for if user provides input
         return render_template('Usage-Ping.html', server=server, ametric=metric_row, date=dateRange, usage=useRange,
-                               form=form, rack=racks, status=status)
-
+                               form=form, rack=tmpLoc2)
     # return for default date range
     return render_template('Usage-Ping.html', server=server, ametric=metric_row, date=cpuDate, usage=pingUse,
-                           form=form, rack=racks, status=status)
+                           form=form, rack=tmpLoc2)
+
 
 # @app.route('/usage-cpu')     *** THIS IS THE ROUTE FOR THE HARD-CODED CPU USAGE PAGE ***
 # def usage_CPU():
