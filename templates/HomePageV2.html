@@ -1,6 +1,6 @@
 {# New Home Page #}
 
-{% from '_formhelpers.html' import render_field %} {# import neede for chard range forms #}
+{#{% from '_formhelpers.html' import render_field %} {# import neede for chard range forms #}
 
 {% extends 'layout.html' %} {# inherits format from layout.html #}
 
@@ -16,19 +16,39 @@
         </div>
     </div>
 
+{#    <div class="row mt-3 text-center"> {# Row for Master list button and dropdown #}
+{##}
+{#        <div class="col-2"> {# master list button #}
+{#            <a class="btn btn-secondary btn-lg" href="/masterlist" role="button">Master List</a>#}
+{#        </div>#}
+{##}
+{#        <div class="col-10 ml-auto"> {# dropdown for filter | filter does not work #}
+{#            <form method="post">#}
+{##}
+{#                {{ form.csrf_token }}#}
+{#                {{ render_field(form.filter) }}#}
+{#                {{ render_field(form.sub) }}#}
+{#                <a class="btn btn-primary" href={{ url_for('home') }} role="button">Un-filter</a>#}
+{##}
+{#            </form>#}
+{##}
+{#        </div>#}
+{##}
+{#    </div>#}
     <div class="row mt-3 text-center"> {# Row for Master list button and dropdown #}
 
         <div class="col-2"> {# master list button #}
             <a class="btn btn-secondary btn-lg" href="/masterlist" role="button">Master List</a>
         </div>
 
-        <div class="col-10 ml-auto"> {# dropdown for filter | filter does not work #}
+        <div class="col-10 ml-auto text-right"> {# dropdown for filter | filter does not work #}
             <form method="post">
-
                 {{ form.csrf_token }}
-                {{ render_field(form.filter) }}
-                {{ render_field(form.sub) }}
-                <a class="btn btn-primary" href={{ url_for('home') }} role="button">Un-filter</a>
+                {{ form.filter }}
+                <div class="btn btn-secondary" role="button">
+                {{ form.sub }}
+                </div>
+                <a class="btn btn-secondary" href={{ url_for('home') }} role="button">Reset</a>
 
             </form>
 
@@ -42,23 +62,23 @@
         {% for rack in rack %}
             <div class="card mt-3" style="width: 18rem;"> {# card containing a rack #}
 
-            <div class="card-header text-center p-3 mb-2 bg-primary text-white"> {# card header #}
-                {{ rack.Name }}{# rack name #}
+                <div class="card-header text-center p-3 mb-2 bg-primary text-white"> {# card header #}
+                    {{ rack.Name }}
+                </div>
+
+                {% for server in server %}
+                    {% if server.RackID == rack.RackId %}
+                    {# grabs all servers in DB | NEEDS TO BE CHANGED TO ONLY GRAB SERVERS IN THIS RACK #}
+                    <ul class="list-group list-group-flush"> {# lists servers that link to their Real Time page #}
+                        <a href="/real-time-data-overview/{{ server.ServerId }}"
+                           class="list-group-item list-group-item-action text-center">{{ server.ServerName }}<img
+                                src="WebApp\Red X.png" class="float-right"></a>
+                    </ul>
+                    {% endif %}
+                {% endfor %}
+
             </div>
-
-            {% for server in server %}
-                {% if server.RackID == rack.RackId %}
-                {# grabs all servers in DB | NEEDS TO BE CHANGED TO ONLY GRAB SERVERS IN THIS RACK #}
-                <ul class="list-group list-group-flush"> {# lists servers that link to their Real Time page #}
-                    <a href="/real-time-data-overview/{{ server.ServerId }}"
-                       class="list-group-item list-group-item-action text-center">{{ server.ServerName }}<img
-                            src="WebApp\Red X.png" class="float-right"></a>
-                </ul>
-                {% endif %}
-            {% endfor %}
-
-        </div>
-    {% endfor %}
+        {% endfor %}
 
 
     </div>

@@ -134,7 +134,8 @@ def home():
         # else:
         server_table = Server.query.filter_by(
             ServerTypeID=form.filter.data)  # query that gets all of the servers in the Server table
-    rack_table = Rack.query.order_by(Rack.Name).all()
+
+    rack_table = Rack.query.filter(Rack.RackId == Server.RackID).order_by(Rack.Name) #Show only racks that have servers on them
 
     return render_template('HomePageV2.html',
                            server=server_table, rack=rack_table,
@@ -253,7 +254,7 @@ def CPU(slug):  # Slug is the Server Id
 
         # return for if user provides input
         return render_template('Usage-CPUTemp.html', server=server, ametric=metric_row, date=dateRange, usage=useRange,
-                               form=form)
+                               form=form, rack=racks)
     # return for default date range
     return render_template('Usage-CPUTemp.html', server=server, ametric=metric_row, date=cpuDate, usage=cpuUse,
                            form=form, rack=racks)
@@ -303,7 +304,7 @@ def disk(slug):  # Slug is the Server Id
 
         # return for if user provides input
         return render_template('Usage-Disk.html', server=server, ametric=metric_row, date=dateRange, usage=useRange,
-                               form=form)
+                               form=form, rack=racks)
     # return for default date range
     return render_template('Usage-Disk.html', server=server, ametric=metric_row, date=cpuDate, usage=diskUse,
                            form=form, aUsage=partAUse, bUsage=partBUse, cUsage=partCUse, dUsage=partDUse, rack=racks)
@@ -345,7 +346,7 @@ def gpu(slug):  # Slug is the Server Id
 
         # return for if user provides input
         return render_template('Usage-GPUTemp.html', server=server, ametric=metric_row, date=dateRange, usage=useRange,
-                               form=form)
+                               form=form, rack=racks)
     # return for default date range
     return render_template('Usage-GPU.html', server=server, ametric=metric_row, date=cpuDate, usage=gpuUse,
                            form=form, rack=racks)
@@ -387,7 +388,7 @@ def ram(slug):  # Slug is the Server Id
 
         # return for if user provides input
         return render_template('Usage-RAM.html', server=server, ametric=metric_row, date=dateRange, usage=useRange,
-                               form=form)
+                               form=form, rack=racks)
     # return for default date range
     return render_template('Usage-RAM.html', server=server, ametric=metric_row, date=cpuDate, usage=ramUse,
                            form=form, rack=racks)
@@ -413,6 +414,11 @@ def ping(slug):  # Slug is the Server Id
     pingUse = [metrics.PingLatency for metrics in Metric.query.order_by(Metric.Time).filter_by(ServerId=slug).filter(
         between(Metric.Time, '07/06/2019 00:00:00', '07/06/2019 12:00:00'))]
 
+    if metric_row.PingLatency != null:
+        status = "Responding"
+    else:
+        status = "Not Responding"
+
     if form.validate_on_submit():  # implementation of user input limiting date range for chart
 
         form = ChartForm(request.form)
@@ -429,11 +435,7 @@ def ping(slug):  # Slug is the Server Id
 
         # return for if user provides input
         return render_template('Usage-Ping.html', server=server, ametric=metric_row, date=dateRange, usage=useRange,
-                               form=form)
-    if metric_row.PingLatency != null:
-        status = "Responding"
-    else:
-        status = "Not Responding"
+                               form=form, rack=racks, status=status)
 
     # return for default date range
     return render_template('Usage-Ping.html', server=server, ametric=metric_row, date=cpuDate, usage=pingUse,
