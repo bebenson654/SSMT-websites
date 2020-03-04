@@ -231,11 +231,11 @@ def CPU(slug):  # Slug is the Server Id
 
     # gets all dates for this server between dates
     cpuDate = [metrics.Time for metrics in Metric.query.order_by(Metric.Time).filter_by(ServerId=slug).filter(
-        between(Metric.Time, '07/06/2019 00:00:00', '07/06/2019 12:00:00'))]
+        between(Metric.Time, '08/31/2019 23:50:00', '09/01/2019 23:50:00'))]
 
     # gets all cpu usages for this server between dates
     cpuUse = [metrics.Cpu for metrics in Metric.query.order_by(Metric.Time).filter_by(ServerId=slug).filter(
-        between(Metric.Time, '07/06/2019 00:00:00', '07/06/2019 12:00:00'))]
+        between(Metric.Time, '08/31/2019 23:50:00', '09/01/2019 23:50:00'))]
 
     tmpLoc = Server.query.filter_by(ServerId=slug).first()
 
@@ -306,7 +306,7 @@ def disk(slug):  # Slug is the Server Id
 
     # gets all dates for this server between dates
     cpuDate = [metrics.Time for metrics in Metric.query.order_by(Metric.Time).filter_by(ServerId=slug).filter(
-        between(Metric.Time, '07/06/2019', '07/07/2019'))]
+        between(Metric.Time, '09/01/2019 11:50:00', '09/01/2019 23:50:00'))]
 
     tmpLoc = Server.query.filter_by(ServerId=slug).first()
 
@@ -314,15 +314,15 @@ def disk(slug):  # Slug is the Server Id
 
     # gets all disk usages for this server between dates
     diskUse = [metrics.Disk for metrics in Metric.query.order_by(Metric.Time).filter_by(ServerId=slug).filter(
-        between(Metric.Time, '07/06/2019', '07/07/2019'))]
+        between(Metric.Time, '09/01/2019 11:50:00', '09/01/2019 23:50:00'))]
     partAUse = [metrics.PartA for metrics in Metric.query.order_by(Metric.Time).filter_by(ServerId=slug).filter(
-        between(Metric.Time, '07/06/2019', '07/07/2019'))]
+        between(Metric.Time, '09/01/2019 11:50:00', '09/01/2019 23:50:00'))]
     partBUse = [metrics.PartB for metrics in Metric.query.order_by(Metric.Time).filter_by(ServerId=slug).filter(
-        between(Metric.Time, '07/06/2019', '07/07/2019'))]
+        between(Metric.Time, '09/01/2019 11:50:00', '09/01/2019 23:50:00'))]
     partCUse = [metrics.PartC for metrics in Metric.query.order_by(Metric.Time).filter_by(ServerId=slug).filter(
-        between(Metric.Time, '07/06/2019', '07/07/2019'))]
+        between(Metric.Time, '09/01/2019 11:50:00', '09/01/2019 23:50:00'))]
     partDUse = [metrics.PartD for metrics in Metric.query.order_by(Metric.Time).filter_by(ServerId=slug).filter(
-        between(Metric.Time, '07/06/2019', '07/07/2019'))]
+        between(Metric.Time, '09/01/2019 11:50:00', '09/01/2019 23:50:00'))]
 
     if form.validate_on_submit():  # implementation of user input limiting date range for chart
 
@@ -360,11 +360,11 @@ def gpu(slug):  # Slug is the Server Id
 
     # gets all dates for this server between dates
     cpuDate = [metrics.Time for metrics in Metric.query.order_by(Metric.Time).filter_by(ServerId=slug).filter(
-        between(Metric.Time, '07/06/2019', '07/07/2019'))]
+        between(Metric.Time, '09/01/2019 11:50:00', '09/01/2019 23:50:00'))]
 
     # gets all disk usages for this server between dates
     gpuUse = [metrics.Gpu for metrics in Metric.query.order_by(Metric.Time).filter_by(ServerId=slug).filter(
-        between(Metric.Time, '07/06/2019', '07/07/2019'))]
+        between(Metric.Time, '09/01/2019 11:50:00', '09/01/2019 23:50:00'))]
 
     tmpLoc = Server.query.filter_by(ServerId=slug).first()
 
@@ -410,11 +410,11 @@ def ram(slug):  # Slug is the Server Id
 
     # gets all dates for this server between dates
     cpuDate = [metrics.Time for metrics in Metric.query.order_by(Metric.Time).filter_by(ServerId=slug).filter(
-        between(Metric.Time, '07/06/2019', '07/07/2019'))]
+        between(Metric.Time, '09/01/2019 11:50:00', '09/01/2019 23:50:00'))]
 
     # gets all disk usages for this server between dates
     ramUse = [metrics.Ram for metrics in Metric.query.order_by(Metric.Time).filter_by(ServerId=slug).filter(
-        between(Metric.Time, '07/06/2019', '07/07/2019'))]
+        between(Metric.Time, '09/01/2019 11:50:00', '09/01/2019 23:50:00'))]
 
     if form.validate_on_submit():  # implementation of user input limiting date range for chart
 
@@ -456,11 +456,11 @@ def ping(slug):  # Slug is the Server Id
 
     # gets all dates for this server between dates
     cpuDate = [metrics.Time for metrics in Metric.query.order_by(Metric.Time).filter_by(ServerId=slug).filter(
-        between(Metric.Time, '07/06/2019 00:00:00', '07/06/2019 12:00:00'))]
+        between(Metric.Time, '09/01/2019 11:50:00', '09/01/2019 23:50:00'))]
 
     # gets all disk usages for this server between dates
     pingUse = [metrics.PingLatency for metrics in Metric.query.order_by(Metric.Time).filter_by(ServerId=slug).filter(
-        between(Metric.Time, '07/06/2019 00:00:00', '07/06/2019 12:00:00'))]
+        between(Metric.Time, '09/01/2019 11:50:00', '09/01/2019 23:50:00'))]
 
     if metric_row.PingLatency != null:
         status = "Responding"
