@@ -3,7 +3,7 @@ from flask_wtf import FlaskForm
 from wtforms import StringField, DateField, SelectField, BooleanField, SubmitField
 from wtforms.validators import input_required, length, none_of
 from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy import between
+from sqlalchemy import between, null
 from sqlalchemy.sql import func
 from sqlalchemy.orm.exc import FlushError
 from datetime import date, datetime, timedelta
@@ -205,13 +205,16 @@ def RT(slug):  # Slug is the Server Id
 
     tmpLoc3 = Location.query.filter_by(LocationId=tmpLoc2.LocationId).first()
 
-    # racks = Rack.query.filter_by(ServerId=slug)  # query for the rack of this server
-
     tmp = Metric.query.order_by(Metric.Time.desc()).filter_by(ServerId=slug).first()
     metric_row = Metric.query.get(tmp.MetricId)  # gets the most recent metrics for server
 
+    if metric_row.PingLatency != null:
+        status = "Responding"
+    else:
+        status = "Not Responding"
+
     return render_template('RealTimeDataOverviewTemp.html', server=server, metric=metric_row, service=services,
-                           database=databases, runningjob=runningjobs, location=tmpLoc3, rack=tmpLoc2)
+                           database=databases, runningjob=runningjobs, location=tmpLoc3, rack=tmpLoc2, status=status)
     #   returns the template for real time data overview with ^ variables passed to it
 
 
