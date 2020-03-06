@@ -37,8 +37,10 @@
         </div>
     </div>
 
+
+
     <div class="row text-center mt-3 ml-auto"> {# forms for chard date range | NOT CURRENTLY WORKING #}
-        <div class="col-12">
+      <!--  <div class="col-12">
             <form method="post">
                 {{ form.csrf_token }}
                 {{ render_field(form.startdate) }}
@@ -58,7 +60,27 @@
                 {#                <input type="submit" value="update">#}
                 {#            </div>#}
             </form>
+        </div>-->
+        <div class='col-md-5'>
+            <div class="form-group">
+                <div class='input-group date' id='datetimepicker1'>
+                    <input type='text' class="form-control"/>
+                    <span class="input-group-addon">
+                    <span class="glyphicon glyphicon-calendar"></span>
+                </span>
+                </div>
+            </div>
         </div>
+        <div class='col-md-5'>
+            <div class="form-group">
+                <div class='input-group date' id='datetimepicker2'>
+                    <input type='text' class="form-control"/>
+                    <span class="input-group-addon">
+                    <span class="glyphicon glyphicon-calendar"></span>
+                </span>
+                </div>
+            </div>
+    </div>
     </div>
 
 
