@@ -129,10 +129,15 @@ today = date.strftime("%m/%d/%Y")  # reformat date to mm/dd/yyyy
 def home():
     form = HomeFilter()
     server_table = Server.query.all()
-    serverMetricsDict = {}
-    for server in server_table:
+
+    serverMetricsDict = {}  # Dictionary used for tooltips on home page
+    for server in server_table:  # loop to add server id with its metrics to dictionary
+
+        # gets metrics for each server in loop
         metric = Metric.query.order_by(Metric.Time.desc()).filter_by(ServerId=server.ServerId).first()
 
+        # creates key:value
+        # key is server id, value is string of metrics as seen below
         serverMetricsDict[server.ServerID] = 'CPU: ' + str(metric.Cpu) + '%' + ' | RAM:' + str(metric.Ram) + '%' + \
                                              ' | Disk: ' + str(metric.Disk) + '%' + ' | GPU: ' + str(metric.Gpu) + '%' \
                                              + ' | Ping:' + str(metric.PingLatency) + 'ms'
