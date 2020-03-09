@@ -16,6 +16,7 @@ app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///StubServersDB_V4.db'  # sets 
 
 app.config['SECRET_KEY'] = 'secret ssmt'  # secret key used for by WTforms for forms
 
+
 db = SQLAlchemy(app)  # something SQL Alchemy needs
 db.Model.metadata.reflect(db.engine)  # Allows SQL alchemy to look into the DB for info on the tables
 
@@ -28,7 +29,7 @@ class Server(db.Model):  # Server Table
     __tablename__ = 'Server'
     __table_args__ = {'extend_existing': True}
     ServerId = db.Column(db.Text, primary_key=True)  # primary key column
-    Metrics = db.relationship('Metric', backref='Server', lazy=True)  # pseudo column for relationship
+    Metrics = db.relationship('Metric', backref='Server', lazy='dynamic')  # pseudo column for relationship
     ServerID = db.Column(db.Text, db.ForeignKey('server.ServerId'))  # foreign key column? **********************
 
 
@@ -98,7 +99,6 @@ class ChartForm(FlaskForm):  # form for the chart range
     startdate = StringField('startdate', validators=[input_required(), length(min=10, max=19)])  # start date field
     enddate = StringField('enddate', validators=[input_required(), length(min=10, max=19)])  # End date field
 
-
 class MasterListForm(FlaskForm):
     type = SelectField('type', choices=[(st.TypeId, st.TypeName) for st in ServerType.query.all()],
                        validators=[input_required()])
@@ -129,6 +129,13 @@ today = date.strftime("%m/%d/%Y")  # reformat date to mm/dd/yyyy
 def home():
     form = HomeFilter()
     server_table = Server.query.all()
+    serverMetricsDict = {}
+    for server in server_table:
+        metric = Metric.query.order_by(Metric.Time.desc()).filter_by(ServerId=server.ServerId).first()
+
+        serverMetricsDict[server.ServerID] = 'CPU: ' + str(metric.Cpu) + '%' + ' | RAM:' + str(metric.Ram) + '%' + \
+                                             ' | Disk: ' + str(metric.Disk) + '%' + ' | GPU: ' + str(metric.Gpu) + '%' \
+                                             + ' | Ping:' + str(metric.PingLatency) + 'ms'
 
     if form.validate_on_submit():
         # if form.filter.data == '':
@@ -136,11 +143,12 @@ def home():
         # else:
         server_table = Server.query.filter_by(
             ServerTypeID=form.filter.data)  # query that gets all of the servers in the Server table
-    rack_table = Rack.query.filter(Rack.RackId == Server.RackID).order_by(Rack.Name) #Show only racks that have servers on them
+    rack_table = Rack.query.filter(Rack.RackId == Server.RackID).order_by(
+        Rack.Name)  # Show only racks that have servers on them
 
     return render_template('HomePageV2.html',
                            server=server_table, rack=rack_table,
-                           form=form)  # returns V2 home page html doc with that variable
+                           form=form, metric=serverMetricsDict)  # returns V2 home page html doc with that variable
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -312,7 +320,7 @@ def CPU(slug):  # Slug is the Server Id
         averageList = 'xxx'
 
     # return for default date range
-    return render_template('Usage-CPUTemp.html', server=server, ametric=metric_row, date=dateRange, usage=useRange,
+    return render_template('Usage-CPUTemp.html', server=server, ametric=tmp, date=dateRange, usage=useRange,
                            form=form, rack=tmpLoc2, hi=maxList, lo=minList, avg=averageList)
 
 
