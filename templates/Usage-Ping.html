@@ -63,63 +63,119 @@
     </div>
 
 
-{#        <div class="row ml-2"> {# Lists the dates in date range in order | FOR TESTING/DEBUGGING #}
-{#            <ol>#}
-{#                {% for d in date %}#}
-{#                    <li> {{ d }} </li>#}
-{#                {% endfor %}#}
-{#            </ol>#}
-{#        </div>#}
+    {#        <div class="row ml-2"> {# Lists the dates in date range in order | FOR TESTING/DEBUGGING #}
+    {#            <ol>#}
+    {#                {% for d in date %}#}
+    {#                    <li> {{ d }} </li>#}
+    {#                {% endfor %}#}
+    {#            </ol>#}
+    {#        </div>#}
 
-        <div class="row text-center m-5">{# Chart for usage #}
+    <div class="row text-center m-5">{# Chart for usage #}
 
-            <div class="col">
-                <canvas id="myChart"></canvas>
-            </div>
-            <script>
-                var ctx = document.getElementById('myChart').getContext('2d');
-                var chart = new Chart(ctx, {
-                    {# The type of chart we want to create #}
-                    type: 'line',
+        <div class="col">
+            <canvas id="myChart"></canvas>
+        </div>
+        <script>
+            var ctx = document.getElementById('myChart').getContext('2d');
+            var chart = new Chart(ctx, {
+                {# The type of chart we want to create #}
+                type: 'line',
 
+                {% if hi == 'xxx' %}
                     {# The data for our dataset #}
                     data: {
                         labels: [{% for d in date %} "{{ d }}", {% endfor %}], {# Dates #}
                         datasets: [{
-                            label: 'My First dataset',
+                            label: 'usage',
                             backgroundColor: 'rgb(122,211,132)',
-                            borderColor: 'rgb(0, 0, 0)',
+                            borderColor: 'rgb(0,0,0)',
                             data: [{% for u in usage %} "{{ u }}", {% endfor %}] {# Usages #}
                         }]
                     },
-                    {# Configuration options go here #}
-                    options: {
-                        legend: {display: false}
-                    }
-                });
-            </script>
-        </div>
+                {% else %}
+                    data: {
+                        labels: [{% for d in date %} "{{ d }}", {% endfor %}], {# Dates #}
+                        datasets: [{
+                            label: 'HIGH',
+                            fill: false,
+                            backgroundColor: 'rgba(255,33,0,0.71)',
+                            borderColor: 'rgb(255,33,0)',
+                            data: [{% for h in hi %} "{{ h }}", {% endfor %}] {# Usages #}
+                        }, {
+                            label: 'LOW',
+                            fill: false,
+                            backgroundColor: 'rgba(64,255,0,0.71)',
+                            borderColor: 'rgb(64,255,0)',
+                            data: [{% for l in lo %} "{{ l }}", {% endfor %}]
+                        }, {
+                            label: 'Average',
+                            fill: false,
+                            backgroundColor: 'rgba(255,223,0,0.71)',
+                            borderColor: 'rgb(255,223,0)',
+                            data: [{% for a in avg %} "{{ a }}", {% endfor %}]
+                        }
+                        ]
+                    },
+                {% endif %}
 
-        <div class="row"> {# Ping Usage table #}
+
+                {# Configuration options go here #}
+                options: {
+                    legend: {display: false}
+                }
+            });
+        </script>
+    </div>
+
+    {% if lo == 'xxx' %}
+        <div class="row"> {# ping Usage table #}
             <div class="col mt-5 mb-5">
                 <table class="table table-striped table-bordered">
                     <thead class="table-dark">
                     <tr>
                         <th scope="col">Date/Time</th>
-                        <th scope="col">Ping Latency (ms)</th>
+                        <th scope="col">Ping (%):</th>
                     </tr>
                     </thead>
                     <tbody>
-                        {% for d, u in zip(date, usage) %}
-                            <tr>
-                                <td>{{ d }}</td>
-                                <td>{{ u }}</td>
-                            </tr>
-                        {% endfor %}
+                    {% for d, u in zip(date, usage) %}
+                        <tr>
+                            <td>{{ d }}</td>
+                            <td>{{ u }}%</td>
+                        </tr>
+                    {% endfor %}
                     </tbody>
                 </table>
             </div>
         </div>
+    {% else %}
+        <div class="row"> {# CPU Usage table #}
+            <div class="col mt-5 mb-5">
+                <table class="table table-bordered">
+                    <thead class="table-dark">
+                    <tr>
+                        <th scope="col">Date/Time</th>
+                        <th scope="col">High</th>
+                        <th scope="col">Average</th>
+                        <th scope="col">Low</th>
+
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {% for d, h, a, l in zip(date, hi, avg, lo) %}
+                        <tr>
+                            <td>{{ d }}</td>
+                            <td class="table-danger">{{ h }}</td>
+                            <td class="table-warning">{{ a }}</td>
+                            <td class="table-success">{{ l }}</td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    {% endif %}
 
 
 {% endblock content %}

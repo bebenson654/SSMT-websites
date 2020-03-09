@@ -42,12 +42,13 @@
 
                 {% for server in server %}
                     {% if server.RackID == rack.RackId %}
-                    {# grabs all servers in DB | NEEDS TO BE CHANGED TO ONLY GRAB SERVERS IN THIS RACK #}
-                    <ul class="list-group list-group-flush"> {# lists servers that link to their Real Time page #}
-                        <a href="/real-time-data-overview/{{ server.ServerId }}"
-                           class="list-group-item list-group-item-action text-center">{{ server.ServerName }}<img
-                                src="WebApp\Red X.png" class="float-right"></a>
-                    </ul>
+                        {# grabs all servers in DB#}
+                        <ul class="list-group list-group-flush"> {# lists servers that link to their Real Time page #}
+                            <a href="/real-time-data-overview/{{ server.ServerId }}"
+                               data-toggle="tooltip" data-placement="right" title="{{ metric[server.ServerId] }}"
+                               class="list-group-item list-group-item-action text-center">{{ server.ServerName }}<img
+                                    src="WebApp\Red X.png" class="float-right"></a>
+                        </ul>
                     {% endif %}
                 {% endfor %}
 

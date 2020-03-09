@@ -29,10 +29,12 @@
     <div class="row mt-3 text-center"> {# Server Specs #}
         <div class="col-12 ">
 
-            <table class="table table-borderless table-secondary">
+            <table class="table table-bordered table-secondary">
                 <th colspan="12">
                     Server Specifications
                 </th>
+
+                <tbody>
                 <tr> {# Spec's names #}
                     <th>Operating System</th>
                     <th>CPU | Cores</th>
@@ -43,18 +45,17 @@
                     <th>Room</th>
                     <th>Last Updated</th>
                 </tr>
-                <tbody>
-                    <tr> {# Spec's Values #}
-                        <td>{{ server.Os }}</td>
-                        <td>{{ server.Cpu }} | {{ server.CpuCores }}</td>
-                        <td>{{ server.Gpu }}</td>
-                        <td>{{ server.Memory }}GB</td>
-                        <td>{{ server.Model }}</td>
-                        <td>{{ location.BuildingNumber }}</td>
-                        <td>{{ location.Room }}</td>
-                        <td>{{ metric.Time }}</td>
+                <tr> {# Spec's Values #}
+                    <td>{{ server.Os }}</td>
+                    <td>{{ server.Cpu }} | {{ server.CpuCores }}</td>
+                    <td>{{ server.Gpu }}</td>
+                    <td>{{ server.Memory }}GB</td>
+                    <td>{{ server.Model }}</td>
+                    <td>{{ location.BuildingNumber }}</td>
+                    <td>{{ location.Room }}</td>
+                    <td>{{ metric.Time }}</td>
 
-                    </tr>
+                </tr>
                 </tbody>
             </table>
 
@@ -70,28 +71,33 @@
     <tr>
       <th scope="row"><h3><img src="WebApp\Red X.png" class="float-left"></h3></th>
         <td><h3 class="text-center">CPU Usage:</h3></td>
-        <td><h3 class="text-danger"><a href="/usage-cpu/{{ server.ServerId }}">{{ metric.Cpu }}%</a></h3></td>
+        <td><h3 class="text-danger"><a href="/usage-cpu/{{ server.ServerId }}"
+                                       class="text-decoration-none text-success">{{ metric.Cpu }}%</a></h3></td>
     </tr>
     <tr>
         <th scope="row"><h3><img src="WebApp\Red X.png" class="float-left"></h3></th>
          <td><h3>RAM Usage:</h3></td>
-        <td><h3 class="text-danger"><a href="/usage-RAM/{{ server.ServerId }}">{{ metric.Ram }}%</a></h3></td>
+        <td><h3 class="text-danger"><a href="/usage-RAM/{{ server.ServerId }}"
+                                       class="text-decoration-none text-success">{{ metric.Ram }}%</a></h3></td>
 
     </tr>
     <tr>
         <th scope="row"><h3><img src="WebApp\Red X.png" class="float-left"></h3></th>
         <td><h3>Disk Usage:</h3></td>
-        <td><h3 class="text-danger"><a href="/usage-Disk/{{ server.ServerId }}">{{ metric.Disk }}%</a></h3></td>
+        <td><h3 class="text-danger"><a href="/usage-Disk/{{ server.ServerId }}"
+                                       class="text-decoration-none text-success">{{ metric.Disk }}%</a></h3></td>
     </tr>
     <tr>
       <th scope="row"><h3><img src="WebApp\Red X.png" class="float-left"></h3></th>
       <td><h3>GPU Usage:</h3></td>
-        <td><h3 class="text-danger"><a href="/usage-GPU/{{ server.ServerId }}">{{ metric.Gpu }}%</a></h3></td>
+        <td><h3 class="text-danger"><a href="/usage-GPU/{{ server.ServerId }}"
+                                       class="text-decoration-none text-success">{{ metric.Gpu }}%</a></h3></td>
     </tr>
     <tr>
       <th scope="row"><h3><img src="WebApp\Red X.png" class="float-left"></h3></th>
        <td><h3>Ping Status:</h3></td>
-      <td><h3 class="text-success"><a href="/usage-Ping/{{ server.ServerId }}">{{ metric.PingLatency }} ms - {{status}} </a> </h3></td>
+      <td><h3 class="text-success"><a href="/usage-Ping/{{ server.ServerId }}"
+                                      class="text-decoration-none text-success">{{ metric.PingLatency }} ms - {{ status }} </a> </h3></td>
 
     </tr>
   </tbody>

@@ -103,17 +103,17 @@
             </table>
         </div>
     </div>
-    <div class="row mt-3 text-center"> {# Add Delete Buttons #}
-        <div class="col-09">
-            <form method="post">
-                <input type="submit" name="Delete" value="Delete">{# Delete Button #}
-            </form>
-        </div>
-        <div class="col-11 ml-auto">
-
-            <a class="btn btn-success btn-lg float-md-right" href="#" role="button">Add</a> {# Add button #}
-        </div>
-    </div>
+    {#    <div class="row mt-3 text-center"> {# Add Delete Buttons #}
+    {#        <div class="col-09">#}
+    {#            <form method="post">#}
+    {#                <input type="submit" name="Delete" value="Delete">{# Delete Button #}
+    {#            </form>#}
+    {#        </div>#}
+    {#        <div class="col-11 ml-auto">#}
+    {##}
+    {#            <a class="btn btn-success btn-lg float-md-right" href="#" role="button">Add</a> {# Add button #}
+    {#        </div>#}
+    {#    </div>#}
 
     {% for m in mList %}
         <div class="modal fade" id="{{ m.Type | safe }}{{ m.Name | safe }}" tabindex="-1" role="dialog"
