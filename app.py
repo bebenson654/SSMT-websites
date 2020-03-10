@@ -12,7 +12,7 @@ import pandas as pd
 app = Flask(__name__)  # something for flask
 app.jinja_env.globals.update(zip=zip)
 
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///StubServersDB_V4.db'  # sets the DB to the stubDB
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///StubServersDB_V4_TEST.db'  # sets the DB to the stubDB
 
 app.config['SECRET_KEY'] = 'secret ssmt'  # secret key used for by WTforms for forms
 
