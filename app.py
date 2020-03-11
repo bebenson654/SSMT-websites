@@ -12,7 +12,7 @@ import pandas as pd
 app = Flask(__name__)  # something for flask
 app.jinja_env.globals.update(zip=zip)
 
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///StubServersDB_V4.db'  # sets the DB to the stubDB
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///StubServersDB_V6_Text.db'  # sets the DB to the stubDB
 
 app.config['SECRET_KEY'] = 'secret ssmt'  # secret key used for by WTforms for forms
 
@@ -147,9 +147,8 @@ def home():
         #     pass
         # else:
         server_table = Server.query.filter_by(
-            ServerTypeID=form.filter.data)  # query that gets all of the servers in the Server table
-    rack_table = Rack.query.filter(Rack.RackId == Server.RackID).order_by(
-        Rack.Name)  # Show only racks that have servers on them
+            ServerTypeId=form.filter.data)  # query that gets all of the servers in the Server table
+    rack_table = Rack.query.filter((Rack.RackId == Server.RackId) & ((MasterList.num + "-" + MasterList.Name) == Server.ServerId)).order_by(Rack.Name)  # Show only racks that have servers on them
 
     return render_template('HomePageV2.html',
                            server=server_table, rack=rack_table,
@@ -215,7 +214,7 @@ def RT(slug):  # Slug is the Server Id
 
     tmpLoc = Server.query.filter_by(ServerId=slug).first()
 
-    tmpLoc2 = Rack.query.filter_by(RackId=tmpLoc.RackID).first()
+    tmpLoc2 = Rack.query.filter_by(RackId=tmpLoc.RackId).first()
 
     tmpLoc3 = Location.query.filter_by(LocationId=tmpLoc2.LocationId).first()
 
@@ -248,15 +247,15 @@ def CPU(slug):  # Slug is the Server Id
     averageList = []
 
     tmpLoc = Server.query.filter_by(ServerId=slug).first()
-    tmpLoc2 = Rack.query.filter_by(RackId=tmpLoc.RackID).first()  # gets rack for this server
+    tmpLoc2 = Rack.query.filter_by(RackId=tmpLoc.RackId).first()  # gets rack for this server
 
     # gets all dates for this server between dates
     dateRange = [metrics.Time for metrics in Metric.query.order_by(Metric.Time).filter_by(ServerId=slug).filter(
-        between(Metric.Time, '08/31/2019 23:50:00', '09/01/2019 23:50:00'))]
+        between(Metric.Time, '02/29/2020 12:00:00', '02/29/2020 23:55:00'))]
 
     # gets all cpu usages for this server between dates
     useRange = [metrics.Cpu for metrics in Metric.query.order_by(Metric.Time).filter_by(ServerId=slug).filter(
-        between(Metric.Time, '08/31/2019 23:50:00', '09/01/2019 23:50:00'))]
+        between(Metric.Time, '02/29/2020 12:00:00', '02/29/2020 23:55:00'))]
 
     if form.validate_on_submit():  # implementation of user input limiting date range for chart
 
@@ -343,23 +342,23 @@ def disk(slug):  # Slug is the Server Id
 
     # gets all dates for this server between dates
     cpuDate = [metrics.Time for metrics in Metric.query.order_by(Metric.Time).filter_by(ServerId=slug).filter(
-        between(Metric.Time, '09/01/2019 11:50:00', '09/01/2019 23:50:00'))]
+        between(Metric.Time, '02/29/2020 12:00:00', '02/29/2020 23:55:00'))]
 
     tmpLoc = Server.query.filter_by(ServerId=slug).first()
 
-    tmpLoc2 = Rack.query.filter_by(RackId=tmpLoc.RackID).first()
+    tmpLoc2 = Rack.query.filter_by(RackId=tmpLoc.RackId).first()
 
     # gets all disk usages for this server between dates
     diskUse = [metrics.Disk for metrics in Metric.query.order_by(Metric.Time).filter_by(ServerId=slug).filter(
-        between(Metric.Time, '09/01/2019 11:50:00', '09/01/2019 23:50:00'))]
+        between(Metric.Time, '02/29/2020 12:00:00', '02/29/2020 23:55:00'))]
     partAUse = [metrics.PartA for metrics in Metric.query.order_by(Metric.Time).filter_by(ServerId=slug).filter(
-        between(Metric.Time, '09/01/2019 11:50:00', '09/01/2019 23:50:00'))]
+        between(Metric.Time, '02/29/2020 12:00:00', '02/29/2020 23:55:00'))]
     partBUse = [metrics.PartB for metrics in Metric.query.order_by(Metric.Time).filter_by(ServerId=slug).filter(
-        between(Metric.Time, '09/01/2019 11:50:00', '09/01/2019 23:50:00'))]
+        between(Metric.Time, '02/29/2020 12:00:00', '02/29/2020 23:55:00'))]
     partCUse = [metrics.PartC for metrics in Metric.query.order_by(Metric.Time).filter_by(ServerId=slug).filter(
-        between(Metric.Time, '09/01/2019 11:50:00', '09/01/2019 23:50:00'))]
+        between(Metric.Time, '02/29/2020 12:00:00', '02/29/2020 23:55:00'))]
     partDUse = [metrics.PartD for metrics in Metric.query.order_by(Metric.Time).filter_by(ServerId=slug).filter(
-        between(Metric.Time, '09/01/2019 11:50:00', '09/01/2019 23:50:00'))]
+        between(Metric.Time, '02/29/2020 12:00:00', '02/29/2020 23:55:00'))]
 
     if form.validate_on_submit():  # implementation of user input limiting date range for chart
 
@@ -400,15 +399,15 @@ def gpu(slug):  # Slug is the Server Id
     averageList = []
 
     tmpLoc = Server.query.filter_by(ServerId=slug).first()
-    tmpLoc2 = Rack.query.filter_by(RackId=tmpLoc.RackID).first()  # gets rack for this server
+    tmpLoc2 = Rack.query.filter_by(RackId=tmpLoc.RackId).first()  # gets rack for this server
 
     # gets all dates for this server between dates
     dateRange = [metrics.Time for metrics in Metric.query.order_by(Metric.Time).filter_by(ServerId=slug).filter(
-        between(Metric.Time, '09/01/2019 11:50:00', '09/01/2019 23:50:00'))]
+        between(Metric.Time, '02/29/2020 12:00:00', '02/29/2020 23:55:00'))]
 
     # gets all Gpu usages for this server between dates
     useRange = [metrics.Gpu for metrics in Metric.query.order_by(Metric.Time).filter_by(ServerId=slug).filter(
-        between(Metric.Time, '09/01/2019 11:50:00', '09/01/2019 23:50:00'))]
+        between(Metric.Time, '02/29/2020 12:00:00', '02/29/2020 23:55:00'))]
 
     if form.validate_on_submit():  # implementation of user input limiting date range for chart
 
@@ -498,15 +497,15 @@ def ram(slug):  # Slug is the Server Id
     averageList = []
 
     tmpLoc = Server.query.filter_by(ServerId=slug).first()
-    tmpLoc2 = Rack.query.filter_by(RackId=tmpLoc.RackID).first()  # gets rack for this server
+    tmpLoc2 = Rack.query.filter_by(RackId=tmpLoc.RackId).first()  # gets rack for this server
 
     # gets all dates for this server between dates
     dateRange = [metrics.Time for metrics in Metric.query.order_by(Metric.Time).filter_by(ServerId=slug).filter(
-        between(Metric.Time, '09/01/2019 11:50:00', '09/01/2019 23:50:00'))]
+        between(Metric.Time, '02/29/2020 12:00:00', '02/29/2020 23:55:00'))]
 
     # gets all Ram usages for this server between dates
     useRange = [metrics.Ram for metrics in Metric.query.order_by(Metric.Time).filter_by(ServerId=slug).filter(
-        between(Metric.Time, '09/01/2019 11:50:00', '09/01/2019 23:50:00'))]
+        between(Metric.Time, '02/29/2020 12:00:00', '02/29/2020 23:55:00'))]
 
     if form.validate_on_submit():  # implementation of user input limiting date range for chart
 
@@ -596,7 +595,7 @@ def ping(slug):  # Slug is the Server Id
     averageList = []
 
     tmpLoc = Server.query.filter_by(ServerId=slug).first()
-    tmpLoc2 = Rack.query.filter_by(RackId=tmpLoc.RackID).first()  # gets rack for this server
+    tmpLoc2 = Rack.query.filter_by(RackId=tmpLoc.RackId).first()  # gets rack for this server
 
     if metric_row.PingLatency != null:  # checks to see if ping is responding
         status = "Responding"
@@ -605,11 +604,11 @@ def ping(slug):  # Slug is the Server Id
 
     # gets all dates for this server between dates
     dateRange = [metrics.Time for metrics in Metric.query.order_by(Metric.Time).filter_by(ServerId=slug).filter(
-        between(Metric.Time, '09/01/2019 11:50:00', '09/01/2019 23:50:00'))]
+        between(Metric.Time, '02/29/2020 12:00:00', '02/29/2020 23:55:00'))]
 
     # gets all Ping usages for this server between dates
     useRange = [metrics.PingLatency for metrics in Metric.query.order_by(Metric.Time).filter_by(ServerId=slug).filter(
-        between(Metric.Time, '09/01/2019 11:50:00', '09/01/2019 23:50:00'))]
+        between(Metric.Time, '02/29/2020 12:00:00', '02/29/2020 23:55:00'))]
 
     if form.validate_on_submit():  # implementation of user input limiting date range for chart
 
