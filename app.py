@@ -96,8 +96,10 @@ class MasterList(db.Model):  # Master list table
 
 
 class ChartForm(FlaskForm):  # form for the chart range
-    startdate = StringField('startdate', validators=[input_required(), length(min=10, max=19)])  # start date field
-    enddate = StringField('enddate', validators=[input_required(), length(min=10, max=19)])  # End date field
+    startdate = StringField('start mm/dd/yyyy hh:mm:ss',
+                            validators=[input_required(), length(min=10, max=19)])  # start date field
+    enddate = StringField('end mm/dd/yyyy hh:mm:ss',
+                          validators=[input_required(), length(min=10, max=19)])  # End date field
 
 class MasterListForm(FlaskForm):
     type = SelectField('type', choices=[(st.TypeId, st.TypeName) for st in ServerType.query.all()],
@@ -143,17 +145,20 @@ def home():
                                              + ' | Ping:' + str(metric.PingLatency) + 'ms'
 
     if form.validate_on_submit():
-        # if form.filter.data == '':
-        #     pass
-        # else:
         server_table = Server.query.filter_by(
             ServerTypeID=form.filter.data)  # query that gets all of the servers in the Server table
+
     rack_table = Rack.query.filter(Rack.RackId == Server.RackID).order_by(
         Rack.Name)  # Show only racks that have servers on them
 
+    masterList = []  # used to only display servers on the Master List
+    for s in MasterList.query.all():
+        masterList.append(s.num + '-' + s.Name)  # concatenates strings to make the server id
+    print(masterList)
+
     return render_template('HomePageV2.html',
-                           server=server_table, rack=rack_table,
-                           form=form, metric=serverMetricsDict)  # returns V2 home page html doc with that variable
+                           server=server_table, rack=rack_table, form=form, metric=serverMetricsDict,
+                           masterList=masterList)  # returns V2 home page html doc with that variable
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -335,23 +340,31 @@ def CPU(slug):  # Slug is the Server Id
 @app.route('/usage-Disk/<slug>', methods=['POST', 'GET'])  # route for Disk usage for a specific server
 def disk(slug):  # Slug is the Server Id
 
+    # gets all disk usages for this server between dates
+    # diskUse = [metrics.Disk for metrics in Metric.query.order_by(Metric.Time).filter_by(ServerId=slug).filter(
+    #     between(Metric.Time, '09/01/2019 11:50:00', '09/01/2019 23:50:00'))]
+
     form = ChartForm()  # instantiate the chart form class
     server = Server.query.filter_by(ServerId=slug).first()  # query for the server specs
 
     tmp = Metric.query.order_by(Metric.Time.desc()).filter_by(ServerID=slug).first()
     metric_row = Metric.query.get(tmp.MetricId)  # gets the most recent metrics for server
 
-    # gets all dates for this server between dates
-    cpuDate = [metrics.Time for metrics in Metric.query.order_by(Metric.Time).filter_by(ServerId=slug).filter(
-        between(Metric.Time, '09/01/2019 11:50:00', '09/01/2019 23:50:00'))]
+    minList = []  # Create empty lists for min, max, average
+    maxList = []
+    averageList = []
 
     tmpLoc = Server.query.filter_by(ServerId=slug).first()
+    tmpLoc2 = Rack.query.filter_by(RackId=tmpLoc.RackID).first()  # gets rack for this server
 
-    tmpLoc2 = Rack.query.filter_by(RackId=tmpLoc.RackID).first()
-
-    # gets all disk usages for this server between dates
-    diskUse = [metrics.Disk for metrics in Metric.query.order_by(Metric.Time).filter_by(ServerId=slug).filter(
+    # gets all dates for this server between dates
+    dateRange = [metrics.Time for metrics in Metric.query.order_by(Metric.Time).filter_by(ServerId=slug).filter(
         between(Metric.Time, '09/01/2019 11:50:00', '09/01/2019 23:50:00'))]
+
+    # gets all Disk usages for this server between dates
+    useRange = [metrics.Disk for metrics in Metric.query.order_by(Metric.Time).filter_by(ServerId=slug).filter(
+        between(Metric.Time, '09/01/2019 11:50:00', '09/01/2019 23:50:00'))]
+
     partAUse = [metrics.PartA for metrics in Metric.query.order_by(Metric.Time).filter_by(ServerId=slug).filter(
         between(Metric.Time, '09/01/2019 11:50:00', '09/01/2019 23:50:00'))]
     partBUse = [metrics.PartB for metrics in Metric.query.order_by(Metric.Time).filter_by(ServerId=slug).filter(
@@ -363,24 +376,74 @@ def disk(slug):  # Slug is the Server Id
 
     if form.validate_on_submit():  # implementation of user input limiting date range for chart
 
+        dateRange = []  # empties dates to be refilled by code below
+
         form = ChartForm(request.form)
         startdate = form.startdate.data  # gets start and end date from form
         enddate = form.enddate.data
 
-        # Returns list of dates within start and end date
-        dateRange = [metrics.Time for metrics in Metric.query.order_by(Metric.Time).filter_by(ServerId=slug).filter(
-            between(Metric.Time, startdate, enddate))]
+        # converts inputted string to date or datetime
+        try:
+            sDate = datetime.strptime(startdate, '%m/%d/%Y %H:%M:%S')
+        except ValueError:
+            sDate = datetime.strptime(startdate, '%m/%d/%Y')
+        try:
+            eDate = datetime.strptime(enddate, '%m/%d/%Y %H:%M:%S')
+        except ValueError:
+            eDate = datetime.strptime(enddate, '%m/%d/%Y')
 
-        # Returns usages that within  start and end date
-        useRange = [metrics.Disk for metrics in Metric.query.order_by(Metric.Time).filter_by(ServerId=slug).filter(
-            between(Metric.Time, startdate, enddate))]
+        difference = eDate - sDate  # calculating the difference between the start and end date
 
-        # return for if user provides input
-        return render_template('Usage-Disk.html', server=server, ametric=metric_row, date=dateRange, usage=useRange,
-                               form=form, rack=tmpLoc2)
+        if difference.total_seconds() <= 86400:  # check to see if the difference is less than 24hrs
+            # Returns list of dates within start and end date
+            dateRange = [metrics.Time for metrics in Metric.query.order_by(Metric.Time).filter_by(ServerId=slug).filter(
+                between(Metric.Time, startdate, enddate))]
+
+            # Returns usages that within  start and end date
+            useRange = [metrics.Disk for metrics in Metric.query.order_by(Metric.Time).filter_by(ServerId=slug).filter(
+                between(Metric.Time, startdate, enddate))]
+
+        else:  # if deference is grater than 24hrs
+
+            x = sDate  # will be used in iterating the for loop
+            y = timedelta(days=1)  # datetime variable that equals 1 day
+
+            while x <= eDate:
+                for p in pd.date_range(sDate, eDate):  # for loop starting at the start date and ending on end date
+                    # x = sDate.date()
+                    z = x + y  # z = current value of x plus 1 day
+
+                    # gets the average for each day also temporarily converts x & z to string for query
+                    avg = db.session.query(db.func.avg(Metric.Disk).label('average')).order_by(Metric.Time).filter_by(
+                        ServerId=slug).filter(
+                        Metric.Time.between(x.strftime('%m/%d/%Y'), z.strftime('%m/%d/%Y'))).scalar()
+
+                    # gets the min for each day also temporarily converts x & z to string for query
+                    min = db.session.query(db.func.min(Metric.Disk).label('average')).order_by(Metric.Time).filter_by(
+                        ServerId=slug).filter(
+                        Metric.Time.between(x.strftime('%m/%d/%Y'), z.strftime('%m/%d/%Y'))).scalar()
+
+                    # gets the max for each day also temporarily converts x & z to string for query
+                    max = db.session.query(db.func.max(Metric.Disk).label('average')).order_by(Metric.Time).filter_by(
+                        ServerId=slug).filter(
+                        Metric.Time.between(x.strftime('%m/%d/%Y'), z.strftime('%m/%d/%Y'))).scalar()
+
+                    dateRange.append(x.date().strftime('%m/%d/%Y'))  # reformat x and adds it to date list
+                    averageList.append(round(avg, 1))  # rounds avg to 1 decimal place and adds it to list
+                    minList.append(min)  # adds min to list
+                    maxList.append(max)  # adds MAX to list
+
+                    x = x + y  # adds 1 day to x to iterate through loop
+
+    if len(minList) == 0:  # checks to see if min list is empty | will be empty if date range < 24hrs
+        minList = 'xxx'  # sets empty lists to string which will be checked for in the html file
+        maxList = 'xxx'
+        averageList = 'xxx'
+
     # return for default date range
-    return render_template('Usage-Disk.html', server=server, ametric=metric_row, date=cpuDate, usage=diskUse,
-                           form=form, aUsage=partAUse, bUsage=partBUse, cUsage=partCUse, dUsage=partDUse, rack=tmpLoc2)
+    return render_template('Usage-Disk.html', server=server, ametric=tmp, date=dateRange, usage=useRange,
+                           form=form, rack=tmpLoc2, hi=maxList, lo=minList, avg=averageList, aUsage=partAUse,
+                           bUsage=partBUse, cUsage=partCUse, dUsage=partDUse)
 
 
 # ----------------------------------------------------------------------------------------------------------------------
