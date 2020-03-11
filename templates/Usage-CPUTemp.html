@@ -39,22 +39,15 @@
         </div>
     </div>
 
-    <div class="row text-center mt-3"> {# forms for chard date range #}
-
-        <form method="post">
-            <div class="col-3">
-
+    <div class="row text-center mt-3 ml-auto"> {# forms for chard date range | NOT CURRENTLY WORKING #}
+        <div class="col-12">
+            <form method="post">
                 {{ form.csrf_token }}
-                {{ form.startdate }}
-            </div>
-            <div class="col-3">
-                {{ form.enddate }}
-            </div>
-            <div class="col-3">
+                {{ render_field(form.startdate) }}
+                {{ render_field(form.enddate) }}
                 <input type="submit" value="update">
-            </div>
-        </form>
-
+            </form>
+        </div>
     </div>
 
 
