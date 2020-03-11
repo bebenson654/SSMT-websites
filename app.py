@@ -12,7 +12,7 @@ import pandas as pd
 app = Flask(__name__)  # something for flask
 app.jinja_env.globals.update(zip=zip)
 
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///StubServersDB_V4.db'  # sets the DB to the stubDB
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///StubServersDB_V6_Text.db'  # sets the DB to the stubDB
 
 app.config['SECRET_KEY'] = 'secret ssmt'  # secret key used for by WTforms for forms
 
@@ -96,9 +96,9 @@ class MasterList(db.Model):  # Master list table
 
 
 class ChartForm(FlaskForm):  # form for the chart range
-    startdate = StringField('start mm/dd/yyyy hh:mm:ss',
+    startdate = StringField('start yyyy-mm-dd hh:mm:ss',
                             validators=[input_required(), length(min=10, max=19)])  # start date field
-    enddate = StringField('end mm/dd/yyyy hh:mm:ss',
+    enddate = StringField('end yyyy-mm-dd hh:mm:ss',
                           validators=[input_required(), length(min=10, max=19)])  # End date field
 
 class MasterListForm(FlaskForm):
@@ -119,7 +119,7 @@ class HomeFilter(FlaskForm):
 
 
 date = date.today()  # gets today's date for use in default range for chart
-today = date.strftime("%m/%d/%Y")  # reformat date to mm/dd/yyyy
+today = date.strftime("%Y/%m/%d")  # reformat date to mm/dd/yyyy
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -146,15 +146,17 @@ def home():
 
     if form.validate_on_submit():
         server_table = Server.query.filter_by(
-            ServerTypeID=form.filter.data)  # query that gets all of the servers in the Server table
+            ServerTypeId=form.filter.data)  # query that gets all of the servers in the Server table
 
-    rack_table = Rack.query.filter(Rack.RackId == Server.RackID).order_by(
-        Rack.Name)  # Show only racks that have servers on them
+
 
     masterList = []  # used to only display servers on the Master List
     for s in MasterList.query.all():
         masterList.append(s.num + '-' + s.Name)  # concatenates strings to make the server id
-    print(masterList)
+    #print(masterList)
+
+    rack_table = Rack.query.filter(Rack.RackId == Server.RackId).order_by(
+        Rack.Name)  # Show only racks that have servers on them
 
     return render_template('HomePageV2.html',
                            server=server_table, rack=rack_table, form=form, metric=serverMetricsDict,
@@ -218,9 +220,16 @@ def RT(slug):  # Slug is the Server Id
 
     runningjobs = RunningJob.query.filter_by(ServerId=slug)  # query for the runningjobs on this server
 
+    testRJ = RunningJob.query.filter_by(ServerId=slug).first()
+    if testRJ is None:
+        runningjobs = 0
+    testDB = Database.query.filter_by(ServerId=slug).first()
+    if testDB is None:
+        databases = 0
+
     tmpLoc = Server.query.filter_by(ServerId=slug).first()
 
-    tmpLoc2 = Rack.query.filter_by(RackId=tmpLoc.RackID).first()
+    tmpLoc2 = Rack.query.filter_by(RackId=tmpLoc.RackId).first()
 
     tmpLoc3 = Location.query.filter_by(LocationId=tmpLoc2.LocationId).first()
 
@@ -253,15 +262,15 @@ def CPU(slug):  # Slug is the Server Id
     averageList = []
 
     tmpLoc = Server.query.filter_by(ServerId=slug).first()
-    tmpLoc2 = Rack.query.filter_by(RackId=tmpLoc.RackID).first()  # gets rack for this server
+    tmpLoc2 = Rack.query.filter_by(RackId=tmpLoc.RackId).first()  # gets rack for this server
 
     # gets all dates for this server between dates
     dateRange = [metrics.Time for metrics in Metric.query.order_by(Metric.Time).filter_by(ServerId=slug).filter(
-        between(Metric.Time, '08/31/2019 23:50:00', '09/01/2019 23:50:00'))]
+        between(Metric.Time, '2020-02-29 11:55:00', '2020-02-29 23:55:00'))]
 
     # gets all cpu usages for this server between dates
     useRange = [metrics.Cpu for metrics in Metric.query.order_by(Metric.Time).filter_by(ServerId=slug).filter(
-        between(Metric.Time, '08/31/2019 23:50:00', '09/01/2019 23:50:00'))]
+        between(Metric.Time, '2020-02-29 11:55:00', '2020-02-29 23:55:00'))]
 
     if form.validate_on_submit():  # implementation of user input limiting date range for chart
 
@@ -273,13 +282,13 @@ def CPU(slug):  # Slug is the Server Id
 
         # converts inputted string to date or datetime
         try:
-            sDate = datetime.strptime(startdate, '%m/%d/%Y %H:%M:%S')
+            sDate = datetime.strptime(startdate, '%Y-%m-%d %H:%M:%S')
         except ValueError:
-            sDate = datetime.strptime(startdate, '%m/%d/%Y')
+            sDate = datetime.strptime(startdate, '%Y-%m-%d')
         try:
-            eDate = datetime.strptime(enddate, '%m/%d/%Y %H:%M:%S')
+            eDate = datetime.strptime(enddate, '%Y-%m-%d %H:%M:%S')
         except ValueError:
-            eDate = datetime.strptime(enddate, '%m/%d/%Y')
+            eDate = datetime.strptime(enddate, '%Y-%m-%d')
 
         difference = eDate - sDate  # calculating the difference between the start and end date
 
@@ -305,19 +314,19 @@ def CPU(slug):  # Slug is the Server Id
                     # gets the average for each day also temporarily converts x & z to string for query
                     avg = db.session.query(db.func.avg(Metric.Cpu).label('average')).order_by(Metric.Time).filter_by(
                         ServerId=slug).filter(
-                        Metric.Time.between(x.strftime('%m/%d/%Y'), z.strftime('%m/%d/%Y'))).scalar()
+                        Metric.Time.between(x.strftime('%Y-%m-%d'), z.strftime('%Y-%m-%d'))).scalar()
 
                     # gets the min for each day also temporarily converts x & z to string for query
                     min = db.session.query(db.func.min(Metric.Cpu).label('average')).order_by(Metric.Time).filter_by(
                         ServerId=slug).filter(
-                        Metric.Time.between(x.strftime('%m/%d/%Y'), z.strftime('%m/%d/%Y'))).scalar()
+                        Metric.Time.between(x.strftime('%Y-%m-%d'), z.strftime('%Y-%m-%d'))).scalar()
 
                     # gets the max for each day also temporarily converts x & z to string for query
                     max = db.session.query(db.func.max(Metric.Cpu).label('average')).order_by(Metric.Time).filter_by(
                         ServerId=slug).filter(
-                        Metric.Time.between(x.strftime('%m/%d/%Y'), z.strftime('%m/%d/%Y'))).scalar()
+                        Metric.Time.between(x.strftime('%Y-%m-%d'), z.strftime('%Y-%m-%d'))).scalar()
 
-                    dateRange.append(x.date().strftime('%m/%d/%Y'))  # reformats x and adds it to date list
+                    dateRange.append(x.date().strftime('%Y-%m-%d'))  # reformats x and adds it to date list
                     averageList.append(round(avg, 1))  # rounds avg to 1 decimal place and adds it to list
                     minList.append(min)  # adds min to list
                     maxList.append(max)  # adds MAX to list
@@ -342,7 +351,7 @@ def disk(slug):  # Slug is the Server Id
 
     # gets all disk usages for this server between dates
     # diskUse = [metrics.Disk for metrics in Metric.query.order_by(Metric.Time).filter_by(ServerId=slug).filter(
-    #     between(Metric.Time, '09/01/2019 11:50:00', '09/01/2019 23:50:00'))]
+    #     between(Metric.Time, '2020-02-29 11:55:00', '2020-02-29 23:55:00'))]
 
     form = ChartForm()  # instantiate the chart form class
     server = Server.query.filter_by(ServerId=slug).first()  # query for the server specs
@@ -355,24 +364,24 @@ def disk(slug):  # Slug is the Server Id
     averageList = []
 
     tmpLoc = Server.query.filter_by(ServerId=slug).first()
-    tmpLoc2 = Rack.query.filter_by(RackId=tmpLoc.RackID).first()  # gets rack for this server
+    tmpLoc2 = Rack.query.filter_by(RackId=tmpLoc.RackId).first()  # gets rack for this server
 
     # gets all dates for this server between dates
     dateRange = [metrics.Time for metrics in Metric.query.order_by(Metric.Time).filter_by(ServerId=slug).filter(
-        between(Metric.Time, '09/01/2019 11:50:00', '09/01/2019 23:50:00'))]
+        between(Metric.Time, '2020-02-29 11:55:00', '2020-02-29 23:55:00'))]
 
     # gets all Disk usages for this server between dates
     useRange = [metrics.Disk for metrics in Metric.query.order_by(Metric.Time).filter_by(ServerId=slug).filter(
-        between(Metric.Time, '09/01/2019 11:50:00', '09/01/2019 23:50:00'))]
+        between(Metric.Time, '2020-02-29 11:55:00', '2020-02-29 23:55:00'))]
 
     partAUse = [metrics.PartA for metrics in Metric.query.order_by(Metric.Time).filter_by(ServerId=slug).filter(
-        between(Metric.Time, '09/01/2019 11:50:00', '09/01/2019 23:50:00'))]
+        between(Metric.Time, '2020-02-29 11:55:00', '2020-02-29 23:55:00'))]
     partBUse = [metrics.PartB for metrics in Metric.query.order_by(Metric.Time).filter_by(ServerId=slug).filter(
-        between(Metric.Time, '09/01/2019 11:50:00', '09/01/2019 23:50:00'))]
+        between(Metric.Time, '2020-02-29 11:55:00', '2020-02-29 23:55:00'))]
     partCUse = [metrics.PartC for metrics in Metric.query.order_by(Metric.Time).filter_by(ServerId=slug).filter(
-        between(Metric.Time, '09/01/2019 11:50:00', '09/01/2019 23:50:00'))]
+        between(Metric.Time, '2020-02-29 11:55:00', '2020-02-29 23:55:00'))]
     partDUse = [metrics.PartD for metrics in Metric.query.order_by(Metric.Time).filter_by(ServerId=slug).filter(
-        between(Metric.Time, '09/01/2019 11:50:00', '09/01/2019 23:50:00'))]
+        between(Metric.Time, '2020-02-29 11:55:00', '2020-02-29 23:55:00'))]
 
     if form.validate_on_submit():  # implementation of user input limiting date range for chart
 
@@ -384,13 +393,13 @@ def disk(slug):  # Slug is the Server Id
 
         # converts inputted string to date or datetime
         try:
-            sDate = datetime.strptime(startdate, '%m/%d/%Y %H:%M:%S')
+            sDate = datetime.strptime(startdate, '%Y-%m-%d %H:%M:%S')
         except ValueError:
-            sDate = datetime.strptime(startdate, '%m/%d/%Y')
+            sDate = datetime.strptime(startdate, '%Y-%m-%d')
         try:
-            eDate = datetime.strptime(enddate, '%m/%d/%Y %H:%M:%S')
+            eDate = datetime.strptime(enddate, '%Y-%m-%d %H:%M:%S')
         except ValueError:
-            eDate = datetime.strptime(enddate, '%m/%d/%Y')
+            eDate = datetime.strptime(enddate, '%Y-%m-%d')
 
         difference = eDate - sDate  # calculating the difference between the start and end date
 
@@ -416,19 +425,19 @@ def disk(slug):  # Slug is the Server Id
                     # gets the average for each day also temporarily converts x & z to string for query
                     avg = db.session.query(db.func.avg(Metric.Disk).label('average')).order_by(Metric.Time).filter_by(
                         ServerId=slug).filter(
-                        Metric.Time.between(x.strftime('%m/%d/%Y'), z.strftime('%m/%d/%Y'))).scalar()
+                        Metric.Time.between(x.strftime('%Y-%m-%d'), z.strftime('%Y-%m-%d'))).scalar()
 
                     # gets the min for each day also temporarily converts x & z to string for query
                     min = db.session.query(db.func.min(Metric.Disk).label('average')).order_by(Metric.Time).filter_by(
                         ServerId=slug).filter(
-                        Metric.Time.between(x.strftime('%m/%d/%Y'), z.strftime('%m/%d/%Y'))).scalar()
+                        Metric.Time.between(x.strftime('%Y-%m-%d'), z.strftime('%Y-%m-%d'))).scalar()
 
                     # gets the max for each day also temporarily converts x & z to string for query
                     max = db.session.query(db.func.max(Metric.Disk).label('average')).order_by(Metric.Time).filter_by(
                         ServerId=slug).filter(
-                        Metric.Time.between(x.strftime('%m/%d/%Y'), z.strftime('%m/%d/%Y'))).scalar()
+                        Metric.Time.between(x.strftime('%Y-%m-%d'), z.strftime('%Y-%m-%d'))).scalar()
 
-                    dateRange.append(x.date().strftime('%m/%d/%Y'))  # reformat x and adds it to date list
+                    dateRange.append(x.date().strftime('%Y-%m-%d'))  # reformat x and adds it to date list
                     averageList.append(round(avg, 1))  # rounds avg to 1 decimal place and adds it to list
                     minList.append(min)  # adds min to list
                     maxList.append(max)  # adds MAX to list
@@ -463,15 +472,15 @@ def gpu(slug):  # Slug is the Server Id
     averageList = []
 
     tmpLoc = Server.query.filter_by(ServerId=slug).first()
-    tmpLoc2 = Rack.query.filter_by(RackId=tmpLoc.RackID).first()  # gets rack for this server
+    tmpLoc2 = Rack.query.filter_by(RackId=tmpLoc.RackId).first()  # gets rack for this server
 
     # gets all dates for this server between dates
     dateRange = [metrics.Time for metrics in Metric.query.order_by(Metric.Time).filter_by(ServerId=slug).filter(
-        between(Metric.Time, '09/01/2019 11:50:00', '09/01/2019 23:50:00'))]
+        between(Metric.Time, '2020-02-29 11:55:00', '2020-02-29 23:55:00'))]
 
     # gets all Gpu usages for this server between dates
     useRange = [metrics.Gpu for metrics in Metric.query.order_by(Metric.Time).filter_by(ServerId=slug).filter(
-        between(Metric.Time, '09/01/2019 11:50:00', '09/01/2019 23:50:00'))]
+        between(Metric.Time, '2020-02-29 11:55:00', '2020-02-29 23:55:00'))]
 
     if form.validate_on_submit():  # implementation of user input limiting date range for chart
 
@@ -483,13 +492,13 @@ def gpu(slug):  # Slug is the Server Id
 
         # converts inputted string to date or datetime
         try:
-            sDate = datetime.strptime(startdate, '%m/%d/%Y %H:%M:%S')
+            sDate = datetime.strptime(startdate, '%Y-%m-%d %H:%M:%S')
         except ValueError:
-            sDate = datetime.strptime(startdate, '%m/%d/%Y')
+            sDate = datetime.strptime(startdate, '%Y-%m-%d')
         try:
-            eDate = datetime.strptime(enddate, '%m/%d/%Y %H:%M:%S')
+            eDate = datetime.strptime(enddate, '%Y-%m-%d %H:%M:%S')
         except ValueError:
-            eDate = datetime.strptime(enddate, '%m/%d/%Y')
+            eDate = datetime.strptime(enddate, '%Y-%m-%d')
 
         difference = eDate - sDate  # calculating the difference between the start and end date
 
@@ -515,19 +524,19 @@ def gpu(slug):  # Slug is the Server Id
                     # gets the average for each day also temporarily converts x & z to string for query
                     avg = db.session.query(db.func.avg(Metric.Gpu).label('average')).order_by(Metric.Time).filter_by(
                         ServerId=slug).filter(
-                        Metric.Time.between(x.strftime('%m/%d/%Y'), z.strftime('%m/%d/%Y'))).scalar()
+                        Metric.Time.between(x.strftime('%Y-%m-%d'), z.strftime('%Y-%m-%d'))).scalar()
 
                     # gets the min for each day also temporarily converts x & z to string for query
                     min = db.session.query(db.func.min(Metric.Gpu).label('average')).order_by(Metric.Time).filter_by(
                         ServerId=slug).filter(
-                        Metric.Time.between(x.strftime('%m/%d/%Y'), z.strftime('%m/%d/%Y'))).scalar()
+                        Metric.Time.between(x.strftime('%Y-%m-%d'), z.strftime('%Y-%m-%d'))).scalar()
 
                     # gets the max for each day also temporarily converts x & z to string for query
                     max = db.session.query(db.func.max(Metric.Gpu).label('average')).order_by(Metric.Time).filter_by(
                         ServerId=slug).filter(
-                        Metric.Time.between(x.strftime('%m/%d/%Y'), z.strftime('%m/%d/%Y'))).scalar()
+                        Metric.Time.between(x.strftime('%Y-%m-%d'), z.strftime('%Y-%m-%d'))).scalar()
 
-                    dateRange.append(x.date().strftime('%m/%d/%Y'))  # reformat x and adds it to date list
+                    dateRange.append(x.date().strftime('%Y-%m-%d'))  # reformat x and adds it to date list
                     averageList.append(round(avg, 1))  # rounds avg to 1 decimal place and adds it to list
                     minList.append(min)  # adds min to list
                     maxList.append(max)  # adds MAX to list
@@ -561,15 +570,15 @@ def ram(slug):  # Slug is the Server Id
     averageList = []
 
     tmpLoc = Server.query.filter_by(ServerId=slug).first()
-    tmpLoc2 = Rack.query.filter_by(RackId=tmpLoc.RackID).first()  # gets rack for this server
+    tmpLoc2 = Rack.query.filter_by(RackId=tmpLoc.RackId).first()  # gets rack for this server
 
     # gets all dates for this server between dates
     dateRange = [metrics.Time for metrics in Metric.query.order_by(Metric.Time).filter_by(ServerId=slug).filter(
-        between(Metric.Time, '09/01/2019 11:50:00', '09/01/2019 23:50:00'))]
+        between(Metric.Time, '2020-02-29 11:55:00', '2020-02-29 23:55:00'))]
 
     # gets all Ram usages for this server between dates
     useRange = [metrics.Ram for metrics in Metric.query.order_by(Metric.Time).filter_by(ServerId=slug).filter(
-        between(Metric.Time, '09/01/2019 11:50:00', '09/01/2019 23:50:00'))]
+        between(Metric.Time, '2020-02-29 11:55:00', '2020-02-29 23:55:00'))]
 
     if form.validate_on_submit():  # implementation of user input limiting date range for chart
 
@@ -581,13 +590,13 @@ def ram(slug):  # Slug is the Server Id
 
         # converts inputted string to date or datetime
         try:
-            sDate = datetime.strptime(startdate, '%m/%d/%Y %H:%M:%S')
+            sDate = datetime.strptime(startdate, '%Y-%m-%d %H:%M:%S')
         except ValueError:
-            sDate = datetime.strptime(startdate, '%m/%d/%Y')
+            sDate = datetime.strptime(startdate, '%Y-%m-%d')
         try:
-            eDate = datetime.strptime(enddate, '%m/%d/%Y %H:%M:%S')
+            eDate = datetime.strptime(enddate, '%Y-%m-%d %H:%M:%S')
         except ValueError:
-            eDate = datetime.strptime(enddate, '%m/%d/%Y')
+            eDate = datetime.strptime(enddate, '%Y-%m-%d')
 
         difference = eDate - sDate  # calculating the difference between the start and end date
 
@@ -613,19 +622,19 @@ def ram(slug):  # Slug is the Server Id
                     # gets the average for each day also temporarily converts x & z to string for query
                     avg = db.session.query(db.func.avg(Metric.Ram).label('average')).order_by(Metric.Time).filter_by(
                         ServerId=slug).filter(
-                        Metric.Time.between(x.strftime('%m/%d/%Y'), z.strftime('%m/%d/%Y'))).scalar()
+                        Metric.Time.between(x.strftime('%Y-%m-%d'), z.strftime('%Y-%m-%d'))).scalar()
 
                     # gets the min for each day also temporarily converts x & z to string for query
                     min = db.session.query(db.func.min(Metric.Ram).label('average')).order_by(Metric.Time).filter_by(
                         ServerId=slug).filter(
-                        Metric.Time.between(x.strftime('%m/%d/%Y'), z.strftime('%m/%d/%Y'))).scalar()
+                        Metric.Time.between(x.strftime('%Y-%m-%d'), z.strftime('%Y-%m-%d'))).scalar()
 
                     # gets the max for each day also temporarily converts x & z to string for query
                     max = db.session.query(db.func.max(Metric.Ram).label('average')).order_by(Metric.Time).filter_by(
                         ServerId=slug).filter(
-                        Metric.Time.between(x.strftime('%m/%d/%Y'), z.strftime('%m/%d/%Y'))).scalar()
+                        Metric.Time.between(x.strftime('%Y-%m-%d'), z.strftime('%Y-%m-%d'))).scalar()
 
-                    dateRange.append(x.date().strftime('%m/%d/%Y'))  # reformat x and adds it to date list
+                    dateRange.append(x.date().strftime('%Y-%m-%d'))  # reformat x and adds it to date list
                     averageList.append(round(avg, 1))  # rounds avg to 1 decimal place and adds it to list
                     minList.append(min)  # adds min to list
                     maxList.append(max)  # adds MAX to list
@@ -659,7 +668,7 @@ def ping(slug):  # Slug is the Server Id
     averageList = []
 
     tmpLoc = Server.query.filter_by(ServerId=slug).first()
-    tmpLoc2 = Rack.query.filter_by(RackId=tmpLoc.RackID).first()  # gets rack for this server
+    tmpLoc2 = Rack.query.filter_by(RackId=tmpLoc.RackId).first()  # gets rack for this server
 
     if metric_row.PingLatency != null:  # checks to see if ping is responding
         status = "Responding"
@@ -668,11 +677,11 @@ def ping(slug):  # Slug is the Server Id
 
     # gets all dates for this server between dates
     dateRange = [metrics.Time for metrics in Metric.query.order_by(Metric.Time).filter_by(ServerId=slug).filter(
-        between(Metric.Time, '09/01/2019 11:50:00', '09/01/2019 23:50:00'))]
+        between(Metric.Time, '2020-02-29 11:55:00', '2020-02-29 23:55:00'))]
 
     # gets all Ping usages for this server between dates
     useRange = [metrics.PingLatency for metrics in Metric.query.order_by(Metric.Time).filter_by(ServerId=slug).filter(
-        between(Metric.Time, '09/01/2019 11:50:00', '09/01/2019 23:50:00'))]
+        between(Metric.Time, '2020-02-29 11:55:00', '2020-02-29 23:55:00'))]
 
     if form.validate_on_submit():  # implementation of user input limiting date range for chart
 
@@ -684,13 +693,13 @@ def ping(slug):  # Slug is the Server Id
 
         # converts inputted string to date or datetime
         try:
-            sDate = datetime.strptime(startdate, '%m/%d/%Y %H:%M:%S')
+            sDate = datetime.strptime(startdate, '%Y-%m-%d %H:%M:%S')
         except ValueError:
-            sDate = datetime.strptime(startdate, '%m/%d/%Y')
+            sDate = datetime.strptime(startdate, '%Y-%m-%d')
         try:
-            eDate = datetime.strptime(enddate, '%m/%d/%Y %H:%M:%S')
+            eDate = datetime.strptime(enddate, '%Y-%m-%d %H:%M:%S')
         except ValueError:
-            eDate = datetime.strptime(enddate, '%m/%d/%Y')
+            eDate = datetime.strptime(enddate, '%Y-%m-%d')
 
         difference = eDate - sDate  # calculating the difference between the start and end date
 
@@ -718,21 +727,21 @@ def ping(slug):  # Slug is the Server Id
                     avg = db.session.query(db.func.avg(Metric.PingLatency).label('average')).order_by(
                         Metric.Time).filter_by(
                         ServerId=slug).filter(
-                        Metric.Time.between(x.strftime('%m/%d/%Y'), z.strftime('%m/%d/%Y'))).scalar()
+                        Metric.Time.between(x.strftime('%Y-%m-%d'), z.strftime('%Y-%m-%d'))).scalar()
 
                     # gets the min for each day also temporarily converts x & z to string for query
                     min = db.session.query(db.func.min(Metric.PingLatency).label('average')).order_by(
                         Metric.Time).filter_by(
                         ServerId=slug).filter(
-                        Metric.Time.between(x.strftime('%m/%d/%Y'), z.strftime('%m/%d/%Y'))).scalar()
+                        Metric.Time.between(x.strftime('%Y-%m-%d'), z.strftime('%Y-%m-%d'))).scalar()
 
                     # gets the max for each day also temporarily converts x & z to string for query
                     max = db.session.query(db.func.max(Metric.PingLatency).label('average')).order_by(
                         Metric.Time).filter_by(
                         ServerId=slug).filter(
-                        Metric.Time.between(x.strftime('%m/%d/%Y'), z.strftime('%m/%d/%Y'))).scalar()
+                        Metric.Time.between(x.strftime('%Y-%m-%d'), z.strftime('%Y-%m-%d'))).scalar()
 
-                    dateRange.append(x.date().strftime('%m/%d/%Y'))  # reformat x and adds it to date list
+                    dateRange.append(x.date().strftime('%Y-%m-%d'))  # reformat x and adds it to date list
                     averageList.append(round(avg, 1))  # rounds avg to 1 decimal place and adds it to list
                     minList.append(min)  # adds min to list
                     maxList.append(max)  # adds MAX to list

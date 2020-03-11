@@ -41,7 +41,7 @@
                 </div>
 
                 {% for server in server %}
-                    {% if server.RackID == rack.RackId and server.ServerId in masterList %}
+                    {% if server.RackId == rack.RackId and server.ServerId in masterList%}
                         {# grabs all servers in DB#}
                         <ul class="list-group list-group-flush"> {# lists servers that link to their Real Time page #}
                             <a href="/real-time-data-overview/{{ server.ServerId }}"
