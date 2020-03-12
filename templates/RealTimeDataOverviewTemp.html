@@ -69,35 +69,35 @@
    <table class="table table-borderless table-hover">
        <tbody>
     <tr>
-      <th scope="row"><h3><img src="WebApp\Red X.png" class="float-left"></h3></th>
+      <th scope="row"><h3><i class="fas fa-{{ color['CpuIcon'] }}"></i></h3></th>
         <td><h3 class="text-center">CPU Usage:</h3></td>
         <td><h3 class="text-danger"><a href="/usage-cpu/{{ server.ServerId }}"
-                                       class="text-decoration-none text-success">{{ metric.Cpu }}%</a></h3></td>
+                                       class="text-decoration-none text-{{ color['CpuColor'] }}">{{ metric.Cpu }}%</a></h3></td>
     </tr>
     <tr>
-        <th scope="row"><h3><img src="WebApp\Red X.png" class="float-left"></h3></th>
+        <th scope="row"><h3><i class="fas fa-{{ color['RamIcon'] }}"></i></h3></th>
          <td><h3>RAM Usage:</h3></td>
         <td><h3 class="text-danger"><a href="/usage-RAM/{{ server.ServerId }}"
-                                       class="text-decoration-none text-success">{{ metric.Ram }}%</a></h3></td>
+                                       class="text-decoration-none text-{{ color['RamColor'] }}">{{ metric.Ram }}%</a></h3></td>
 
     </tr>
     <tr>
-        <th scope="row"><h3><img src="WebApp\Red X.png" class="float-left"></h3></th>
+        <th scope="row"><h3><i class="fas fa-{{ color['DiskIcon'] }}"></i></h3></th>
         <td><h3>Disk Usage:</h3></td>
         <td><h3 class="text-danger"><a href="/usage-Disk/{{ server.ServerId }}"
-                                       class="text-decoration-none text-success">{{ metric.Disk }}%</a></h3></td>
+                                       class="text-decoration-none text-{{ color['DiskColor'] }}">{{ metric.Disk }}%</a></h3></td>
     </tr>
     <tr>
-      <th scope="row"><h3><img src="WebApp\Red X.png" class="float-left"></h3></th>
+      <th scope="row"><h3><i class="fas fa-{{ color['GpuIcon'] }}"></i></h3></th>
       <td><h3>GPU Usage:</h3></td>
         <td><h3 class="text-danger"><a href="/usage-GPU/{{ server.ServerId }}"
-                                       class="text-decoration-none text-success">{{ metric.Gpu }}%</a></h3></td>
+                                       class="text-decoration-none text-{{ color['GpuColor'] }}">{{ metric.Gpu }}%</a></h3></td>
     </tr>
     <tr>
-      <th scope="row"><h3><img src="WebApp\Red X.png" class="float-left"></h3></th>
+      <th scope="row"><h3><i class="fas fa-{{ color['PingIcon'] }}"></i></h3></th>
        <td><h3>Ping Status:</h3></td>
       <td><h3 class="text-success"><a href="/usage-Ping/{{ server.ServerId }}"
-                                      class="text-decoration-none text-success">{{ metric.PingLatency }} ms - {{ status }} </a> </h3></td>
+                                      class="text-decoration-none text-{{ color['PingColor'] }}">{{ metric.PingLatency }} ms - {{ status }} </a> </h3></td>
 
     </tr>
   </tbody>

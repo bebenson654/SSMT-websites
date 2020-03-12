@@ -23,7 +23,7 @@
     <div class="mt-3 text-center"> {# Home button & Rack & Server Names #}
         <div class="row card-body border border-dark font-weight-bold">
             <div class="text-left">
-                <a class="btn btn-secondary btn-lg"  href="/" role="button">Home</a>
+                <a class="btn btn-secondary btn-lg" href="/" role="button">Home</a>
             </div>
             <div class="col-10">
                 <h2 class="text-center">Rack: {{ rack.Name }} | Server: {{ server.ServerName }}</h2>
@@ -31,10 +31,10 @@
         </div>
     </div>
 
-{#    </div>#}
+    {#    </div>#}
     <div class="row text-center m-2"> {# Displays this servers Disk usage #}
         <div class="col-12">
-            <h2 class="text-danger"> Disk Usage: <b>{{ ametric.Disk }}%</b></h2>
+            <h2 class="text-{{ color }}"> Disk Usage: <b>{{ ametric.Disk }}%</b></h2>
         </div>
     </div>
 

@@ -1,16 +1,18 @@
 from flask import Flask, render_template, request, redirect, flash, url_for
 from flask_wtf import FlaskForm
-from wtforms import StringField, DateField, SelectField, BooleanField, SubmitField
-from wtforms.validators import input_required, length, none_of
+from wtforms import StringField, SelectField, SubmitField
+from wtforms.validators import input_required, length
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import between, null
 from sqlalchemy.sql import func
 from sqlalchemy.orm.exc import FlushError
 from datetime import date, datetime, timedelta
 import pandas as pd
+from flask_fontawesome import FontAwesome
 
 app = Flask(__name__)  # something for flask
 app.jinja_env.globals.update(zip=zip)
+fa = FontAwesome(app)
 
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///StubServersDB_V6_Text.db'  # sets the DB to the stubDB
 
@@ -101,6 +103,7 @@ class ChartForm(FlaskForm):  # form for the chart range
     enddate = StringField('end yyyy-mm-dd hh:mm:ss',
                           validators=[input_required(), length(min=10, max=19)])  # End date field
 
+
 class MasterListForm(FlaskForm):
     type = SelectField('type', choices=[(st.TypeId, st.TypeName) for st in ServerType.query.all()],
                        validators=[input_required()])
@@ -133,12 +136,38 @@ def home():
     server_table = Server.query.all()
 
     serverMetricsDict = {}  # Dictionary used for tooltips on home page
+
+    serverColorDict = {}  # Dictionary used for Color coding on home page
+
     for server in server_table:  # loop to add server id with its metrics to dictionary
 
         # gets metrics for each server in loop
         metric = Metric.query.order_by(Metric.Time.desc()).filter_by(ServerId=server.ServerId).first()
 
-        # creates key:value
+        # sets color server in card
+        if metric.Cpu > 80 or metric.Disk > 90 or metric.Ram > 80 \
+                or metric.Gpu > 90 or metric.PingLatency is None:
+            color = 'danger'  # bootstrap Red
+            icon = 'times'  # # Font Awesome icon 'x'
+
+        elif 50 <= metric.Cpu <= 80 or 70 <= metric.Disk <= 90 or \
+                50 <= metric.Ram <= 80 or 50 <= metric.Gpu <= 80:
+            color = 'warning'  # bootstrap Yellowish
+            icon = 'exclamation-triangle'  # # Font Awesome icon warning triangle
+
+        elif metric.Cpu < 50 or metric.Disk < 70 or metric.Ram < \
+                50 or metric.Gpu < 50 or metric.PingLatency is not None:
+            color = 'success'  # bootstrap Green
+            icon = 'check'  # # Font Awesome icon check
+
+        else:
+            color = 'light'  # bootstrap White
+            icon = 'question'  # Font Awesome icon '?'
+
+        serverColorDict[server.ServerID + 'color'] = color  # sets server color to color assigned above
+        serverColorDict[server.ServerID + 'icon'] = icon  # sets server icon to color assigned above
+
+        # creates key:value for tool tips
         # key is server id, value is string of metrics as seen below
         serverMetricsDict[server.ServerID] = 'CPU: ' + str(metric.Cpu) + '%' + ' | RAM:' + str(metric.Ram) + '%' + \
                                              ' | Disk: ' + str(metric.Disk) + '%' + ' | GPU: ' + str(metric.Gpu) + '%' \
@@ -148,19 +177,17 @@ def home():
         server_table = Server.query.filter_by(
             ServerTypeId=form.filter.data)  # query that gets all of the servers in the Server table
 
-
-
     masterList = []  # used to only display servers on the Master List
     for s in MasterList.query.all():
         masterList.append(s.num + '-' + s.Name)  # concatenates strings to make the server id
-    #print(masterList)
 
     rack_table = Rack.query.filter(Rack.RackId == Server.RackId).order_by(
         Rack.Name)  # Show only racks that have servers on them
 
     return render_template('HomePageV2.html',
                            server=server_table, rack=rack_table, form=form, metric=serverMetricsDict,
-                           masterList=masterList)  # returns V2 home page html doc with that variable
+                           masterList=masterList,
+                           color=serverColorDict)  # returns V2 home page html doc with that variable
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -220,10 +247,10 @@ def RT(slug):  # Slug is the Server Id
 
     runningjobs = RunningJob.query.filter_by(ServerId=slug)  # query for the runningjobs on this server
 
-    testRJ = RunningJob.query.filter_by(ServerId=slug).first()
+    testRJ = RunningJob.query.filter_by(ServerId=slug).first()  # hides running job table when empty
     if testRJ is None:
         runningjobs = 0
-    testDB = Database.query.filter_by(ServerId=slug).first()
+    testDB = Database.query.filter_by(ServerId=slug).first()  # hided DB table when empty
     if testDB is None:
         databases = 0
 
@@ -236,13 +263,76 @@ def RT(slug):  # Slug is the Server Id
     tmp = Metric.query.order_by(Metric.Time.desc()).filter_by(ServerId=slug).first()
     metric_row = Metric.query.get(tmp.MetricId)  # gets the most recent metrics for server
 
-    if metric_row.PingLatency != null:
-        status = "Responding"
+    serverColorDict = {}  # used to to get color and icon for conditional formatting
+
+    if metric_row.Cpu > 80:
+        serverColorDict['CpuColor'] = 'danger'  # sets color to bootstrap red
+        serverColorDict['CpuIcon'] = 'times'  # sets icon to Font Awesome 'x'
+    elif 50 <= metric_row.Cpu <= 80:
+        serverColorDict['CpuColor'] = 'warning'  # sets color to bootstrap yellowish
+        serverColorDict['CpuIcon'] = 'exclamation-triangle'  # sets icon to Font Awesome warning triangle
+    elif metric_row.Cpu < 50:
+        serverColorDict['CpuColor'] = 'success'  # sets color to bootstrap green
+        serverColorDict['CpuIcon'] = 'check'  # sets icon to Font Awesome check
     else:
-        status = "Not Responding"
+        serverColorDict['CpuColor'] = 'dark'  # sets color to bootstrap black
+        serverColorDict['CpuIcon'] = 'question'  # sets icon to Font Awesome '?'
+
+    if metric_row.Gpu > 80:
+        serverColorDict['GpuColor'] = 'danger'  # sets color to bootstrap red
+        serverColorDict['GpuIcon'] = 'times'  # sets icon to Font Awesome 'x'
+    elif 50 <= metric_row.Gpu <= 80:
+        serverColorDict['GpuColor'] = 'warning'  # sets color to bootstrap yellowish
+        serverColorDict['GpuIcon'] = 'exclamation-triangle'  # sets icon to Font Awesome warning triangle
+    elif metric_row.Gpu < 50:
+        serverColorDict['GpuColor'] = 'success'  # sets color to bootstrap green
+        serverColorDict['GpuIcon'] = 'check'  # sets icon to Font Awesome check
+    else:
+        serverColorDict['GpuColor'] = 'dark'  # sets color to bootstrap black
+        serverColorDict['GpuIcon'] = 'question'  # sets icon to Font Awesome '?'
+
+    if metric_row.Ram > 80:
+        serverColorDict['RamColor'] = 'danger'  # sets color to bootstrap red
+        serverColorDict['RamIcon'] = 'times'  # sets icon to Font Awesome 'x'
+    elif 50 <= metric_row.Ram <= 80:
+        serverColorDict['RamColor'] = 'warning'  # sets color to bootstrap yellowish
+        serverColorDict['RamIcon'] = 'exclamation-triangle'  # sets icon to Font Awesome warning triangle
+    elif metric_row.Ram < 50:
+        serverColorDict['RamColor'] = 'success'  # sets color to bootstrap green
+        serverColorDict['RamIcon'] = 'check'  # sets icon to Font Awesome check
+    else:
+        serverColorDict['RamColor'] = 'dark'  # sets color to bootstrap black
+        serverColorDict['RamIcon'] = 'question'  # sets icon to Font Awesome '?'
+
+    if metric_row.Disk > 90:
+        serverColorDict['DiskColor'] = 'danger'  # sets color to bootstrap red
+        serverColorDict['DiskIcon'] = 'times'  # sets icon to Font Awesome 'x'
+    elif 70 <= metric_row.Disk <= 90:
+        serverColorDict['DiskColor'] = 'warning'  # sets color to bootstrap yellowish
+        serverColorDict['DiskIcon'] = 'exclamation-triangle'  # sets icon to Font Awesome warning triangle
+    elif metric_row.Disk < 70:
+        serverColorDict['DiskColor'] = 'success'  # sets color to bootstrap green
+        serverColorDict['DiskIcon'] = 'check'  # sets icon to Font Awesome check
+    else:
+        serverColorDict['Disk'] = 'dark'  # sets color to bootstrap black
+        serverColorDict['DiskIcon'] = 'question'  # sets icon to Font Awesome '?'
+
+    if metric_row.PingLatency != null:
+        status = "Responding"  # sets status of ping
+        serverColorDict['PingColor'] = 'success'  # sets color to bootstrap green
+        serverColorDict['PingIcon'] = 'check'  # sets icon to Font Awesome check
+    elif metric_row.PingLatency == null:
+        status = "Not Responding"  # sets status of ping
+        serverColorDict['PingColor'] = 'danger'  # sets color to bootstrap red
+        serverColorDict['PingIcon'] = 'times'  # sets icon to Font Awesome 'x'
+    else:
+        status = "Unknown"  # sets status of ping
+        serverColorDict['PingColor'] = 'dark'  # sets color to bootstrap black
+        serverColorDict['PingIcon'] = 'question'  # sets icon to Font Awesome '?'
 
     return render_template('RealTimeDataOverviewTemp.html', server=server, metric=metric_row, service=services,
-                           database=databases, runningjob=runningjobs, location=tmpLoc3, rack=tmpLoc2, status=status)
+                           database=databases, runningjob=runningjobs, location=tmpLoc3, rack=tmpLoc2, status=status,
+                           color=serverColorDict)
     #   returns the template for real time data overview with ^ variables passed to it
 
 
@@ -256,6 +346,16 @@ def CPU(slug):  # Slug is the Server Id
 
     tmp = Metric.query.order_by(Metric.Time.desc()).filter_by(ServerID=slug).first()
     metric_row = Metric.query.get(tmp.MetricId)  # gets the most recent metrics for server
+
+    # sets color of metric
+    if tmp.Cpu > 80:
+        color = 'danger'
+    elif 50 <= tmp.Cpu <= 80:
+        color = 'warning'
+    elif tmp.Cpu < 50:
+        color = 'success'
+    else:
+        color = 'dark'
 
     minList = []  # Create empty lists for min, max, average
     maxList = []
@@ -340,7 +440,7 @@ def CPU(slug):  # Slug is the Server Id
 
     # return for default date range
     return render_template('Usage-CPUTemp.html', server=server, ametric=tmp, date=dateRange, usage=useRange,
-                           form=form, rack=tmpLoc2, hi=maxList, lo=minList, avg=averageList)
+                           form=form, rack=tmpLoc2, hi=maxList, lo=minList, avg=averageList, color=color)
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -358,6 +458,16 @@ def disk(slug):  # Slug is the Server Id
 
     tmp = Metric.query.order_by(Metric.Time.desc()).filter_by(ServerID=slug).first()
     metric_row = Metric.query.get(tmp.MetricId)  # gets the most recent metrics for server
+
+    # sets color of metric
+    if tmp.Disk > 90:
+        color = 'danger'
+    elif 70 <= tmp.Disk <= 90:
+        color = 'warning'
+    elif tmp.Disk < 70:
+        color = 'success'
+    else:
+        color = 'dark'
 
     minList = []  # Create empty lists for min, max, average
     maxList = []
@@ -452,7 +562,7 @@ def disk(slug):  # Slug is the Server Id
     # return for default date range
     return render_template('Usage-Disk.html', server=server, ametric=tmp, date=dateRange, usage=useRange,
                            form=form, rack=tmpLoc2, hi=maxList, lo=minList, avg=averageList, aUsage=partAUse,
-                           bUsage=partBUse, cUsage=partCUse, dUsage=partDUse)
+                           bUsage=partBUse, cUsage=partCUse, dUsage=partDUse, color=color)
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -466,6 +576,16 @@ def gpu(slug):  # Slug is the Server Id
 
     tmp = Metric.query.order_by(Metric.Time.desc()).filter_by(ServerID=slug).first()
     metric_row = Metric.query.get(tmp.MetricId)  # gets the most recent metrics for server
+
+    # sets color of metric
+    if tmp.Gpu > 80:
+        color = 'danger'
+    elif 50 <= tmp.Gpu <= 80:
+        color = 'warning'
+    elif tmp.Gpu < 50:
+        color = 'success'
+    else:
+        color = 'dark'
 
     minList = []  # Create empty lists for min, max, average
     maxList = []
@@ -550,7 +670,7 @@ def gpu(slug):  # Slug is the Server Id
 
     # return for default date range
     return render_template('Usage-GPU.html', server=server, ametric=metric_row, date=dateRange, usage=useRange,
-                           form=form, rack=tmpLoc2, hi=maxList, lo=minList, avg=averageList)
+                           form=form, rack=tmpLoc2, hi=maxList, lo=minList, avg=averageList, color=color)
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -564,6 +684,16 @@ def ram(slug):  # Slug is the Server Id
 
     tmp = Metric.query.order_by(Metric.Time.desc()).filter_by(ServerID=slug).first()
     metric_row = Metric.query.get(tmp.MetricId)  # gets the most recent metrics for server
+
+    # sets color of metric
+    if tmp.Ram > 80:
+        color = 'danger'
+    elif 50 <= tmp.Ram <= 80:
+        color = 'warning'
+    elif tmp.Ram < 50:
+        color = 'success'
+    else:
+        color = 'dark'
 
     minList = []  # Create empty lists for min, max, average
     maxList = []
@@ -648,7 +778,7 @@ def ram(slug):  # Slug is the Server Id
 
     # return for default date range
     return render_template('Usage-RAM.html', server=server, ametric=metric_row, date=dateRange, usage=useRange,
-                           form=form, rack=tmpLoc2, hi=maxList, lo=minList, avg=averageList)
+                           form=form, rack=tmpLoc2, hi=maxList, lo=minList, avg=averageList, color=color)
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -663,17 +793,23 @@ def ping(slug):  # Slug is the Server Id
     tmp = Metric.query.order_by(Metric.Time.desc()).filter_by(ServerID=slug).first()
     metric_row = Metric.query.get(tmp.MetricId)  # gets the most recent metrics for server
 
+    # sets color and status of metric
+    if metric_row.PingLatency != null:
+        color = 'success'
+        status = "Responding"
+    elif metric_row.PingLatency == null:
+        color = 'danger'
+        status = "Not Responding"
+    else:
+        color = 'dark'
+        status = 'Unknown'
+
     minList = []  # Create empty lists for min, max, average
     maxList = []
     averageList = []
 
     tmpLoc = Server.query.filter_by(ServerId=slug).first()
     tmpLoc2 = Rack.query.filter_by(RackId=tmpLoc.RackId).first()  # gets rack for this server
-
-    if metric_row.PingLatency != null:  # checks to see if ping is responding
-        status = "Responding"
-    else:
-        status = "Not Responding"
 
     # gets all dates for this server between dates
     dateRange = [metrics.Time for metrics in Metric.query.order_by(Metric.Time).filter_by(ServerId=slug).filter(
@@ -755,7 +891,7 @@ def ping(slug):  # Slug is the Server Id
 
     # return for default date range
     return render_template('Usage-Ping.html', server=server, ametric=metric_row, date=dateRange, usage=useRange,
-                           form=form, rack=tmpLoc2, hi=maxList, lo=minList, avg=averageList, status=status)
+                           form=form, rack=tmpLoc2, hi=maxList, lo=minList, avg=averageList, status=status, color=color)
 
 
 # ----------------------------------------------------------------------------------------------------------------------
