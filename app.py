@@ -382,19 +382,10 @@ def CPU(slug):  # Slug is the Server Id
         dateRange = []  # empties dates to be refilled by code below
 
         form = ChartForm(request.form)
-        startdate = form.startdate.data  # gets start and end date from form
-        enddate = form.enddate.data
-
-        # converts inputted string to date or datetime
-        try:
-            sDate = datetime.strptime(startdate, '%Y-%m-%d %H:%M:%S')
-        except ValueError:
-            sDate = datetime.strptime(startdate, '%Y-%m-%d')
-        try:
-            eDate = datetime.strptime(enddate, '%Y-%m-%d %H:%M:%S')
-        except ValueError:
-            eDate = datetime.strptime(enddate, '%Y-%m-%d')
-
+        sDate = form.startdate.data  # gets start and end date from form
+        eDate = form.enddate.data
+        startdate = sDate.strftime('%Y-%m-%d %H:%M:%S')
+        enddate = eDate.strftime('%Y-%m-%d %H:%M:%S')
         difference = eDate - sDate  # calculating the difference between the start and end date
 
         if difference.total_seconds() <= 86400:  # check to see if the difference is less than 24hrs
