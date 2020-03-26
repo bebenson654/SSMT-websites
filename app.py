@@ -8,13 +8,14 @@ from sqlalchemy.sql import func
 from sqlalchemy.orm.exc import FlushError
 from datetime import date, datetime, timedelta
 import pandas as pd
+from wtforms.fields.html5 import DateTimeLocalField
 from flask_fontawesome import FontAwesome
 
 app = Flask(__name__)  # something for flask
 app.jinja_env.globals.update(zip=zip)
 fa = FontAwesome(app)
 
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///StubServersDB_V6_Text.db'  # sets the DB to the stubDB
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///servers2.db'  # sets the DB to the stubDB
 
 app.config['SECRET_KEY'] = 'secret ssmt'  # secret key used for by WTforms for forms
 
@@ -98,10 +99,13 @@ class MasterList(db.Model):  # Master list table
 
 
 class ChartForm(FlaskForm):  # form for the chart range
-    startdate = StringField('start yyyy-mm-dd hh:mm:ss',
-                            validators=[input_required(), length(min=10, max=19)])  # start date field
-    enddate = StringField('end yyyy-mm-dd hh:mm:ss',
-                          validators=[input_required(), length(min=10, max=19)])  # End date field
+    # startdate = StringField('start yyyy-mm-dd hh:mm:ss',
+    #                         validators=[input_required(), length(min=10, max=19)])  # start date field
+    # enddate = StringField('end yyyy-mm-dd hh:mm:ss',
+    #                       validators=[input_required(), length(min=10, max=19)])  # End date field
+    startdate = DateTimeLocalField('start', format='%Y-%m-%dT%H:%M')
+    enddate = DateTimeLocalField('end', format='%Y-%m-%dT%H:%M')
+
 
 
 class MasterListForm(FlaskForm):
@@ -377,19 +381,10 @@ def CPU(slug):  # Slug is the Server Id
         dateRange = []  # empties dates to be refilled by code below
 
         form = ChartForm(request.form)
-        startdate = form.startdate.data  # gets start and end date from form
-        enddate = form.enddate.data
-
-        # converts inputted string to date or datetime
-        try:
-            sDate = datetime.strptime(startdate, '%Y-%m-%d %H:%M:%S')
-        except ValueError:
-            sDate = datetime.strptime(startdate, '%Y-%m-%d')
-        try:
-            eDate = datetime.strptime(enddate, '%Y-%m-%d %H:%M:%S')
-        except ValueError:
-            eDate = datetime.strptime(enddate, '%Y-%m-%d')
-
+        sDate = form.startdate.data  # gets start and end date from form
+        eDate = form.enddate.data
+        startdate = sDate.strftime('%Y-%m-%d %H:%M:%S')
+        enddate = eDate.strftime('%Y-%m-%d %H:%M:%S')
         difference = eDate - sDate  # calculating the difference between the start and end date
 
         if difference.total_seconds() <= 86400:  # check to see if the difference is less than 24hrs
@@ -498,19 +493,10 @@ def disk(slug):  # Slug is the Server Id
         dateRange = []  # empties dates to be refilled by code below
 
         form = ChartForm(request.form)
-        startdate = form.startdate.data  # gets start and end date from form
-        enddate = form.enddate.data
-
-        # converts inputted string to date or datetime
-        try:
-            sDate = datetime.strptime(startdate, '%Y-%m-%d %H:%M:%S')
-        except ValueError:
-            sDate = datetime.strptime(startdate, '%Y-%m-%d')
-        try:
-            eDate = datetime.strptime(enddate, '%Y-%m-%d %H:%M:%S')
-        except ValueError:
-            eDate = datetime.strptime(enddate, '%Y-%m-%d')
-
+        sDate = form.startdate.data  # gets start and end date from form
+        eDate = form.enddate.data
+        startdate = sDate.strftime('%Y-%m-%d %H:%M:%S')
+        enddate = eDate.strftime('%Y-%m-%d %H:%M:%S')
         difference = eDate - sDate  # calculating the difference between the start and end date
 
         if difference.total_seconds() <= 86400:  # check to see if the difference is less than 24hrs
@@ -607,19 +593,10 @@ def gpu(slug):  # Slug is the Server Id
         dateRange = []  # empties dates to be refilled by code below
 
         form = ChartForm(request.form)
-        startdate = form.startdate.data  # gets start and end date from form
-        enddate = form.enddate.data
-
-        # converts inputted string to date or datetime
-        try:
-            sDate = datetime.strptime(startdate, '%Y-%m-%d %H:%M:%S')
-        except ValueError:
-            sDate = datetime.strptime(startdate, '%Y-%m-%d')
-        try:
-            eDate = datetime.strptime(enddate, '%Y-%m-%d %H:%M:%S')
-        except ValueError:
-            eDate = datetime.strptime(enddate, '%Y-%m-%d')
-
+        sDate = form.startdate.data  # gets start and end date from form
+        eDate = form.enddate.data
+        startdate = sDate.strftime('%Y-%m-%d %H:%M:%S')
+        enddate = eDate.strftime('%Y-%m-%d %H:%M:%S')
         difference = eDate - sDate  # calculating the difference between the start and end date
 
         if difference.total_seconds() <= 86400:  # check to see if the difference is less than 24hrs
@@ -715,19 +692,10 @@ def ram(slug):  # Slug is the Server Id
         dateRange = []  # empties dates to be refilled by code below
 
         form = ChartForm(request.form)
-        startdate = form.startdate.data  # gets start and end date from form
-        enddate = form.enddate.data
-
-        # converts inputted string to date or datetime
-        try:
-            sDate = datetime.strptime(startdate, '%Y-%m-%d %H:%M:%S')
-        except ValueError:
-            sDate = datetime.strptime(startdate, '%Y-%m-%d')
-        try:
-            eDate = datetime.strptime(enddate, '%Y-%m-%d %H:%M:%S')
-        except ValueError:
-            eDate = datetime.strptime(enddate, '%Y-%m-%d')
-
+        sDate = form.startdate.data  # gets start and end date from form
+        eDate = form.enddate.data
+        startdate = sDate.strftime('%Y-%m-%d %H:%M:%S')
+        enddate = eDate.strftime('%Y-%m-%d %H:%M:%S')
         difference = eDate - sDate  # calculating the difference between the start and end date
 
         if difference.total_seconds() <= 86400:  # check to see if the difference is less than 24hrs
@@ -824,19 +792,10 @@ def ping(slug):  # Slug is the Server Id
         dateRange = []  # empties dates to be refilled by code below
 
         form = ChartForm(request.form)
-        startdate = form.startdate.data  # gets start and end date from form
-        enddate = form.enddate.data
-
-        # converts inputted string to date or datetime
-        try:
-            sDate = datetime.strptime(startdate, '%Y-%m-%d %H:%M:%S')
-        except ValueError:
-            sDate = datetime.strptime(startdate, '%Y-%m-%d')
-        try:
-            eDate = datetime.strptime(enddate, '%Y-%m-%d %H:%M:%S')
-        except ValueError:
-            eDate = datetime.strptime(enddate, '%Y-%m-%d')
-
+        sDate = form.startdate.data  # gets start and end date from form
+        eDate = form.enddate.data
+        startdate = sDate.strftime('%Y-%m-%d %H:%M:%S')
+        enddate = eDate.strftime('%Y-%m-%d %H:%M:%S')
         difference = eDate - sDate  # calculating the difference between the start and end date
 
         if difference.total_seconds() <= 86400:  # check to see if the difference is less than 24hrs
