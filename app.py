@@ -10,12 +10,14 @@ from datetime import date, datetime, timedelta
 import pandas as pd
 from wtforms.fields.html5 import DateTimeLocalField
 from flask_fontawesome import FontAwesome
+import os
 
 app = Flask(__name__)  # something for flask
+app._static_folder = 'static'
 app.jinja_env.globals.update(zip=zip)
 fa = FontAwesome(app)
 
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///StubServersDB_V6_Text.db'  # sets the DB to the stubDB
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///NewDatabase.db'  # sets the DB to the stubDB
 
 app.config['SECRET_KEY'] = 'secret ssmt'  # secret key used for by WTforms for forms
 
@@ -93,6 +95,14 @@ class MasterList(db.Model):  # Master list table
     __table_args__ = {'extend_existing': True}
     Type = db.Column(db.Text, primary_key=True)  # primary key column
     Name = db.Column(db.Text, primary_key=True)  # primary key column
+
+
+class Partition(db.Model):  # Master list table
+    __tablename__ = 'Partition'
+    __table_args__ = {'extend_existing': True}
+    PartitionId = db.Column(db.Text, primary_key=True)  # primary key column
+    ServerId = db.Column(db.Text, primary_key=True)  # primary key column
+    ServerID = db.Column(db.Text, db.ForeignKey('Server.ServerId'))  # foreign key column
 
 
 # --------------------------------------------------------------------------------------------------------------------
@@ -476,16 +486,19 @@ def disk(slug):  # Slug is the Server Id
         between(Metric.Time, '2020-02-29 11:55:00', '2020-02-29 23:55:00'))]
 
     # gets all Disk usages for this server between dates
-    useRange = [metrics.Disk for metrics in Metric.query.order_by(Metric.Time).filter_by(ServerId=slug).filter(
-        between(Metric.Time, '2020-02-29 11:55:00', '2020-02-29 23:55:00'))]
+    # useRange = [metrics.Disk for metrics in Metric.query.order_by(Metric.Time).filter_by(ServerId=slug).filter(
+    #     between(Metric.Time, '2020-02-29 11:55:00', '2020-02-29 23:55:00'))]
+    #
+    # partAUse = [metrics.PartA for metrics in Metric.query.order_by(Metric.Time).filter_by(ServerId=slug).filter(
+    #     between(Metric.Time, '2020-02-29 11:55:00', '2020-02-29 23:55:00'))]
+    # partBUse = [metrics.PartB for metrics in Metric.query.order_by(Metric.Time).filter_by(ServerId=slug).filter(
+    #     between(Metric.Time, '2020-02-29 11:55:00', '2020-02-29 23:55:00'))]
+    # partCUse = [metrics.PartC for metrics in Metric.query.order_by(Metric.Time).filter_by(ServerId=slug).filter(
+    #     between(Metric.Time, '2020-02-29 11:55:00', '2020-02-29 23:55:00'))]
+    # partDUse = [metrics.PartD for metrics in Metric.query.order_by(Metric.Time).filter_by(ServerId=slug).filter(
+    #     between(Metric.Time, '2020-02-29 11:55:00', '2020-02-29 23:55:00'))]
 
-    partAUse = [metrics.PartA for metrics in Metric.query.order_by(Metric.Time).filter_by(ServerId=slug).filter(
-        between(Metric.Time, '2020-02-29 11:55:00', '2020-02-29 23:55:00'))]
-    partBUse = [metrics.PartB for metrics in Metric.query.order_by(Metric.Time).filter_by(ServerId=slug).filter(
-        between(Metric.Time, '2020-02-29 11:55:00', '2020-02-29 23:55:00'))]
-    partCUse = [metrics.PartC for metrics in Metric.query.order_by(Metric.Time).filter_by(ServerId=slug).filter(
-        between(Metric.Time, '2020-02-29 11:55:00', '2020-02-29 23:55:00'))]
-    partDUse = [metrics.PartD for metrics in Metric.query.order_by(Metric.Time).filter_by(ServerId=slug).filter(
+    partUse = [metrics.Time for metrics in Metric.query.order_by(Metric.Time).filter_by(ServerId=slug).filter(
         between(Metric.Time, '2020-02-29 11:55:00', '2020-02-29 23:55:00'))]
 
     if form.validate_on_submit():  # implementation of user input limiting date range for chart
