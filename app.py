@@ -17,7 +17,7 @@ app._static_folder = 'static'
 app.jinja_env.globals.update(zip=zip)
 fa = FontAwesome(app)
 
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///NewDatabase.db'  # sets the DB to the stubDB
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///NewServer1.db'  # sets the DB to the stubDB
 
 app.config['SECRET_KEY'] = 'secret ssmt'  # secret key used for by WTforms for forms
 
@@ -101,6 +101,7 @@ class Partition(db.Model):  # Master list table
     __tablename__ = 'Partition'
     __table_args__ = {'extend_existing': True}
     PartitionId = db.Column(db.Text, primary_key=True)  # primary key column
+    Time = db.Column(db.Text, primary_key=True)
     ServerId = db.Column(db.Text, primary_key=True)  # primary key column
     ServerID = db.Column(db.Text, db.ForeignKey('Server.ServerId'))  # foreign key column
 
@@ -486,8 +487,8 @@ def disk(slug):  # Slug is the Server Id
         between(Metric.Time, '2020-02-29 11:55:00', '2020-02-29 23:55:00'))]
 
     # gets all Disk usages for this server between dates
-    # useRange = [metrics.Disk for metrics in Metric.query.order_by(Metric.Time).filter_by(ServerId=slug).filter(
-    #     between(Metric.Time, '2020-02-29 11:55:00', '2020-02-29 23:55:00'))]
+    useRange = [metrics.Disk for metrics in Metric.query.order_by(Metric.Time).filter_by(ServerId=slug).filter(
+        between(Metric.Time, '2020-02-29 11:55:00', '2020-02-29 23:55:00'))]
     #
     # partAUse = [metrics.PartA for metrics in Metric.query.order_by(Metric.Time).filter_by(ServerId=slug).filter(
     #     between(Metric.Time, '2020-02-29 11:55:00', '2020-02-29 23:55:00'))]
@@ -498,8 +499,12 @@ def disk(slug):  # Slug is the Server Id
     # partDUse = [metrics.PartD for metrics in Metric.query.order_by(Metric.Time).filter_by(ServerId=slug).filter(
     #     between(Metric.Time, '2020-02-29 11:55:00', '2020-02-29 23:55:00'))]
 
-    partUse = [metrics.Time for metrics in Metric.query.order_by(Metric.Time).filter_by(ServerId=slug).filter(
-        between(Metric.Time, '2020-02-29 11:55:00', '2020-02-29 23:55:00'))]
+    partUse = {}
+    for p in Partition.query.order_by(Partition.Time).filter_by(ServerId=slug):  # .filter(between(
+    # Metric.Time, '2020-02-29 11:55:00', '2020-02-29 23:55:00')):
+    partUse[p.PartitionId] = []
+    partUse[p.PartitionId].append(p.Usage)
+    print(partUse)
 
     if form.validate_on_submit():  # implementation of user input limiting date range for chart
 
@@ -560,8 +565,8 @@ def disk(slug):  # Slug is the Server Id
 
     # return for default date range
     return render_template('Usage-Disk.html', server=server, ametric=tmp, date=dateRange, usage=useRange,
-                           form=form, rack=tmpLoc2, hi=maxList, lo=minList, avg=averageList, aUsage=partAUse,
-                           bUsage=partBUse, cUsage=partCUse, dUsage=partDUse, color=color)
+                           form=form, rack=tmpLoc2, hi=maxList, lo=minList, avg=averageList, partuse=partUse,
+                           color=color)
 
 
 # ----------------------------------------------------------------------------------------------------------------------
