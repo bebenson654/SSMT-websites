@@ -15,7 +15,7 @@ app = Flask(__name__)  # something for flask
 app.jinja_env.globals.update(zip=zip)
 fa = FontAwesome(app)
 
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///servers2.db'  # sets the DB to the stubDB
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///StubServersDB_V6_Text.db'  # sets the DB to the stubDB
 
 app.config['SECRET_KEY'] = 'secret ssmt'  # secret key used for by WTforms for forms
 
