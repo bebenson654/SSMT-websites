@@ -1,7 +1,7 @@
 from flask import Flask, render_template, request, redirect, flash, url_for
 from flask_wtf import FlaskForm
-from wtforms import StringField, SelectField, BooleanField, SubmitField
-from wtforms.validators import input_required, length, none_of
+from wtforms import StringField, SelectField, SubmitField
+from wtforms.validators import input_required, length
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import between, null
 from sqlalchemy.sql import func
@@ -10,6 +10,7 @@ from datetime import date, datetime, timedelta
 import pandas as pd
 from flask_fontawesome import FontAwesome
 from wtforms.fields.html5 import DateTimeLocalField
+from flask_fontawesome import FontAwesome
 
 app = Flask(__name__)  # something for flask
 app.jinja_env.globals.update(zip=zip)
@@ -105,6 +106,7 @@ class ChartForm(FlaskForm):  # form for the chart range
     #                       validators=[input_required(), length(min=10, max=19)])  # End date field
     startdate = DateTimeLocalField('start', format='%Y-%m-%dT%H:%M')
     enddate = DateTimeLocalField('end', format='%Y-%m-%dT%H:%M')
+
 
 
 class MasterListForm(FlaskForm):
