@@ -10,16 +10,19 @@ from datetime import date, datetime, timedelta
 import pandas as pd
 from wtforms.fields.html5 import DateTimeLocalField
 from flask_fontawesome import FontAwesome
-import os
+from _collections import defaultdict
+from itertools import zip_longest
 
 app = Flask(__name__)  # something for flask
 app._static_folder = 'static'
-app.jinja_env.globals.update(zip=zip)
+app.jinja_env.globals.update(zip=zip, zip_longest=zip_longest)
 fa = FontAwesome(app)
 
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///NewServer1.db'  # sets the DB to the stubDB
+app.config[
+    'SQLALCHEMY_DATABASE_URI'] = 'sqlite:///NewServer1.db'  # sets the DB to the stubDB
 
-app.config['SECRET_KEY'] = 'secret ssmt'  # secret key used for by WTforms for forms
+app.config[
+    'SECRET_KEY'] = 'secret ssmt'  # secret key used for by WTforms for forms
 
 
 db = SQLAlchemy(app)  # something SQL Alchemy needs
@@ -480,16 +483,21 @@ def disk(slug):  # Slug is the Server Id
     averageList = []
 
     tmpLoc = Server.query.filter_by(ServerId=slug).first()
-    tmpLoc2 = Rack.query.filter_by(RackId=tmpLoc.RackId).first()  # gets rack for this server
+    tmpLoc2 = Rack.query.filter_by(
+        RackId=tmpLoc.RackId).first()  # gets rack for this server
 
     # gets all dates for this server between dates
-    dateRange = [metrics.Time for metrics in Metric.query.order_by(Metric.Time).filter_by(ServerId=slug).filter(
-        between(Metric.Time, '2020-02-29 11:55:00', '2020-02-29 23:55:00'))]
+    dateRange = [metrics.Time for metrics in
+                 Metric.query.order_by(Metric.Time).filter_by(
+                     ServerId=slug)]
+    # .filter(between(Metric.Time, '2020-02-29 11:55:00', '2020-02-29 23:55:00'))]
 
     # gets all Disk usages for this server between dates
-    useRange = [metrics.Disk for metrics in Metric.query.order_by(Metric.Time).filter_by(ServerId=slug).filter(
-        between(Metric.Time, '2020-02-29 11:55:00', '2020-02-29 23:55:00'))]
-    #
+    useRange = [metrics.Disk for metrics in
+                Metric.query.order_by(Metric.Time).filter_by(
+                    ServerId=slug)]
+    # .filter(between(Metric.Time, '2020-02-29 11:55:00', '2020-02-29 23:55:00'))]
+
     # partAUse = [metrics.PartA for metrics in Metric.query.order_by(Metric.Time).filter_by(ServerId=slug).filter(
     #     between(Metric.Time, '2020-02-29 11:55:00', '2020-02-29 23:55:00'))]
     # partBUse = [metrics.PartB for metrics in Metric.query.order_by(Metric.Time).filter_by(ServerId=slug).filter(
@@ -499,11 +507,15 @@ def disk(slug):  # Slug is the Server Id
     # partDUse = [metrics.PartD for metrics in Metric.query.order_by(Metric.Time).filter_by(ServerId=slug).filter(
     #     between(Metric.Time, '2020-02-29 11:55:00', '2020-02-29 23:55:00'))]
 
-    partUse = {}
-    for p in Partition.query.order_by(Partition.Time).filter_by(ServerId=slug):  # .filter(between(
-    # Metric.Time, '2020-02-29 11:55:00', '2020-02-29 23:55:00')):
-    partUse[p.PartitionId] = []
-    partUse[p.PartitionId].append(p.Usage)
+    partUse = defaultdict(dict)
+    partitions = []
+
+    for p in Partition.query.filter_by(ServerId=slug).order_by(
+            Partition.PartitionId):
+        if p.PartitionId not in partitions:
+            partitions.append(p.PartitionId)
+        partUse[p.Time] = {p.PartitionId: p.Usage}
+    print(partitions)
     print(partUse)
 
     if form.validate_on_submit():  # implementation of user input limiting date range for chart
@@ -564,9 +576,11 @@ def disk(slug):  # Slug is the Server Id
         averageList = 'xxx'
 
     # return for default date range
-    return render_template('Usage-Disk.html', server=server, ametric=tmp, date=dateRange, usage=useRange,
-                           form=form, rack=tmpLoc2, hi=maxList, lo=minList, avg=averageList, partuse=partUse,
-                           color=color)
+    return render_template('Usage-Disk.html', server=server,
+                           ametric=tmp, date=dateRange, usage=useRange,
+                           form=form, rack=tmpLoc2, hi=maxList,
+                           lo=minList, avg=averageList, partuse=partUse,
+                           color=color, partitions=partitions)
 
 
 # ----------------------------------------------------------------------------------------------------------------------

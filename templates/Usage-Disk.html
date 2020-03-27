@@ -136,22 +136,22 @@
                     <tr>
                         <th>Date/Time</th>
                         <th>Total</th>
-                        {% for p in partuse.keys() %}
+                        {% for p in partitions %}
                             <th>{{ p }}</th>
                         {% endfor %}
                     </tr>
                     </thead>
                     <tbody>
-                    {#                    {% for date, u, a, b, c, d in zip(date, usage, aUsage, bUsage, cUsage, dUsage) %}#}
-                    {#                            <tr>#}
-                    {#                                <td>{{ date }}</td>#}
-                    {#                                <td>{{ u }}%</td>#}
-                    {#                                <td>{{ a }}%</td>#}
-                    {#                                <td>{{ b }}%</td>#}
-                    {#                                <td>{{ c }}%</td>#}
-                    {#                                <td>{{ d }}%</td>#}
-                    {#                            </tr>#}
-                    {#                        {% endfor %}#}
+
+                    {% for date, u in zip_longest(date, usage) %}
+                        <tr>
+                            <td>{{ date }}</td>
+                            <td>{{ u }}%</td>
+                            {% for i in range(partitions|length) %}
+                                <td>{{ partuse[date][partitions[i]] }}</td>
+                            {% endfor %}
+                        </tr>
+                    {% endfor %}
 
 
                     </tbody>
