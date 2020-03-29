@@ -142,16 +142,28 @@
                     </tr>
                     </thead>
                     <tbody>
+                    {#                            {% for i in range(partitions|length) %}#}
 
-                    {% for date, u in zip_longest(date, usage) %}
+                    {#                        <tr>#}
+                    {#                            {% for date, u in zip_longest(date, usage) %}#}
+                    {##}
+                    {#                            <td>{{ date }}</td>#}
+                    {#                            <td>{{ u }}%</td>#}
+                    {#                                <td>{{ partuse[date][partitions[i]] }}</td>#}
+                    {#                            {% endfor %}#}
+
+                    {% for key, val in partuse.items() %}
                         <tr>
-                            <td>{{ date }}</td>
-                            <td>{{ u }}%</td>
-                            {% for i in range(partitions|length) %}
-                                <td>{{ partuse[date][partitions[i]] }}</td>
+                            <td>{{ key }}</td>
+                            {% for v in val.values() %}
+
+                                <td>{{ v }}</td>
+
                             {% endfor %}
                         </tr>
                     {% endfor %}
+                    {#                        </tr>#}
+                    {#                    {% endfor %}#}
 
 
                     </tbody>
