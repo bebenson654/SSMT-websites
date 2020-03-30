@@ -1,4 +1,3 @@
-
 {# NEW NON HARD-CODED VERSION #}
 
 {% from '_formhelpers.html' import render_field %} {# import neede for chard range forms #}
@@ -63,10 +62,10 @@
     </div>
 
 
-{#        <div class="row ml-2"> {# Lists the dates in date range in order | FOR TESTING/DEBUGGING #}
-{#            <ol>#}
-{#                {% for d in date %}#}
-{#                    <li> {{ d }} </li>#}
+    {#        <div class="row ml-2"> {# Lists the dates in date range in order | FOR TESTING/DEBUGGING #}
+    {#            <ol>#}
+    {#                {% for d in date %}#}
+    {#                    <li> {{ d }} </li>#}
     {#                {% endfor %}#}
     {#            </ol>#}
     {#        </div>#}
@@ -142,29 +141,17 @@
                     </tr>
                     </thead>
                     <tbody>
-                    {#                            {% for i in range(partitions|length) %}#}
 
-                    {#                        <tr>#}
-                    {#                            {% for date, u in zip_longest(date, usage) %}#}
-                    {##}
-                    {#                            <td>{{ date }}</td>#}
-                    {#                            <td>{{ u }}%</td>#}
-                    {#                                <td>{{ partuse[date][partitions[i]] }}</td>#}
-                    {#                            {% endfor %}#}
-
+                    {# key == Dates, val == Dict of total and partitions, v == the usages of those partitons #}
                     {% for key, val in partuse.items() %}
                         <tr>
                             <td>{{ key }}</td>
+
                             {% for v in val.values() %}
-
                                 <td>{{ v }}</td>
-
                             {% endfor %}
                         </tr>
                     {% endfor %}
-                    {#                        </tr>#}
-                    {#                    {% endfor %}#}
-
 
                     </tbody>
                 </table>
