@@ -11,15 +11,19 @@ import pandas as pd
 from flask_fontawesome import FontAwesome
 from wtforms.fields.html5 import DateTimeLocalField
 from flask_fontawesome import FontAwesome
+from _collections import defaultdict
+from itertools import zip_longest
 
 app = Flask(__name__)  # something for flask
-app.jinja_env.globals.update(zip=zip)
+app._static_folder = 'static'
+app.jinja_env.globals.update(zip=zip, zip_longest=zip_longest)
 fa = FontAwesome(app)
 
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///StubServersDB_V6_Text.db'  # sets the DB to the stubDB
+app.config[
+    'SQLALCHEMY_DATABASE_URI'] = 'sqlite:///NewServer1.db'  # sets the DB to the stubDB
 
-app.config['SECRET_KEY'] = 'secret ssmt'  # secret key used for by WTforms for forms
-
+app.config[
+    'SECRET_KEY'] = 'secret ssmt'  # secret key used for by WTforms for forms
 
 db = SQLAlchemy(app)  # something SQL Alchemy needs
 db.Model.metadata.reflect(db.engine)  # Allows SQL alchemy to look into the DB for info on the tables
@@ -96,6 +100,15 @@ class MasterList(db.Model):  # Master list table
     Name = db.Column(db.Text, primary_key=True)  # primary key column
 
 
+class Partition(db.Model):  # Master list table
+    __tablename__ = 'Partition'
+    __table_args__ = {'extend_existing': True}
+    PartitionId = db.Column(db.Text, primary_key=True)  # primary key column
+    Time = db.Column(db.Text, primary_key=True)
+    ServerId = db.Column(db.Text, primary_key=True)  # primary key column
+    ServerID = db.Column(db.Text, db.ForeignKey('Server.ServerId'))  # foreign key column
+
+
 # --------------------------------------------------------------------------------------------------------------------
 
 
@@ -106,7 +119,6 @@ class ChartForm(FlaskForm):  # form for the chart range
     #                       validators=[input_required(), length(min=10, max=19)])  # End date field
     startdate = DateTimeLocalField('start', format='%Y-%m-%dT%H:%M')
     enddate = DateTimeLocalField('end', format='%Y-%m-%dT%H:%M')
-
 
 
 class MasterListForm(FlaskForm):
@@ -470,24 +482,57 @@ def disk(slug):  # Slug is the Server Id
     averageList = []
 
     tmpLoc = Server.query.filter_by(ServerId=slug).first()
-    tmpLoc2 = Rack.query.filter_by(RackId=tmpLoc.RackId).first()  # gets rack for this server
+    tmpLoc2 = Rack.query.filter_by(
+        RackId=tmpLoc.RackId).first()  # gets rack for this server
 
     # gets all dates for this server between dates
-    dateRange = [metrics.Time for metrics in Metric.query.order_by(Metric.Time).filter_by(ServerId=slug).filter(
-        between(Metric.Time, '2020-02-29 11:55:00', '2020-02-29 23:55:00'))]
+    dateRange = [metrics.Time for metrics in Metric.query.order_by(Metric.Time).filter_by(ServerId=slug).filter(between(
+        Metric.Time, '2020-02-29 11:55:00', '2020-02-29 23:55:00'))]
 
     # gets all Disk usages for this server between dates
-    useRange = [metrics.Disk for metrics in Metric.query.order_by(Metric.Time).filter_by(ServerId=slug).filter(
-        between(Metric.Time, '2020-02-29 11:55:00', '2020-02-29 23:55:00'))]
+    useRange = [metrics.Disk for metrics in Metric.query.order_by(Metric.Time).filter_by(ServerId=slug).filter(between(
+        Metric.Time, '2020-02-29 11:55:00', '2020-02-29 23:55:00'))]
 
-    partAUse = [metrics.PartA for metrics in Metric.query.order_by(Metric.Time).filter_by(ServerId=slug).filter(
-        between(Metric.Time, '2020-02-29 11:55:00', '2020-02-29 23:55:00'))]
-    partBUse = [metrics.PartB for metrics in Metric.query.order_by(Metric.Time).filter_by(ServerId=slug).filter(
-        between(Metric.Time, '2020-02-29 11:55:00', '2020-02-29 23:55:00'))]
-    partCUse = [metrics.PartC for metrics in Metric.query.order_by(Metric.Time).filter_by(ServerId=slug).filter(
-        between(Metric.Time, '2020-02-29 11:55:00', '2020-02-29 23:55:00'))]
-    partDUse = [metrics.PartD for metrics in Metric.query.order_by(Metric.Time).filter_by(ServerId=slug).filter(
-        between(Metric.Time, '2020-02-29 11:55:00', '2020-02-29 23:55:00'))]
+    # partAUse = [metrics.PartA for metrics in Metric.query.order_by(Metric.Time).filter_by(ServerId=slug).filter(
+    #     between(Metric.Time, '2020-02-29 11:55:00', '2020-02-29 23:55:00'))]
+    # partBUse = [metrics.PartB for metrics in Metric.query.order_by(Metric.Time).filter_by(ServerId=slug).filter(
+    #     between(Metric.Time, '2020-02-29 11:55:00', '2020-02-29 23:55:00'))]
+    # partCUse = [metrics.PartC for metrics in Metric.query.order_by(Metric.Time).filter_by(ServerId=slug).filter(
+    #     between(Metric.Time, '2020-02-29 11:55:00', '2020-02-29 23:55:00'))]
+    # partDUse = [metrics.PartD for metrics in Metric.query.order_by(Metric.Time).filter_by(ServerId=slug).filter(
+    #     between(Metric.Time, '2020-02-29 11:55:00', '2020-02-29 23:55:00'))]
+
+    parts = []  # list of all partitions for a server
+
+    # Adds unique partition Ids to the list for given server
+    for p in Partition.query.filter_by(ServerId=slug).order_by(Partition.PartitionId).filter(between(
+            Partition.Time, '2020-02-29 11:55:00', '2020-02-29 23:55:00')):
+        if p.PartitionId not in parts:
+            parts.append(p.PartitionId)
+
+    partUse = defaultdict(dict)  # dictionary used for disk table with partitions
+    '''PartsUse is a dictionary of dictionaries. The top level dictionary has a key of a Date and Time, and a value of 
+    another dictionary. In that dictionary the keys are 'total' which gives you the total disk use for that date and 
+    time. The other keys are all of the partition IDs for the server, and the values are that partitions use for that 
+    date and time. '''
+
+    # adds disk use from metrics table to dictionary for total
+    for row in Metric.query.order_by(Metric.Time).filter_by(ServerId=slug).filter(between(
+            Metric.Time, '2020-02-29 11:55:00', '2020-02-29 23:55:00')):
+        partUse[row.Time]['total'] = row.Disk
+
+    # Adds a key for each partition with the values of an empty string
+    for row in Partition.query.filter_by(ServerId=slug).filter(between(
+            Partition.Time, '2020-02-29 11:55:00', '2020-02-29 23:55:00')):
+        for p in parts:
+            partUse[row.Time][p] = ''
+
+    # Adds the actual usage for each partition if there is one
+    for row in Partition.query.filter_by(ServerId=slug).filter(between(
+            Partition.Time, '2020-02-29 11:55:00', '2020-02-29 23:55:00')):
+        for p in parts:
+            if p == row.PartitionId:
+                partUse[row.Time][p] = row.Usage
 
     if form.validate_on_submit():  # implementation of user input limiting date range for chart
 
@@ -508,8 +553,41 @@ def disk(slug):  # Slug is the Server Id
             # Returns usages that within  start and end date
             useRange = [metrics.Disk for metrics in Metric.query.order_by(Metric.Time).filter_by(ServerId=slug).filter(
                 between(Metric.Time, startdate, enddate))]
+            # ---------------------------------------------------------------------------------
+            # resets parts and partUse to update the date range to the one provided.
+            parts = []  # list of all partitions for a server
 
-        else:  # if deference is grater than 24hrs
+            # Adds unique partition Ids to the list for given server
+            for p in Partition.query.filter_by(ServerId=slug).order_by(Partition.PartitionId).filter(between(
+                    Partition.Time, startdate, enddate)):
+                if p.PartitionId not in parts:
+                    parts.append(p.PartitionId)
+
+            partUse = defaultdict(dict)  # dictionary used for disk table with partitions
+            '''PartsUse is a dictionary of dictionaries. The top level dictionary has a key of a Date and Time, and a value of 
+            another dictionary. In that dictionary the keys are 'total' which gives you the total disk use for that date and 
+            time. The other keys are all of the partition IDs for the server, and the values are that partitions use for that 
+            date and time. '''
+
+            # adds disk use from metrics table to dictionary for total
+            for row in Metric.query.order_by(Metric.Time).filter_by(ServerId=slug).filter(between(
+                    Metric.Time, startdate, enddate)):
+                partUse[row.Time]['total'] = row.Disk
+
+            # Adds a key for each partition with the values of an empty string
+            for row in Partition.query.filter_by(ServerId=slug).filter(between(
+                    Partition.Time, startdate, enddate)):
+                for p in parts:
+                    partUse[row.Time][p] = ''
+
+            # Adds the actual usage for each partition if there is one
+            for row in Partition.query.filter_by(ServerId=slug).filter(between(
+                    Partition.Time, startdate, enddate)):
+                for p in parts:
+                    if p == row.PartitionId:
+                        partUse[row.Time][p] = row.Usage
+
+        else:  # if difference is grater than 24hrs
 
             x = sDate  # will be used in iterating the for loop
             y = timedelta(days=1)  # datetime variable that equals 1 day
@@ -548,8 +626,8 @@ def disk(slug):  # Slug is the Server Id
 
     # return for default date range
     return render_template('Usage-Disk.html', server=server, ametric=tmp, date=dateRange, usage=useRange,
-                           form=form, rack=tmpLoc2, hi=maxList, lo=minList, avg=averageList, aUsage=partAUse,
-                           bUsage=partBUse, cUsage=partCUse, dUsage=partDUse, color=color)
+                           form=form, rack=tmpLoc2, hi=maxList, lo=minList, avg=averageList, partuse=partUse,
+                           color=color, partitions=parts)
 
 
 # ----------------------------------------------------------------------------------------------------------------------
