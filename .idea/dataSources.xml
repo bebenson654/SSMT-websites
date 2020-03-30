@@ -13,5 +13,17 @@
       <jdbc-driver>org.sqlite.JDBC</jdbc-driver>
       <jdbc-url>jdbc:sqlite:C:\Users\Roger\PycharmProjects\SSMT-websites\StubServersDB_V4.db</jdbc-url>
     </data-source>
+    <data-source source="LOCAL" name="StubServersDB_V4_TEST" uuid="2efb8307-0267-4596-8e42-d78d664b3057">
+      <driver-ref>sqlite.xerial</driver-ref>
+      <synchronize>true</synchronize>
+      <jdbc-driver>org.sqlite.JDBC</jdbc-driver>
+      <jdbc-url>jdbc:sqlite:C:\Users\ID140\Dropbox\AU Class\Spring 2020\Scripting\SSMT-websites\StubServersDB_V4_TEST.db</jdbc-url>
+    </data-source>
+    <data-source source="LOCAL" name="StubServersDB_V6_Text" uuid="49290a6b-2c16-4676-86af-d1c55b63a437">
+      <driver-ref>sqlite.xerial</driver-ref>
+      <synchronize>true</synchronize>
+      <jdbc-driver>org.sqlite.JDBC</jdbc-driver>
+      <jdbc-url>jdbc:sqlite:C:\Users\Roger\PycharmProjects\SSMT-websites\StubServersDB_V6_Text.db</jdbc-url>
+    </data-source>
   </component>
 </project>

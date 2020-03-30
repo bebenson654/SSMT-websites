@@ -6,6 +6,8 @@
 
 {% block title %}{# Overides layout.html default title #}
     <script src="https://cdn.jsdelivr.net/npm/chart.js@2.8.0"></script> {# Script needed for chart.js #}
+    <link rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datetimepicker/4.17.47/css/bootstrap-datetimepicker.min.css">
 
     <title>CPU-Usage - {{ server.ServerName }}</title> {# Title - shown in tab on browser #}
 {% endblock title %}
@@ -33,7 +35,7 @@
     {#    </div>#}
     <div class="row text-center m-2"> {# Displays this servers CPU usage #}
         <div class="col-12">
-            <h2 class="text-danger"> CPU Usage: <b>{{ ametric.Cpu }}%</b></h2>
+            <h2 class="text-{{ color }}"> CPU Usage: <b>{{ ametric.Cpu }}%</b></h2>
         </div>
     </div>
 
@@ -46,19 +48,6 @@
                 {{ render_field(form.startdate) }}
                 {{ render_field(form.enddate) }}
                 <input type="submit" value="update">
-
-                {#                <div class="input-group mb-3">#}
-                {#                    <div class="input-group-prepend">#}
-                {#                        <span class="input-group-text" id="basic-addon3">Start & End Date</span>#}
-                {#                    </div>#}
-                {#                    <input type="text" placeholder="09/01/2019" aria-label="start date" class="form-control">#}
-                {#                    <input type="text" placeholder="10/01/2019" aria-label="end date" class="form-control">#}
-                {#                </div>#}
-                {#            </div>#}
-                {#            <div class="col-2">#}
-                {#                <a class="btn btn-success" href="#" onclick="window.location.reload(true);" role="button">Refresh</a>#}
-                {#                <input type="submit" value="update">#}
-                {#            </div>#}
             </form>
         </div>-->
         <div class='col-md-5'>
@@ -96,6 +85,7 @@
                 {# The type of chart we want to create #}
                 type: 'line',
 
+            {% if hi == 'xxx' %}
                 {# The data for our dataset #}
                 data: {
                     labels: [{% for d in date %} "{{ d }}", {% endfor %}], {# Dates #}
@@ -104,37 +94,51 @@
                         backgroundColor: 'rgb(173, 216, 230)',
                         borderColor: 'rgb(0,0,0)',
                         data: [{% for u in usage %} "{{ u }}", {% endfor %}] {# Usages #}
+                    }]
+                },
+            {% else %}
+                data: {
+                    labels: [{% for d in date %} "{{ d }}", {% endfor %}], {# Dates #}
+                    datasets: [{
+                        label: 'HIGH',
+                        fill: false,
+                        backgroundColor: 'rgba(255,33,0,0.71)',
+                        borderColor: 'rgb(255,33,0)',
+                        data: [{% for h in hi %} "{{ h }}", {% endfor %}] {# Usages #}
+                    }, {
+                        label: 'LOW',
+                        fill: false,
+                        backgroundColor: 'rgba(64,255,0,0.71)',
+                        borderColor: 'rgb(64,255,0)',
+                        data: [{% for l in lo %} "{{ l }}", {% endfor %}]
+                    }, {
+                        label: 'Average',
+                        fill: false,
+                        backgroundColor: 'rgba(255,223,0,0.71)',
+                        borderColor: 'rgb(255,223,0)',
+                        data: [{% for a in avg %} "{{ a }}", {% endfor %}]
                     }
-                    {#{#}
-                    {#    label: 'Hi',#}
-                    {#    backgroundColor: 'rgb(173, 216, 230)',#}
-                    {#    borderColor: 'rgb(255,37,0)',#}
-                    {#    data: [{% for u in usage %} "{{ u }}", {% endfor %}] {# Usages #}
-                    {##}
-                    {#{#}
-                    {#    label: 'Lo',#}
-                    {#    backgroundColor: 'rgb(173, 216, 230)',#}
-                    {#    borderColor: 'rgb(78,255,0)',#}
-                    {#    data: [{% for u in usage %} "{{ u }}", {% endfor %}] {# Usages #}
-                    {##}
                     ]
                 },
+            {% endif %}
+
 
                 {# Configuration options go here #}
                 options: {
-                        legend: {display: false}
-                    }
+                    legend: {display: false}
+                }
             });
         </script>
     </div>
 
+    {% if lo == 'xxx' %}
     <div class="row"> {# CPU Usage table #}
         <div class="col mt-5 mb-5">
-            <table class="table table-striped table-bordered">
-                <thead class="table-dark">
+            <table id="usage" class="display">
+                <thead>
                 <tr>
-                    <th scope="col">Date/Time</th>
-                    <th scope="col">CPU Usage (%): Hi-Avg-Low</th>
+                    <th>Date/Time</th>
+                    <th>CPU Usage (%):</th>
                 </tr>
                 </thead>
                 <tbody>
@@ -148,5 +152,32 @@
             </table>
         </div>
     </div>
+    {% else %}
+        <div class="row"> {# CPU Usage table #}
+            <div class="col mt-5 mb-5">
+                <table id="usage" class="display">
+                    <thead>
+                    <tr>
+                        <th>Date/Time</th>
+                        <th>High</th>
+                        <th>Average</th>
+                        <th>Low</th>
+
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {% for d, h, a, l in zip(date, hi, avg, lo) %}
+                        <tr>
+                            <td>{{ d }}</td>
+                            <td class="table-danger">{{ h }}%</td>
+                            <td class="table-warning">{{ a }}%</td>
+                            <td class="table-success">{{ l }}%</td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    {% endif %}
 
 {% endblock content %}

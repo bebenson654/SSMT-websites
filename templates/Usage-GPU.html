@@ -33,7 +33,7 @@
     {#    </div>#}
     <div class="row text-center m-2"> {# Displays this servers GPU usage #}
         <div class="col-12">
-            <h2 class="text-danger"> GPU Usage: <b>{{ ametric.Gpu }}%</b></h2>
+            <h2 class="text-{{ color }}"> GPU Usage: <b>{{ ametric.Gpu }}%</b></h2>
         </div>
     </div>
 
@@ -81,46 +81,101 @@
                 {# The type of chart we want to create #}
                 type: 'line',
 
+            {% if hi == 'xxx' %}
                 {# The data for our dataset #}
                 data: {
                     labels: [{% for d in date %} "{{ d }}", {% endfor %}], {# Dates #}
                     datasets: [{
-                        label: 'My First dataset',
-                        backgroundColor: 'rgb(255,249,142)',
-                        borderColor: 'rgb(0, 0, 0)',
+                        label: 'usage',
+                        backgroundColor: 'rgb(255,122,0,0.82)',
+                        borderColor: 'rgb(0,0,0)',
                         data: [{% for u in usage %} "{{ u }}", {% endfor %}] {# Usages #}
                     }]
                 },
+            {% else %}
+                data: {
+                    labels: [{% for d in date %} "{{ d }}", {% endfor %}], {# Dates #}
+                    datasets: [{
+                        label: 'HIGH',
+                        fill: false,
+                        backgroundColor: 'rgba(255,33,0,0.71)',
+                        borderColor: 'rgb(255,33,0)',
+                        data: [{% for h in hi %} "{{ h }}", {% endfor %}] {# Usages #}
+                    }, {
+                        label: 'LOW',
+                        fill: false,
+                        backgroundColor: 'rgba(64,255,0,0.71)',
+                        borderColor: 'rgb(64,255,0)',
+                        data: [{% for l in lo %} "{{ l }}", {% endfor %}]
+                    }, {
+                        label: 'Average',
+                        fill: false,
+                        backgroundColor: 'rgba(255,223,0,0.71)',
+                        borderColor: 'rgb(255,223,0)',
+                        data: [{% for a in avg %} "{{ a }}", {% endfor %}]
+                    }
+                    ]
+                },
+            {% endif %}
+
 
                 {# Configuration options go here #}
                 options: {
-                        legend: {display: false}
-                    }
+                    legend: {display: false}
+                }
             });
         </script>
     </div>
 
 
 
-    <div class="row"> {# GPU Usage table #}
-        <div class="col mt-5 mb-5">
-            <table class="table table-striped table-bordered">
-                <thead class="table-dark">
-                <tr>
-                    <th scope="col">Date/Time</th>
-                    <th scope="col">GPU Usage (%): Hi-Avg-Low</th>
-                </tr>
-                </thead>
-                <tbody>
+    {% if lo == 'xxx' %}
+        <div class="row"> {# Ram Usage table #}
+            <div class="col mt-5 mb-5">
+                <table id="usage" class="display">
+                    <thead>
+                    <tr>
+                        <th>Date/Time</th>
+                        <th>Gpu Usage (%):</th>
+                    </tr>
+                    </thead>
+                    <tbody>
                     {% for d, u in zip(date, usage) %}
                         <tr>
                             <td>{{ d }}</td>
                             <td>{{ u }}%</td>
                         </tr>
                     {% endfor %}
-                </tbody>
-            </table>
+                    </tbody>
+                </table>
+            </div>
         </div>
-    </div>
+    {% else %}
+        <div class="row"> {# CPU Usage table #}
+            <div class="col mt-5 mb-5">
+                <table id="usage" class="display">
+                    <thead>
+                    <tr>
+                        <th>Date/Time</th>
+                        <th>High</th>
+                        <th>Average</th>
+                        <th>Low</th>
+
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {% for d, h, a, l in zip(date, hi, avg, lo) %}
+                        <tr>
+                            <td>{{ d }}</td>
+                            <td class="table-danger">{{ h }}%</td>
+                            <td class="table-warning">{{ a }}%</td>
+                            <td class="table-success">{{ l }}%</td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    {% endif %}
 
 {% endblock content %}

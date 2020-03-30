@@ -23,7 +23,7 @@
         <div class="col-10 text-right"> {# dropdown for filter | filter does not work #}
             <form method="post">
                 <a>{{ form.csrf_token }}
-                {{ form.filter }}</a>
+                    {{ form.filter }}</a>
                 <button type="submit" class="btn btn-secondary" name="form.sub">Filter</button>
                 <a class="btn btn-secondary" href={{ url_for('home') }} role="button">Reset</a>
 
@@ -34,23 +34,27 @@
     {# Racks == Cards #}
     <div class="col-12 card-columns text-center"> {# formats cards into special columns #}
         {% for rack in rack %}
-            <div class="card mt-3 " style="width: 19rem;"> {# card containing a rack #}
 
-                <div class="card-header text-center p-3 mb-2 bg-primary text-white"> {# card header #}
+            <div class="card mt-3 " style="width: 19rem;"> {# card containing a rack #}
+                <div class="card-header text-center p-3 bg-primary text-white"> {# card header #}
                     {{ rack.Name }}
                 </div>
+                <div class="list-group list-group-flush"> {# lists servers that link to their Real Time page #}
 
-                {% for server in server %}
-                    {% if server.RackID == rack.RackId %}
-                    {# grabs all servers in DB | NEEDS TO BE CHANGED TO ONLY GRAB SERVERS IN THIS RACK #}
-                    <ul class="list-group list-group-flush"> {# lists servers that link to their Real Time page #}
-                        <a href="/real-time-data-overview/{{ server.ServerId }}"
-                           class="list-group-item list-group-item-action text-center">{{ server.ServerName }}<img
-                                src="WebApp\Red X.png" class="float-right"></a>
-                    </ul>
-                    {% endif %}
-                {% endfor %}
+                    {% for server in server %}
+                        {% if server.RackId == rack.RackId and server.ServerId in masterList %}
+                            {# grabs all servers in DB#}
+                            <a href="/real-time-data-overview/{{ server.ServerId }}"
+                               data-toggle="tooltip" data-placement="right" data-html="true"
+                               title="{{ metric[server.ServerId] }}"
+                               class="list-group-item list-group-item-action list-group-item-{{ color[server.ServerId + 'color'] }} text-center">
+                                {{ server.ServerName }}
+                                <i class="fas fa-{{ color[server.ServerId + 'icon'] }} float-right"></i>
+                            </a>
 
+                        {% endif %}
+                    {% endfor %}
+                </div>
             </div>
         {% endfor %}
 
