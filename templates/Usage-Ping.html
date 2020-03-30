@@ -136,14 +136,14 @@
                     <thead>
                     <tr>
                         <th>Date/Time</th>
-                        <th>Ping (%):</th>
+                        <th>Ping (ms):</th>
                     </tr>
                     </thead>
                     <tbody>
                     {% for d, u in zip(date, usage) %}
                         <tr>
                             <td>{{ d }}</td>
-                            <td>{{ u }}%</td>
+                            <td>{{ u }}ms</td>
                         </tr>
                     {% endfor %}
                     </tbody>
