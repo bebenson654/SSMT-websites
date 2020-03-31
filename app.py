@@ -138,8 +138,13 @@ class HomeFilter(FlaskForm):
 # ----------------------------------------------------------------------------------------------------------------------
 
 
-date = date.today()  # gets today's date for use in default range for chart
-today = date.strftime("%Y/%m/%d")  # reformat date to mm/dd/yyyy
+mDate = Metric.query.order_by(Metric.Time.desc()).first()  # gets most recent row from metric
+
+maxDate = mDate.Time  # grabs time from row above^
+
+maxDateMinus12 = datetime.strptime(maxDate, '%Y-%m-%d %H:%M:%S')  # converts it to date time object
+maxDateMinus12 = maxDateMinus12 - timedelta(hours=12)  # subtracts 12 hrs
+maxDateMinus12 = datetime.strftime(maxDateMinus12, '%Y-%m-%d %H:%M:%S')  # converts back to string
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -383,11 +388,11 @@ def CPU(slug):  # Slug is the Server Id
 
     # gets all dates for this server between dates
     dateRange = [metrics.Time for metrics in Metric.query.order_by(Metric.Time).filter_by(ServerId=slug).filter(
-        between(Metric.Time, '2020-02-29 11:55:00', '2020-02-29 23:55:00'))]
+        between(Metric.Time, maxDateMinus12, maxDate))]
 
     # gets all cpu usages for this server between dates
     useRange = [metrics.Cpu for metrics in Metric.query.order_by(Metric.Time).filter_by(ServerId=slug).filter(
-        between(Metric.Time, '2020-02-29 11:55:00', '2020-02-29 23:55:00'))]
+        between(Metric.Time, maxDateMinus12, maxDate))]
 
     if form.validate_on_submit():  # implementation of user input limiting date range for chart
 
@@ -487,11 +492,11 @@ def disk(slug):  # Slug is the Server Id
 
     # gets all dates for this server between dates
     dateRange = [metrics.Time for metrics in Metric.query.order_by(Metric.Time).filter_by(ServerId=slug).filter(between(
-        Metric.Time, '2020-02-29 11:55:00', '2020-02-29 23:55:00'))]
+        Metric.Time, maxDateMinus12, maxDate))]
 
     # gets all Disk usages for this server between dates
     useRange = [metrics.Disk for metrics in Metric.query.order_by(Metric.Time).filter_by(ServerId=slug).filter(between(
-        Metric.Time, '2020-02-29 11:55:00', '2020-02-29 23:55:00'))]
+        Metric.Time, maxDateMinus12, maxDate))]
 
     # partAUse = [metrics.PartA for metrics in Metric.query.order_by(Metric.Time).filter_by(ServerId=slug).filter(
     #     between(Metric.Time, '2020-02-29 11:55:00', '2020-02-29 23:55:00'))]
@@ -506,7 +511,7 @@ def disk(slug):  # Slug is the Server Id
 
     # Adds unique partition Ids to the list for given server
     for p in Partition.query.filter_by(ServerId=slug).order_by(Partition.PartitionId).filter(between(
-            Partition.Time, '2020-02-29 11:55:00', '2020-02-29 23:55:00')):
+            Partition.Time, maxDateMinus12, maxDate)):
         if p.PartitionId not in parts:
             parts.append(p.PartitionId)
 
@@ -518,18 +523,18 @@ def disk(slug):  # Slug is the Server Id
 
     # adds disk use from metrics table to dictionary for total
     for row in Metric.query.order_by(Metric.Time).filter_by(ServerId=slug).filter(between(
-            Metric.Time, '2020-02-29 11:55:00', '2020-02-29 23:55:00')):
+            Metric.Time, maxDateMinus12, maxDate)):
         partUse[row.Time]['total'] = row.Disk
 
     # Adds a key for each partition with the values of an empty string
     for row in Partition.query.filter_by(ServerId=slug).filter(between(
-            Partition.Time, '2020-02-29 11:55:00', '2020-02-29 23:55:00')):
+            Partition.Time, maxDateMinus12, maxDate)):
         for p in parts:
             partUse[row.Time][p] = ''
 
     # Adds the actual usage for each partition if there is one
     for row in Partition.query.filter_by(ServerId=slug).filter(between(
-            Partition.Time, '2020-02-29 11:55:00', '2020-02-29 23:55:00')):
+            Partition.Time, maxDateMinus12, maxDate)):
         for p in parts:
             if p == row.PartitionId:
                 partUse[row.Time][p] = row.Usage
@@ -661,11 +666,11 @@ def gpu(slug):  # Slug is the Server Id
 
     # gets all dates for this server between dates
     dateRange = [metrics.Time for metrics in Metric.query.order_by(Metric.Time).filter_by(ServerId=slug).filter(
-        between(Metric.Time, '2020-02-29 11:55:00', '2020-02-29 23:55:00'))]
+        between(Metric.Time, maxDateMinus12, maxDate))]
 
     # gets all Gpu usages for this server between dates
     useRange = [metrics.Gpu for metrics in Metric.query.order_by(Metric.Time).filter_by(ServerId=slug).filter(
-        between(Metric.Time, '2020-02-29 11:55:00', '2020-02-29 23:55:00'))]
+        between(Metric.Time, maxDateMinus12, maxDate))]
 
     if form.validate_on_submit():  # implementation of user input limiting date range for chart
 
@@ -760,11 +765,11 @@ def ram(slug):  # Slug is the Server Id
 
     # gets all dates for this server between dates
     dateRange = [metrics.Time for metrics in Metric.query.order_by(Metric.Time).filter_by(ServerId=slug).filter(
-        between(Metric.Time, '2020-02-29 11:55:00', '2020-02-29 23:55:00'))]
+        between(Metric.Time, maxDateMinus12, maxDate))]
 
     # gets all Ram usages for this server between dates
     useRange = [metrics.Ram for metrics in Metric.query.order_by(Metric.Time).filter_by(ServerId=slug).filter(
-        between(Metric.Time, '2020-02-29 11:55:00', '2020-02-29 23:55:00'))]
+        between(Metric.Time, maxDateMinus12, maxDate))]
 
     if form.validate_on_submit():  # implementation of user input limiting date range for chart
 
@@ -860,11 +865,11 @@ def ping(slug):  # Slug is the Server Id
 
     # gets all dates for this server between dates
     dateRange = [metrics.Time for metrics in Metric.query.order_by(Metric.Time).filter_by(ServerId=slug).filter(
-        between(Metric.Time, '2020-02-29 11:55:00', '2020-02-29 23:55:00'))]
+        between(Metric.Time, maxDateMinus12, maxDate))]
 
     # gets all Ping usages for this server between dates
     useRange = [metrics.PingLatency for metrics in Metric.query.order_by(Metric.Time).filter_by(ServerId=slug).filter(
-        between(Metric.Time, '2020-02-29 11:55:00', '2020-02-29 23:55:00'))]
+        between(Metric.Time, maxDateMinus12, maxDate))]
 
     if form.validate_on_submit():  # implementation of user input limiting date range for chart
 

@@ -32,33 +32,34 @@
     </div>
 
     {# Racks == Cards #}
-    <div class="col-12 card-columns text-center"> {# formats cards into special columns #}
-        {% for rack in rack %}
+    <div class="testimonial-group mt-3 mb-3">
+        <div class="row p-5">
+            {% for rack in rack %}
+                <div class="col-3 text-center testimonial-group--box"> {# formats cards into special columns #}
+                    <div class="card"> {# card containing a rack #}
+                        <div class="card-header text-center p-3 bg-primary text-white"> {# card header #}
+                            {{ rack.Name }}
+                        </div>
+                        <div class="list-group list-group-flush"> {# lists servers that link to their Real Time page #}
 
-            <div class="card mt-3 " style="width: 19rem;"> {# card containing a rack #}
-                <div class="card-header text-center p-3 bg-primary text-white"> {# card header #}
-                    {{ rack.Name }}
+                            {% for server in server %}
+                                {% if server.RackId == rack.RackId and server.ServerId in masterList %}
+                                    {# grabs all servers in DB#}
+                                    <a href="/real-time-data-overview/{{ server.ServerId }}"
+                                       data-toggle="tooltip" data-placement="right" data-html="true"
+                                       title="{{ metric[server.ServerId] }}"
+                                       class="list-group-item list-group-item-action list-group-item-{{ color[server.ServerId + 'color'] }} text-center">
+                                        {{ server.ServerName }}
+                                        <i class="fas fa-{{ color[server.ServerId + 'icon'] }} float-right"></i>
+                                    </a>
+
+                                {% endif %}
+                            {% endfor %}
+                        </div>
+                    </div>
                 </div>
-                <div class="list-group list-group-flush"> {# lists servers that link to their Real Time page #}
-
-                    {% for server in server %}
-                        {% if server.RackId == rack.RackId and server.ServerId in masterList %}
-                            {# grabs all servers in DB#}
-                            <a href="/real-time-data-overview/{{ server.ServerId }}"
-                               data-toggle="tooltip" data-placement="right" data-html="true"
-                               title="{{ metric[server.ServerId] }}"
-                               class="list-group-item list-group-item-action list-group-item-{{ color[server.ServerId + 'color'] }} text-center">
-                                {{ server.ServerName }}
-                                <i class="fas fa-{{ color[server.ServerId + 'icon'] }} float-right"></i>
-                            </a>
-
-                        {% endif %}
-                    {% endfor %}
-                </div>
-            </div>
-        {% endfor %}
-
-
+            {% endfor %}
+        </div>
     </div>
 {% endblock content %}
 
