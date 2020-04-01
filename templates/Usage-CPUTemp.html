@@ -43,8 +43,8 @@
         <div class="col-12">
             <form method="post">
                 {{ form.csrf_token }}
-                {{ render_field(form.startdate) }}
-                {{ render_field(form.enddate) }}
+                {{ render_field(form.startdate, default="test") }}
+                {{ render_field(form.enddate, default=defEndDate) }}
                 <input type="submit" value="update">
             </form>
         </div>

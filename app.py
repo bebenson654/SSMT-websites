@@ -1,6 +1,6 @@
 from flask import Flask, render_template, request, redirect, flash, url_for
 from flask_wtf import FlaskForm
-from wtforms import StringField, SelectField, SubmitField
+from wtforms import StringField, SelectField, SubmitField, Field
 from wtforms.validators import input_required, length
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import between, null
@@ -8,7 +8,6 @@ from sqlalchemy.sql import func
 from sqlalchemy.orm.exc import FlushError
 from datetime import date, datetime, timedelta
 import pandas as pd
-from flask_fontawesome import FontAwesome
 from wtforms.fields.html5 import DateTimeLocalField
 from flask_fontawesome import FontAwesome
 from _collections import defaultdict
@@ -20,7 +19,7 @@ app.jinja_env.globals.update(zip=zip, zip_longest=zip_longest)
 fa = FontAwesome(app)
 
 app.config[
-    'SQLALCHEMY_DATABASE_URI'] = 'sqlite:///NewServer1.db'  # sets the DB to the stubDB
+    'SQLALCHEMY_DATABASE_URI'] = 'sqlite:///NewDatabase2.db'  # sets the DB to the stubDB
 
 app.config[
     'SECRET_KEY'] = 'secret ssmt'  # secret key used for by WTforms for forms
@@ -112,13 +111,22 @@ class Partition(db.Model):  # Master list table
 # --------------------------------------------------------------------------------------------------------------------
 
 
+mDate = Metric.query.order_by(Metric.Time.desc()).first()  # gets most recent row from metric
+
+maxDate = mDate.Time  # grabs time from row above^
+
+maxDateMinus12 = datetime.strptime(maxDate, '%Y-%m-%d %H:%M:%S')  # converts it to date time object
+maxDateMinus12 = maxDateMinus12 - timedelta(hours=12)  # subtracts 12 hrs
+maxDateMinus12 = datetime.strftime(maxDateMinus12, '%Y-%m-%d %H:%M:%S')  # converts back to string
+
+
+# ----------------------------------------------------------------------------------------------------------------------
+
 class ChartForm(FlaskForm):  # form for the chart range
-    # startdate = StringField('start yyyy-mm-dd hh:mm:ss',
-    #                         validators=[input_required(), length(min=10, max=19)])  # start date field
-    # enddate = StringField('end yyyy-mm-dd hh:mm:ss',
-    #                       validators=[input_required(), length(min=10, max=19)])  # End date field
-    startdate = DateTimeLocalField('start', format='%Y-%m-%dT%H:%M')
-    enddate = DateTimeLocalField('end', format='%Y-%m-%dT%H:%M')
+    defStartDate = datetime.strptime(maxDateMinus12, '%Y-%m-%d %H:%M:%S')
+    defEndDate = datetime.strptime(maxDate, '%Y-%m-%d %H:%M:%S')
+    startdate = DateTimeLocalField(defStartDate, format='%Y-%m-%dT%H:%M')
+    enddate = DateTimeLocalField(defEndDate, format='%Y-%m-%dT%H:%M')
 
 
 class MasterListForm(FlaskForm):
@@ -138,16 +146,6 @@ class HomeFilter(FlaskForm):
 # ----------------------------------------------------------------------------------------------------------------------
 
 
-mDate = Metric.query.order_by(Metric.Time.desc()).first()  # gets most recent row from metric
-
-maxDate = mDate.Time  # grabs time from row above^
-
-maxDateMinus12 = datetime.strptime(maxDate, '%Y-%m-%d %H:%M:%S')  # converts it to date time object
-maxDateMinus12 = maxDateMinus12 - timedelta(hours=12)  # subtracts 12 hrs
-maxDateMinus12 = datetime.strftime(maxDateMinus12, '%Y-%m-%d %H:%M:%S')  # converts back to string
-
-
-# ----------------------------------------------------------------------------------------------------------------------
 # Routes for the pages
 
 
@@ -201,7 +199,7 @@ def home():
 
     masterList = []  # used to only display servers on the Master List
     for s in MasterList.query.all():
-        masterList.append(s.num + '-' + s.Name)  # concatenates strings to make the server id
+        masterList.append(s.Num + '-' + s.Name)  # concatenates strings to make the server id
 
     rack_table = Rack.query.filter(Rack.RackId == Server.RackId).order_by(
         Rack.Name)  # Show only racks that have servers on them
@@ -225,7 +223,7 @@ def master_list():
         mlType = ServerType.query.get(form.type.data)
 
         try:
-            ML = MasterList(Type=mlType.TypeName, Name=form.name.data, num=form.type.data)
+            ML = MasterList(Type=mlType.TypeName, Name=form.name.data, Num=form.type.data)
             db.session.add(ML)
             db.session.commit()
         except FlushError:
@@ -248,7 +246,7 @@ def deleteServer(mlType, mlName):
     tmp = MasterList.query.get_or_404((mlType, mlName))
     print(tmp.Type)
     print(tmp.Name)
-    print(tmp.num)
+    print(tmp.Num)
 
     db.session.delete(tmp)
     db.session.commit()
