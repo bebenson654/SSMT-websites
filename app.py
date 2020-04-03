@@ -437,8 +437,9 @@ def CPU(slug):  # Slug is the Server Id
                         ServerId=slug).filter(
                         Metric.Time.between(x.strftime('%Y-%m-%d'), z.strftime('%Y-%m-%d'))).scalar()
 
-                    dateRange.append(x.date().strftime('%Y-%m-%d'))  # reformats x and adds it to date list
-                    averageList.append(round(avg, 1))  # rounds avg to 1 decimal place and adds it to list
+                    if avg is not None:
+                        dateRange.append(x.date().strftime('%Y-%m-%d'))  # reformats x and adds it to date list
+                        averageList.append(round(avg, 1))  # rounds avg to 1 decimal place and adds it to list
                     minList.append(min)  # adds min to list
                     maxList.append(max)  # adds MAX to list
 
@@ -615,8 +616,9 @@ def disk(slug):  # Slug is the Server Id
                         ServerId=slug).filter(
                         Metric.Time.between(x.strftime('%Y-%m-%d'), z.strftime('%Y-%m-%d'))).scalar()
 
-                    dateRange.append(x.date().strftime('%Y-%m-%d'))  # reformat x and adds it to date list
-                    averageList.append(round(avg, 1))  # rounds avg to 1 decimal place and adds it to list
+                    if avg is not None:
+                        dateRange.append(x.date().strftime('%Y-%m-%d'))  # reformat x and adds it to date list
+                        averageList.append(round(avg, 1))  # rounds avg to 1 decimal place and adds it to list
                     minList.append(min)  # adds min to list
                     maxList.append(max)  # adds MAX to list
 
@@ -715,8 +717,9 @@ def gpu(slug):  # Slug is the Server Id
                         ServerId=slug).filter(
                         Metric.Time.between(x.strftime('%Y-%m-%d'), z.strftime('%Y-%m-%d'))).scalar()
 
-                    dateRange.append(x.date().strftime('%Y-%m-%d'))  # reformat x and adds it to date list
-                    averageList.append(round(avg, 1))  # rounds avg to 1 decimal place and adds it to list
+                    if avg is not None:
+                        dateRange.append(x.date().strftime('%Y-%m-%d'))  # reformat x and adds it to date list
+                        averageList.append(round(avg, 1))  # rounds avg to 1 decimal place and adds it to list
                     minList.append(min)  # adds min to list
                     maxList.append(max)  # adds MAX to list
 
@@ -814,8 +817,9 @@ def ram(slug):  # Slug is the Server Id
                         ServerId=slug).filter(
                         Metric.Time.between(x.strftime('%Y-%m-%d'), z.strftime('%Y-%m-%d'))).scalar()
 
-                    dateRange.append(x.date().strftime('%Y-%m-%d'))  # reformat x and adds it to date list
-                    averageList.append(round(avg, 1))  # rounds avg to 1 decimal place and adds it to list
+                    if avg is not None:
+                        dateRange.append(x.date().strftime('%Y-%m-%d'))  # reformat x and adds it to date list
+                        averageList.append(round(avg, 1))  # rounds avg to 1 decimal place and adds it to list
                     minList.append(min)  # adds min to list
                     maxList.append(max)  # adds MAX to list
 
@@ -918,8 +922,9 @@ def ping(slug):  # Slug is the Server Id
                         ServerId=slug).filter(
                         Metric.Time.between(x.strftime('%Y-%m-%d'), z.strftime('%Y-%m-%d'))).scalar()
 
-                    dateRange.append(x.date().strftime('%Y-%m-%d'))  # reformat x and adds it to date list
-                    averageList.append(round(avg, 1))  # rounds avg to 1 decimal place and adds it to list
+                    if avg is not None:
+                        dateRange.append(x.date().strftime('%Y-%m-%d'))  # reformat x and adds it to date list
+                        averageList.append(round(avg, 1))  # rounds avg to 1 decimal place and adds it to list
                     minList.append(min)  # adds min to list
                     maxList.append(max)  # adds MAX to list
 
