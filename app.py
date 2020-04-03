@@ -19,7 +19,7 @@ app.jinja_env.globals.update(zip=zip, zip_longest=zip_longest)
 fa = FontAwesome(app)
 
 app.config[
-    'SQLALCHEMY_DATABASE_URI'] = 'sqlite:///NewDatabase2.db'  # sets the DB to the stubDB
+    'SQLALCHEMY_DATABASE_URI'] = 'sqlite:///NewServer1.db'  # sets the DB to the stubDB
 
 app.config[
     'SECRET_KEY'] = 'secret ssmt'  # secret key used for by WTforms for forms
@@ -199,7 +199,7 @@ def home():
 
     masterList = []  # used to only display servers on the Master List
     for s in MasterList.query.all():
-        masterList.append(s.Num + '-' + s.Name)  # concatenates strings to make the server id
+        masterList.append(s.num + '-' + s.Name)  # concatenates strings to make the server id
 
     rack_table = Rack.query.filter(Rack.RackId == Server.RackId).order_by(
         Rack.Name)  # Show only racks that have servers on them
@@ -437,8 +437,9 @@ def CPU(slug):  # Slug is the Server Id
                         ServerId=slug).filter(
                         Metric.Time.between(x.strftime('%Y-%m-%d'), z.strftime('%Y-%m-%d'))).scalar()
 
-                    dateRange.append(x.date().strftime('%Y-%m-%d'))  # reformats x and adds it to date list
-                    averageList.append(round(avg, 1))  # rounds avg to 1 decimal place and adds it to list
+                    if avg is not None:
+                        dateRange.append(x.date().strftime('%Y-%m-%d'))  # reformats x and adds it to date list
+                        averageList.append(round(avg, 1))  # rounds avg to 1 decimal place and adds it to list
                     minList.append(min)  # adds min to list
                     maxList.append(max)  # adds MAX to list
 
@@ -615,8 +616,9 @@ def disk(slug):  # Slug is the Server Id
                         ServerId=slug).filter(
                         Metric.Time.between(x.strftime('%Y-%m-%d'), z.strftime('%Y-%m-%d'))).scalar()
 
-                    dateRange.append(x.date().strftime('%Y-%m-%d'))  # reformat x and adds it to date list
-                    averageList.append(round(avg, 1))  # rounds avg to 1 decimal place and adds it to list
+                    if avg is not None:
+                        dateRange.append(x.date().strftime('%Y-%m-%d'))  # reformat x and adds it to date list
+                        averageList.append(round(avg, 1))  # rounds avg to 1 decimal place and adds it to list
                     minList.append(min)  # adds min to list
                     maxList.append(max)  # adds MAX to list
 
@@ -715,8 +717,9 @@ def gpu(slug):  # Slug is the Server Id
                         ServerId=slug).filter(
                         Metric.Time.between(x.strftime('%Y-%m-%d'), z.strftime('%Y-%m-%d'))).scalar()
 
-                    dateRange.append(x.date().strftime('%Y-%m-%d'))  # reformat x and adds it to date list
-                    averageList.append(round(avg, 1))  # rounds avg to 1 decimal place and adds it to list
+                    if avg is not None:
+                        dateRange.append(x.date().strftime('%Y-%m-%d'))  # reformat x and adds it to date list
+                        averageList.append(round(avg, 1))  # rounds avg to 1 decimal place and adds it to list
                     minList.append(min)  # adds min to list
                     maxList.append(max)  # adds MAX to list
 
@@ -814,8 +817,9 @@ def ram(slug):  # Slug is the Server Id
                         ServerId=slug).filter(
                         Metric.Time.between(x.strftime('%Y-%m-%d'), z.strftime('%Y-%m-%d'))).scalar()
 
-                    dateRange.append(x.date().strftime('%Y-%m-%d'))  # reformat x and adds it to date list
-                    averageList.append(round(avg, 1))  # rounds avg to 1 decimal place and adds it to list
+                    if avg is not None:
+                        dateRange.append(x.date().strftime('%Y-%m-%d'))  # reformat x and adds it to date list
+                        averageList.append(round(avg, 1))  # rounds avg to 1 decimal place and adds it to list
                     minList.append(min)  # adds min to list
                     maxList.append(max)  # adds MAX to list
 
@@ -918,8 +922,9 @@ def ping(slug):  # Slug is the Server Id
                         ServerId=slug).filter(
                         Metric.Time.between(x.strftime('%Y-%m-%d'), z.strftime('%Y-%m-%d'))).scalar()
 
-                    dateRange.append(x.date().strftime('%Y-%m-%d'))  # reformat x and adds it to date list
-                    averageList.append(round(avg, 1))  # rounds avg to 1 decimal place and adds it to list
+                    if avg is not None:
+                        dateRange.append(x.date().strftime('%Y-%m-%d'))  # reformat x and adds it to date list
+                        averageList.append(round(avg, 1))  # rounds avg to 1 decimal place and adds it to list
                     minList.append(min)  # adds min to list
                     maxList.append(max)  # adds MAX to list
 
