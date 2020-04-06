@@ -359,9 +359,11 @@ def home():
 
         # creates key:value for tool tips
         # key is server id, value is string of metrics as seen below
-        serverMetricsDict[server.ServerID] = 'CPU: ' + str(metric.Cpu) + '%' + ' | RAM:' + str(metric.Ram) + '%' + \
-                                             ' | Disk: ' + str(metric.Disk) + '%' + ' | GPU: ' + str(metric.Gpu) + '%' \
-                                             + ' | Ping:' + str(metric.PingLatency) + 'ms'
+        serverMetricsDict[server.ServerID] = '<b>CPU</b text-warning>: ' + str(
+            metric.Cpu) + '%' + ' | <b>RAM</b>:' + str(metric.Ram) + '%' + \
+                                             ' | <b>Disk</b>: ' + str(metric.Disk) + '%' + ' | <b>GPU</b>: ' + str(
+            metric.Gpu) + '%' \
+                                             + ' | <b>Ping</b>:' + str(metric.PingLatency) + 'ms'
 
     if form.validate_on_submit():
         server_table = Server.query.filter_by(
