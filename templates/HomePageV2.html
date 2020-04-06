@@ -6,19 +6,22 @@
 
 {% block title %} {# Overides layout.html default title #}
     <title>System Monitoring Tool</title> {# Title - shown in tab on browser #}
+    <link rel="icon" href="/static/favicons/home.ico">
 {% endblock title %}
 
 {% block content %} {# Overides layout.html body section #}
 
-    <div class="row mt-3 text-center"> {# Row for page header #}
-        <div class="col-12 ml-auto p-3 mb-2 bg-secondary text-white">
-            <h1>Server System Monitoring Tool</h1>
+    <a class="text-decoration-none" href="{{ url_for('home') }}">
+        <div class="row mt-3 text-center"> {# Row for page header #}
+            <div class="col-12 ml-auto p-3 mb-2 bg-secondary text-white">
+                <h1>Server System Monitoring Tool</h1>
+            </div>
         </div>
-    </div>
+    </a>
 
     <div class="row mt-3 text-center"> {# Row for Master list button and dropdown #}
         <div class="col-2 text-left"> {# master list button #}
-            <a class="btn btn-secondary btn-lg" href="/masterlist" role="button">Master List</a>
+            <a class="btn btn-secondary btn-lg" href="/masterlist" role="button"><i class="fas fa-list"></i> Master List</a>
         </div>
         <div class="col-10 text-right"> {# dropdown for filter | filter does not work #}
             <form method="post">
@@ -62,14 +65,3 @@
         </div>
     </div>
 {% endblock content %}
-
-{#                <a href="#" class="list-group-item list-group-item-action text-center">DB-01<img src="WebApp\Red X.png"    #}
-{#                                                                                                 class="float-right"></a>#}
-{#                <a href="#" class="list-group-item list-group-item-action text-center">Head-01<img#}
-{#                        src="WebApp\Red X.png" class="float-right"></a>#}
-{#                <a href="#" class="list-group-item list-group-item-action text-center">Log-01<img src="WebApp\Red X.png"#}
-{#                                                                                                  class="float-right"></a>#}
-{#                <a href="#" class="list-group-item list-group-item-action text-center">Scan-01<img#}
-{#                        src="WebApp\Red X.png" class="float-right"></a>#}
-{#                <a href="#" class="list-group-item list-group-item-action text-center">Lic-01<img#}
-{#                        src="C:\Users\Mia\Documents\Spring2020\WebApp\Red.png" class="float-right"></a>#}

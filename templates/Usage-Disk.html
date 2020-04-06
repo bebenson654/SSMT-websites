@@ -8,24 +8,31 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js@2.8.0"></script> {# Script needed for chart.js #}
 
     <title>Disk-Usage - {{ server.ServerName }}</title> {# Title - shown in tab on browser #}
+    <link rel="icon" href="/static/favicons/hdd.ico">
 {% endblock title %}
 
 {% block content %} {# Overides layout.html body section #}
 
-    <div class="row mt-3 text-center"> {# Row for page header #}
-        <div class="col-12 ml-auto p-3 mb-2 bg-secondary text-white">
-            <h1>Server System Monitoring Tool</h1>
+    <a class="text-decoration-none" href="{{ url_for('home') }}">
+        <div class="row mt-3 text-center"> {# Row for page header #}
+            <div class="col-12 ml-auto p-3 mb-2 bg-secondary text-white">
+                <h1>Server System Monitoring Tool</h1>
+            </div>
         </div>
-    </div>
+    </a>
 
-    <!--Home Button and Server-->
     <div class="mt-3 text-center"> {# Home button & Rack & Server Names #}
         <div class="row card-body border border-dark font-weight-bold">
-            <div class="text-left">
-                <a class="btn btn-secondary btn-lg" href="/" role="button">Home</a>
+            <div class="col-2 text-left">
+                <a class="btn btn-secondary btn-lg" href="{{ url_for('RT', slug=server.ServerId) }}" role="button"><i
+                        class="fas fa-arrow-alt-circle-left"></i> Back</a>
             </div>
-            <div class="col-10">
-                <h2 class="text-center">Rack: {{ rack.Name }} | Server: {{ server.ServerName }}</h2>
+            <div class="col-8 text-center">
+                <h2>Rack: {{ rack.Name }} | Server: {{ server.ServerName }}</h2>
+            </div>
+            <div class="col-2 text-right">
+                <a class="btn btn-secondary btn-lg" href="{{ url_for('home') }}" role="button"><i
+                        class="fa fa-home"></i> Home</a>
             </div>
         </div>
     </div>
@@ -34,6 +41,23 @@
     <div class="row text-center m-2"> {# Displays this servers Disk usage #}
         <div class="col-12">
             <h2 class="text-{{ color }}"> Disk Usage: <b>{{ ametric.Disk }}%</b></h2>
+        </div>
+    </div>
+
+    <div class="row mt-3 text-center">
+        <div class="col-12">
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                <!-- Categories: success (green), info (blue), warning (yellow), danger (red) -->
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="alert alert-{{ category }} alert-dismissible" role="alert">
+                            <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span
+                                    aria-hidden="true">&times;</span></button>
+                            <!-- <strong>Title</strong> --> {{ message }}
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
         </div>
     </div>
 

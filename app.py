@@ -34,7 +34,7 @@ class Server(db.Model):  # Server Table
     __table_args__ = {'extend_existing': True}
     ServerId = db.Column(db.Text, primary_key=True)  # primary key column
     Metrics = db.relationship('Metric', backref='Server', lazy='dynamic')  # pseudo column for relationship
-    ServerID = db.Column(db.Text, db.ForeignKey('server.ServerId'))  # foreign key column? **********************
+    ServerID = db.Column(db.Text, db.ForeignKey('server.ServerId'))  # foreign key column
 
 
 class Metric(db.Model):  # metric table
@@ -220,87 +220,99 @@ def usagePages(metricName, slug):
 
         difference = eDate - sDate  # calculating the difference between the start and end date
 
-        if difference.total_seconds() <= 86400:  # check to see if the difference is less than 24hrs
-            # Returns list of dates within start and end date
-            dateRange = [metrics.Time for metrics in Metric.query.order_by(Metric.Time).filter_by(ServerId=slug).filter(
-                between(Metric.Time, startDate, endDate))]
+        if difference.total_seconds() < 0:
+            flash('Error: Start date is greater than end date', 'danger')
 
-            # Returns usages that within  start and end date
-            useRange = [getattr(metrics, metricName) for metrics in Metric.query.order_by(Metric.Time).filter_by(
-                ServerId=slug).filter(between(Metric.Time, startDate, endDate))]
+            dateRange = []
+            useRange = []
+        else:
 
-            # ----------------------------------------------------------------------------------------------------------
-            if metricName == 'disk':
-                # resets parts and partUse to update the date range to the one provided.
-                parts = []  # list of all partitions for a server
+            if difference.total_seconds() <= 86400:  # check to see if the difference is less than 24hrs
+                # Returns list of dates within start and end date
+                dateRange = [metrics.Time for metrics in
+                             Metric.query.order_by(Metric.Time).filter_by(ServerId=slug).filter(
+                                 between(Metric.Time, startDate, endDate))]
 
-                # Adds unique partition Ids to the list for given server
-                for p in Partition.query.filter_by(ServerId=slug).order_by(Partition.PartitionId).filter(between(
-                        Partition.Time, startDate, endDate)):
-                    if p.PartitionId not in parts:
-                        parts.append(p.PartitionId)
+                # Returns usages that within  start and end date
+                useRange = [getattr(metrics, metricName) for metrics in Metric.query.order_by(Metric.Time).filter_by(
+                    ServerId=slug).filter(between(Metric.Time, startDate, endDate))]
 
-                partUse = defaultdict(dict)  # dictionary used for disk table with partitions
-                '''PartsUse is a dictionary of dictionaries. The top level dictionary has a key of a Date and Time, and 
-                a value of another dictionary. In that dictionary the keys are 'total' which gives you the total disk 
-                use for that date and time. The other keys are all of the partition IDs for the server, and the values 
-                are that partitions use for that date and time. '''
+                # ----------------------------------------------------------------------------------------------------------
+                if metricName == 'disk':
+                    # resets parts and partUse to update the date range to the one provided.
+                    parts = []  # list of all partitions for a server
 
-                # adds disk use from metrics table to dictionary for total
-                for row in Metric.query.order_by(Metric.Time).filter_by(ServerId=slug).filter(between(
-                        Metric.Time, startDate, endDate)):
-                    partUse[row.Time]['total'] = row.Disk
+                    # Adds unique partition Ids to the list for given server
+                    for p in Partition.query.filter_by(ServerId=slug).order_by(Partition.PartitionId).filter(between(
+                            Partition.Time, startDate, endDate)):
+                        if p.PartitionId not in parts:
+                            parts.append(p.PartitionId)
 
-                # Adds a key for each partition with the values of an empty string
-                for row in Partition.query.filter_by(ServerId=slug).filter(between(
-                        Partition.Time, startDate, endDate)):
-                    for p in parts:
-                        partUse[row.Time][p] = ''
+                    partUse = defaultdict(dict)  # dictionary used for disk table with partitions
+                    '''PartsUse is a dictionary of dictionaries. The top level dictionary has a key of a Date and Time, and 
+                    a value of another dictionary. In that dictionary the keys are 'total' which gives you the total disk 
+                    use for that date and time. The other keys are all of the partition IDs for the server, and the values 
+                    are that partitions use for that date and time. '''
 
-                # Adds the actual usage for each partition if there is one
-                for row in Partition.query.filter_by(ServerId=slug).filter(between(
-                        Partition.Time, startDate, endDate)):
-                    for p in parts:
-                        if p == row.PartitionId:
-                            partUse[row.Time][p] = row.Usage
+                    # adds disk use from metrics table to dictionary for total
+                    for row in Metric.query.order_by(Metric.Time).filter_by(ServerId=slug).filter(between(
+                            Metric.Time, startDate, endDate)):
+                        partUse[row.Time]['total'] = row.Disk
 
-        else:  # if deference is grater than 24hrs
+                    # Adds a key for each partition with the values of an empty string
+                    for row in Partition.query.filter_by(ServerId=slug).filter(between(
+                            Partition.Time, startDate, endDate)):
+                        for p in parts:
+                            partUse[row.Time][p] = ''
 
-            x = sDate  # will be used in iterating the for loop
-            y = timedelta(days=1)  # datetime variable that equals 1 day
+                    # Adds the actual usage for each partition if there is one
+                    for row in Partition.query.filter_by(ServerId=slug).filter(between(
+                            Partition.Time, startDate, endDate)):
+                        for p in parts:
+                            if p == row.PartitionId:
+                                partUse[row.Time][p] = row.Usage
 
-            while x <= eDate:
-                for p in pd.date_range(sDate, eDate):  # for loop starting at the start date and ending on end date
-                    # x = sDate.date()
-                    z = x + y  # z = current value of x plus 1 day
+            else:  # if deference is grater than 24hrs
 
-                    # gets the average for each day also temporarily converts x & z to string for query
-                    avg = db.session.query(db.func.avg(getattr(Metric, metricName)).label('average')).order_by(
-                        Metric.Time).filter_by(ServerId=slug).filter(Metric.Time.between(
-                        x.strftime('%Y-%m-%d'), z.strftime('%Y-%m-%d'))).scalar()
+                x = sDate  # will be used in iterating the for loop
+                y = timedelta(days=1)  # datetime variable that equals 1 day
 
-                    # gets the min for each day also temporarily converts x & z to string for query
-                    minimum = db.session.query(db.func.min(getattr(Metric, metricName)).label('average')).order_by(
-                        Metric.Time).filter_by(ServerId=slug).filter(Metric.Time.between(
-                        x.strftime('%Y-%m-%d'), z.strftime('%Y-%m-%d'))).scalar()
+                while x <= eDate:
+                    for p in pd.date_range(sDate, eDate):  # for loop starting at the start date and ending on end date
+                        # x = sDate.date()
+                        z = x + y  # z = current value of x plus 1 day
 
-                    # gets the max for each day also temporarily converts x & z to string for query
-                    maximum = db.session.query(db.func.max(getattr(Metric, metricName)).label('average')).order_by(
-                        Metric.Time).filter_by(ServerId=slug).filter(Metric.Time.between(
-                        x.strftime('%Y-%m-%d'), z.strftime('%Y-%m-%d'))).scalar()
+                        # gets the average for each day also temporarily converts x & z to string for query
+                        avg = db.session.query(db.func.avg(getattr(Metric, metricName)).label('average')).order_by(
+                            Metric.Time).filter_by(ServerId=slug).filter(Metric.Time.between(
+                            x.strftime('%Y-%m-%d'), z.strftime('%Y-%m-%d'))).scalar()
 
-                    if avg is not None:  # prevents trying to round None and chart from having dates with no data
-                        dateRange.append(x.date().strftime('%Y-%m-%d'))  # reformat x and adds it to date list
-                        averageList.append(round(avg, 1))  # rounds avg to 1 decimal place and adds it to list
-                    minList.append(minimum)  # adds min to list
-                    maxList.append(maximum)  # adds MAX to list
+                        # gets the min for each day also temporarily converts x & z to string for query
+                        minimum = db.session.query(db.func.min(getattr(Metric, metricName)).label('average')).order_by(
+                            Metric.Time).filter_by(ServerId=slug).filter(Metric.Time.between(
+                            x.strftime('%Y-%m-%d'), z.strftime('%Y-%m-%d'))).scalar()
 
-                    x = x + y  # adds 1 day to x to iterate through loop
+                        # gets the max for each day also temporarily converts x & z to string for query
+                        maximum = db.session.query(db.func.max(getattr(Metric, metricName)).label('average')).order_by(
+                            Metric.Time).filter_by(ServerId=slug).filter(Metric.Time.between(
+                            x.strftime('%Y-%m-%d'), z.strftime('%Y-%m-%d'))).scalar()
+
+                        if avg is not None:  # prevents trying to round None and chart from having dates with no data
+                            dateRange.append(x.date().strftime('%Y-%m-%d'))  # reformat x and adds it to date list
+                            averageList.append(round(avg, 1))  # rounds avg to 1 decimal place and adds it to list
+                        minList.append(minimum)  # adds min to list
+                        maxList.append(maximum)  # adds MAX to list
+
+                        x = x + y  # adds 1 day to x to iterate through loop
 
     if len(minList) == 0:  # checks to see if min list is empty | will be empty if date range < 24hrs
         minList = 'xxx'  # sets empty lists to string which will be checked for in the html file
         maxList = 'xxx'
         averageList = 'xxx'
+
+    if not dateRange:
+        flash('There is no data for the given date range', 'info')
+
     return server, dateRange, useRange, form, tmpLoc2, maxList, minList, averageList, partUse, parts
 
 
