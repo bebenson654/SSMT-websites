@@ -1,7 +1,7 @@
 from flask import Flask, render_template, request, redirect, flash, url_for
 from flask_wtf import FlaskForm
 from wtforms import StringField, SelectField, SubmitField, Field
-from wtforms.validators import input_required, length
+from wtforms.validators import input_required, NoneOf, AnyOf, Regexp
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import between, null
 from sqlalchemy.sql import func
@@ -17,7 +17,7 @@ app._static_folder = 'static'
 app.jinja_env.globals.update(zip=zip)
 fa = FontAwesome(app)
 
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///NewServer1.db'  # sets the DB to the stubDB
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///NewDatabase2.db'  # sets the DB to the stubDB
 
 app.config['SECRET_KEY'] = 'secret ssmt'  # secret key used for by WTforms for forms
 
@@ -130,7 +130,11 @@ class ChartForm(FlaskForm):  # form for the chart range
 class MasterListForm(FlaskForm):  # form for master list
     type = SelectField('type', choices=[(st.TypeId, st.TypeName) for st in ServerType.query.all()],
                        validators=[input_required()])
-    name = StringField('name', validators=[input_required()])
+
+    # only allows alphanumeric and/or '-' and '_'   No spaces either
+    name = StringField('name', validators=[
+        input_required(), Regexp('^(\w|-|_)+$', message='Please only use letters, numbers, "-", or "_"')])
+
     add = SubmitField()
 
 
@@ -353,7 +357,7 @@ def home():
 
     masterList = []  # used to only display servers on the Master List
     for s in MasterList.query.all():
-        masterList.append(s.num + '-' + s.Name)  # concatenates strings to make the server id
+        masterList.append(s.Num + '-' + s.Name)  # concatenates strings to make the server id
 
     rack_table = Rack.query.filter(Rack.RackId == Server.RackId).order_by(
         Rack.Name)  # Show only racks that have servers on them
@@ -377,15 +381,14 @@ def master_list():
         mlType = ServerType.query.get(form.type.data)
 
         try:
-            ML = MasterList(Type=mlType.TypeName, Name=form.name.data, Num=form.type.data)
+            # spaces are removed from the name
+            ML = MasterList(Type=mlType.TypeName, Name=form.name.data.replace(' ', ''), Num=form.type.data)
             db.session.add(ML)
             db.session.commit()
+            flash(mlType.TypeName + '-' + form.name.data.replace(' ', '') + ' was added!', 'success')
         except FlushError:
             db.session.rollback()
-            print('Error 1234')
-        print(form.name.data)
-        print(form.type.data)
-        print(mlType.TypeName)
+            flash('There was an issue adding your server. Make sure the server Id is unique.', 'danger')
         return redirect(url_for('master_list'))
     return render_template('MasterList.html', mList=mList, form=form)  # only returns the hard-coded master list for now
 
@@ -396,7 +399,7 @@ def deleteServer(mlType, mlName):
 
     db.session.delete(tmp)
     db.session.commit()
-    flash('The Server has been deleted!', 'success')
+    flash(mlType + '-' + mlName + ' has been deleted!', 'info')
     return redirect(url_for('master_list'))
 
 
@@ -588,7 +591,6 @@ def gpu(slug):  # Slug is the Server Id
 
 @app.route('/usage-RAM/<slug>', methods=['POST', 'GET'])  # route for cpu usage for a specific server
 def ram(slug):  # Slug is the Server Id
-
 
     tmp = Metric.query.order_by(Metric.Time.desc()).filter_by(ServerID=slug).first()
     metric_row = Metric.query.get(tmp.MetricId)  # gets the most recent metrics for server
