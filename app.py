@@ -17,7 +17,7 @@ app._static_folder = 'static'
 app.jinja_env.globals.update(zip=zip)
 fa = FontAwesome(app)
 
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///NewServer1.db'  # sets the DB to the stubDB
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///FinalDatabase1Month.db'  # sets the DB to the stubDB
 
 app.config['SECRET_KEY'] = 'secret ssmt'  # secret key used for by WTforms for forms
 
@@ -353,10 +353,10 @@ def home():
 
     masterList = []  # used to only display servers on the Master List
     for s in MasterList.query.all():
-        masterList.append(s.num + '-' + s.Name)  # concatenates strings to make the server id
+        masterList.append(s.Num + '-' + s.Name)  # concatenates strings to make the server id
 
-    rack_table = Rack.query.filter(Rack.RackId == Server.RackId).order_by(
-        Rack.Name)  # Show only racks that have servers on them
+    #rack_table = Rack.query.filter(Rack.RackId == Server.RackId).order_by(Rack.Name)  # Show only racks that have servers on them
+    rack_table = Rack.query.order_by(Rack.Name)  # Shows all racks in database
 
     return render_template('HomePageV2.html',
                            server=server_table, rack=rack_table, form=form, metric=serverMetricsDict,
