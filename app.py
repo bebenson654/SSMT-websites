@@ -121,10 +121,10 @@ maxDateMinus12 = datetime.strftime(maxDateMinus12, '%Y-%m-%d %H:%M:%S')  # conve
 # wtforms forms
 
 class ChartForm(FlaskForm):  # form for the chart range
-    defStartDate = datetime.strptime(maxDateMinus12, '%Y-%m-%d %H:%M:%S')
-    defEndDate = datetime.strptime(maxDate, '%Y-%m-%d %H:%M:%S')
-    startdate = DateTimeLocalField(defStartDate, format='%Y-%m-%dT%H:%M')
-    enddate = DateTimeLocalField(defEndDate, format='%Y-%m-%dT%H:%M')
+    defaultStartDate = datetime.strptime(maxDateMinus12, '%Y-%m-%d %H:%M:%S')
+    defaultEndDate = datetime.strptime(maxDate, '%Y-%m-%d %H:%M:%S')
+    startdate = DateTimeLocalField('StartDate', default=defaultStartDate, format='%Y-%m-%dT%H:%M')
+    enddate = DateTimeLocalField('EndDate', default=defaultEndDate, format='%Y-%m-%dT%H:%M')
 
 
 class MasterListForm(FlaskForm):  # form for master list
