@@ -145,6 +145,105 @@ class HomeFilter(FlaskForm):  # filter form on home page
 
 
 # ----------------------------------------------------------------------------------------------------------------------
+def getServerAndMetricColor():
+    serverColorDict = defaultdict(dict)
+    servers = Server.query.distinct().all()
+
+    for server in servers:
+        tmp = Metric.query.order_by(Metric.Time.desc()).filter_by(ServerId=server.ServerId).first()
+        metric_row = Metric.query.get(tmp.MetricId)  # gets the most recent metrics for server
+
+        if metric_row.Cpu > 80:
+            serverColorDict[server.ServerId]['CpuColor'] = 'danger'  # sets color to bootstrap red
+            serverColorDict[server.ServerId]['CpuIcon'] = 'times'  # sets icon to Font Awesome 'x'
+        elif 50 <= metric_row.Cpu <= 80:
+            serverColorDict[server.ServerId]['CpuColor'] = 'warning'  # sets color to bootstrap yellowish
+            serverColorDict[server.ServerId][
+                'CpuIcon'] = 'exclamation-triangle'  # sets icon to Font Awesome warning triangle
+        elif metric_row.Cpu < 50:
+            serverColorDict[server.ServerId]['CpuColor'] = 'success'  # sets color to bootstrap green
+            serverColorDict[server.ServerId]['CpuIcon'] = 'check'  # sets icon to Font Awesome check
+        else:
+            serverColorDict[server.ServerId]['CpuColor'] = 'dark'  # sets color to bootstrap black
+            serverColorDict[server.ServerId]['CpuIcon'] = 'question'  # sets icon to Font Awesome '?'
+
+        if metric_row.Gpu > 80:
+            serverColorDict[server.ServerId]['GpuColor'] = 'danger'  # sets color to bootstrap red
+            serverColorDict['GpuIcon'] = 'times'  # sets icon to Font Awesome 'x'
+        elif 50 <= metric_row.Gpu <= 80:
+            serverColorDict[server.ServerId]['GpuColor'] = 'warning'  # sets color to bootstrap yellowish
+            serverColorDict[server.ServerId][
+                'GpuIcon'] = 'exclamation-triangle'  # sets icon to Font Awesome warning triangle
+        elif metric_row.Gpu < 50:
+            serverColorDict[server.ServerId]['GpuColor'] = 'success'  # sets color to bootstrap green
+            serverColorDict[server.ServerId]['GpuIcon'] = 'check'  # sets icon to Font Awesome check
+        else:
+            serverColorDict[server.ServerId]['GpuColor'] = 'dark'  # sets color to bootstrap black
+            serverColorDict[server.ServerId]['GpuIcon'] = 'question'  # sets icon to Font Awesome '?'
+
+        if metric_row.Ram > 80:
+            serverColorDict[server.ServerId]['RamColor'] = 'danger'  # sets color to bootstrap red
+            serverColorDict[server.ServerId]['RamIcon'] = 'times'  # sets icon to Font Awesome 'x'
+        elif 50 <= metric_row.Ram <= 80:
+            serverColorDict[server.ServerId]['RamColor'] = 'warning'  # sets color to bootstrap yellowish
+            serverColorDict[server.ServerId][
+                'RamIcon'] = 'exclamation-triangle'  # sets icon to Font Awesome warning triangle
+        elif metric_row.Ram < 50:
+            serverColorDict[server.ServerId]['RamColor'] = 'success'  # sets color to bootstrap green
+            serverColorDict[server.ServerId]['RamIcon'] = 'check'  # sets icon to Font Awesome check
+        else:
+            serverColorDict[server.ServerId]['RamColor'] = 'dark'  # sets color to bootstrap black
+            serverColorDict[server.ServerId]['RamIcon'] = 'question'  # sets icon to Font Awesome '?'
+
+        if metric_row.Disk > 90:
+            serverColorDict[server.ServerId]['DiskColor'] = 'danger'  # sets color to bootstrap red
+            serverColorDict[server.ServerId]['DiskIcon'] = 'times'  # sets icon to Font Awesome 'x'
+        elif 70 <= metric_row.Disk <= 90:
+            serverColorDict[server.ServerId]['DiskColor'] = 'warning'  # sets color to bootstrap yellowish
+            serverColorDict[server.ServerId][
+                'DiskIcon'] = 'exclamation-triangle'  # sets icon to Font Awesome warning triangle
+        elif metric_row.Disk < 70:
+            serverColorDict[server.ServerId]['DiskColor'] = 'success'  # sets color to bootstrap green
+            serverColorDict[server.ServerId]['DiskIcon'] = 'check'  # sets icon to Font Awesome check
+        else:
+            serverColorDict[server.ServerId]['Disk'] = 'dark'  # sets color to bootstrap black
+            serverColorDict[server.ServerId]['DiskIcon'] = 'question'  # sets icon to Font Awesome '?'
+
+        if metric_row.PingLatency != null:
+            serverColorDict[server.ServerId]['PingStatus'] = "Responding"  # sets status of ping
+            serverColorDict[server.ServerId]['PingColor'] = 'success'  # sets color to bootstrap green
+            serverColorDict[server.ServerId]['PingIcon'] = 'check'  # sets icon to Font Awesome check
+        elif metric_row.PingLatency == null:
+            serverColorDict[server.ServerId]['PingStatus'] = "Not Responding"  # sets status of ping
+            serverColorDict[server.ServerId]['PingColor'] = 'danger'  # sets color to bootstrap red
+            serverColorDict[server.ServerId]['PingIcon'] = 'times'  # sets icon to Font Awesome 'x'
+        else:
+            serverColorDict[server.ServerId]['PingStatus'] = "Unknown"  # sets status of ping
+            serverColorDict[server.ServerId]['PingColor'] = 'dark'  # sets color to bootstrap black
+            serverColorDict[server.ServerId]['PingIcon'] = 'question'  # sets icon to Font Awesome '?'
+
+        #
+        if metric_row.Cpu > 80 or metric_row.Disk > 90 or metric_row.Ram > 80 or metric_row.Gpu > 90 or \
+                metric_row.PingLatency is None:
+            serverColorDict[server.ServerID]['ServerColor'] = 'danger'
+            serverColorDict[server.ServerID]['ServerIcon'] = 'times'
+
+        elif 50 <= metric_row.Cpu <= 80 or 70 <= metric_row.Disk <= 90 or 50 <= metric_row.Ram <= 80 or \
+                50 <= metric_row.Gpu <= 80:
+            serverColorDict[server.ServerID]['ServerColor'] = 'warning'
+            serverColorDict[server.ServerID]['ServerIcon'] = 'exclamation-triangle'
+        elif metric_row.Cpu < 50 or metric_row.Disk < 70 or metric_row.Ram < 50 or metric_row.Gpu < 50 or \
+                metric_row.PingLatency is not None:
+            serverColorDict[server.ServerID]['ServerColor'] = 'success'
+            serverColorDict[server.ServerID]['ServerIcon'] = 'check'
+        else:
+            serverColorDict[server.ServerID]['ServerColor'] = 'light'
+            serverColorDict[server.ServerID]['ServerIcon'] = 'question'
+
+    return serverColorDict
+
+
+# ----------------------------------------------------------------------------------------------------------------------
 # Function/Method used for usage pages
 def usagePages(metricName, slug):
     # metricName is the name of the column in the Metrics table that you ant info from
@@ -313,7 +412,9 @@ def usagePages(metricName, slug):
     if not dateRange:
         flash('There is no data for the given date range', 'info')
 
-    return server, dateRange, useRange, form, tmpLoc2, maxList, minList, averageList, partUse, parts
+    color = getServerAndMetricColor()
+
+    return server, dateRange, useRange, form, tmpLoc2, maxList, minList, averageList, partUse, parts, color
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -327,43 +428,52 @@ def home():
 
     serverMetricsDict = {}  # Dictionary used for tooltips on home page
 
-    serverColorDict = {}  # Dictionary used for Color coding on home page
+    # serverColorDict = {}  # Dictionary used for Color coding on home page
+    colorDict = getServerAndMetricColor()
 
     for server in server_table:  # loop to add server id with its metrics to dictionary
 
         # gets metrics for each server in loop
         metric = Metric.query.order_by(Metric.Time.desc()).filter_by(ServerId=server.ServerId).first()
 
-        # sets color server in card
-        if metric.Cpu > 80 or metric.Disk > 90 or metric.Ram > 80 \
-                or metric.Gpu > 90 or metric.PingLatency is None:
-            color = 'danger'  # bootstrap Red
-            icon = 'times'  # # Font Awesome icon 'x'
+        cpuColor = colorDict[server.ServerId]['CpuColor']
+        ramColor = colorDict[server.ServerId]['RamColor']
+        gpuColor = colorDict[server.ServerId]['GpuColor']
+        diskColor = colorDict[server.ServerId]['DiskColor']
+        pingColor = colorDict[server.ServerId]['PingColor']
 
-        elif 50 <= metric.Cpu <= 80 or 70 <= metric.Disk <= 90 or \
-                50 <= metric.Ram <= 80 or 50 <= metric.Gpu <= 80:
-            color = 'warning'  # bootstrap Yellowish
-            icon = 'exclamation-triangle'  # # Font Awesome icon warning triangle
-
-        elif metric.Cpu < 50 or metric.Disk < 70 or metric.Ram < \
-                50 or metric.Gpu < 50 or metric.PingLatency is not None:
-            color = 'success'  # bootstrap Green
-            icon = 'check'  # # Font Awesome icon check
-
-        else:
-            color = 'light'  # bootstrap White
-            icon = 'question'  # Font Awesome icon '?'
-
-        serverColorDict[server.ServerID + 'color'] = color  # sets server color to color assigned above
-        serverColorDict[server.ServerID + 'icon'] = icon  # sets server icon to color assigned above
+        #
+        #     # sets color server in card
+        #     if metric.Cpu > 80 or metric.Disk > 90 or metric.Ram > 80 \
+        #             or metric.Gpu > 90 or metric.PingLatency is None:
+        #         color = 'danger'  # bootstrap Red
+        #         icon = 'times'  # # Font Awesome icon 'x'
+        #
+        #     elif 50 <= metric.Cpu <= 80 or 70 <= metric.Disk <= 90 or \
+        #             50 <= metric.Ram <= 80 or 50 <= metric.Gpu <= 80:
+        #         color = 'warning'  # bootstrap Yellowish
+        #         icon = 'exclamation-triangle'  # # Font Awesome icon warning triangle
+        #
+        #     elif metric.Cpu < 50 or metric.Disk < 70 or metric.Ram < \
+        #             50 or metric.Gpu < 50 or metric.PingLatency is not None:
+        #         color = 'success'  # bootstrap Green
+        #         icon = 'check'  # # Font Awesome icon check
+        #
+        #     else:
+        #         color = 'light'  # bootstrap White
+        #         icon = 'question'  # Font Awesome icon '?'
+        #
+        #     serverColorDict[server.ServerID + 'color'] = color  # sets server color to color assigned above
+        #     serverColorDict[server.ServerID + 'icon'] = icon  # sets server icon to color assigned above
 
         # creates key:value for tool tips
         # key is server id, value is string of metrics as seen below
-        serverMetricsDict[server.ServerID] = '<b>CPU</b text-warning>: ' + str(
-            metric.Cpu) + '%' + ' | <b>RAM</b>:' + str(metric.Ram) + '%' + \
-                                             ' | <b>Disk</b>: ' + str(metric.Disk) + '%' + ' | <b>GPU</b>: ' + str(
-            metric.Gpu) + '%' \
-                                             + ' | <b>Ping</b>:' + str(metric.PingLatency) + 'ms'
+        serverMetricsDict[server.ServerId] = f'''<h6 class="text-{cpuColor}"><b>CPU</b>: {str(metric.Cpu)}%</h6>
+                                                <h6 class="text-{ramColor}"><b>RAM</b>: {str(metric.Ram)}%</h6>
+                                                <h6 class="text-{diskColor}"><b>Disk</b>: {str(metric.Disk)}%</h6>
+                                                <h6 class="text-{gpuColor}"><b>GPU</b>: {str(metric.Gpu)}%</h6>
+                                                <h6 class="text-{pingColor}"><b>Ping</b>: {str(metric.PingLatency)}ms
+                                                </h6>'''
 
     if form.validate_on_submit():
         server_table = Server.query.filter_by(
@@ -373,13 +483,12 @@ def home():
     for s in MasterList.query.all():
         masterList.append(s.Num + '-' + s.Name)  # concatenates strings to make the server id
 
-    #rack_table = Rack.query.filter(Rack.RackId == Server.RackId).order_by(Rack.Name)  # Show only racks that have servers on them
+    #  rack_table = Rack.query.filter(Rack.RackId == Server.RackId).order_by(Rack.Name)  # Show only racks that have
+    #                                                                                       servers on them
     rack_table = Rack.query.order_by(Rack.Name)  # Shows all racks in database
 
-    return render_template('HomePageV2.html',
-                           server=server_table, rack=rack_table, form=form, metric=serverMetricsDict,
-                           masterList=masterList,
-                           color=serverColorDict)  # returns V2 home page html doc with that variable
+    return render_template('HomePageV2.html', server=server_table, rack=rack_table, form=form, metric=serverMetricsDict,
+                           masterList=masterList, color=colorDict)  # returns V2 home page html doc with that variable
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -446,76 +555,78 @@ def RT(slug):  # Slug is the Server Id
     tmp = Metric.query.order_by(Metric.Time.desc()).filter_by(ServerId=slug).first()
     metric_row = Metric.query.get(tmp.MetricId)  # gets the most recent metrics for server
 
-    serverColorDict = {}  # used to to get color and icon for conditional formatting
+    # serverColorDict = {}  # used to to get color and icon for conditional formatting
+    #
+    # if metric_row.Cpu > 80:
+    #     serverColorDict['CpuColor'] = 'danger'  # sets color to bootstrap red
+    #     serverColorDict['CpuIcon'] = 'times'  # sets icon to Font Awesome 'x'
+    # elif 50 <= metric_row.Cpu <= 80:
+    #     serverColorDict['CpuColor'] = 'warning'  # sets color to bootstrap yellowish
+    #     serverColorDict['CpuIcon'] = 'exclamation-triangle'  # sets icon to Font Awesome warning triangle
+    # elif metric_row.Cpu < 50:
+    #     serverColorDict['CpuColor'] = 'success'  # sets color to bootstrap green
+    #     serverColorDict['CpuIcon'] = 'check'  # sets icon to Font Awesome check
+    # else:
+    #     serverColorDict['CpuColor'] = 'dark'  # sets color to bootstrap black
+    #     serverColorDict['CpuIcon'] = 'question'  # sets icon to Font Awesome '?'
+    #
+    # if metric_row.Gpu > 80:
+    #     serverColorDict['GpuColor'] = 'danger'  # sets color to bootstrap red
+    #     serverColorDict['GpuIcon'] = 'times'  # sets icon to Font Awesome 'x'
+    # elif 50 <= metric_row.Gpu <= 80:
+    #     serverColorDict['GpuColor'] = 'warning'  # sets color to bootstrap yellowish
+    #     serverColorDict['GpuIcon'] = 'exclamation-triangle'  # sets icon to Font Awesome warning triangle
+    # elif metric_row.Gpu < 50:
+    #     serverColorDict['GpuColor'] = 'success'  # sets color to bootstrap green
+    #     serverColorDict['GpuIcon'] = 'check'  # sets icon to Font Awesome check
+    # else:
+    #     serverColorDict['GpuColor'] = 'dark'  # sets color to bootstrap black
+    #     serverColorDict['GpuIcon'] = 'question'  # sets icon to Font Awesome '?'
+    #
+    # if metric_row.Ram > 80:
+    #     serverColorDict['RamColor'] = 'danger'  # sets color to bootstrap red
+    #     serverColorDict['RamIcon'] = 'times'  # sets icon to Font Awesome 'x'
+    # elif 50 <= metric_row.Ram <= 80:
+    #     serverColorDict['RamColor'] = 'warning'  # sets color to bootstrap yellowish
+    #     serverColorDict['RamIcon'] = 'exclamation-triangle'  # sets icon to Font Awesome warning triangle
+    # elif metric_row.Ram < 50:
+    #     serverColorDict['RamColor'] = 'success'  # sets color to bootstrap green
+    #     serverColorDict['RamIcon'] = 'check'  # sets icon to Font Awesome check
+    # else:
+    #     serverColorDict['RamColor'] = 'dark'  # sets color to bootstrap black
+    #     serverColorDict['RamIcon'] = 'question'  # sets icon to Font Awesome '?'
+    #
+    # if metric_row.Disk > 90:
+    #     serverColorDict['DiskColor'] = 'danger'  # sets color to bootstrap red
+    #     serverColorDict['DiskIcon'] = 'times'  # sets icon to Font Awesome 'x'
+    # elif 70 <= metric_row.Disk <= 90:
+    #     serverColorDict['DiskColor'] = 'warning'  # sets color to bootstrap yellowish
+    #     serverColorDict['DiskIcon'] = 'exclamation-triangle'  # sets icon to Font Awesome warning triangle
+    # elif metric_row.Disk < 70:
+    #     serverColorDict['DiskColor'] = 'success'  # sets color to bootstrap green
+    #     serverColorDict['DiskIcon'] = 'check'  # sets icon to Font Awesome check
+    # else:
+    #     serverColorDict['Disk'] = 'dark'  # sets color to bootstrap black
+    #     serverColorDict['DiskIcon'] = 'question'  # sets icon to Font Awesome '?'
+    #
+    # if metric_row.PingLatency != null:
+    #     status = "Responding"  # sets status of ping
+    #     serverColorDict['PingColor'] = 'success'  # sets color to bootstrap green
+    #     serverColorDict['PingIcon'] = 'check'  # sets icon to Font Awesome check
+    # elif metric_row.PingLatency == null:
+    #     status = "Not Responding"  # sets status of ping
+    #     serverColorDict['PingColor'] = 'danger'  # sets color to bootstrap red
+    #     serverColorDict['PingIcon'] = 'times'  # sets icon to Font Awesome 'x'
+    # else:
+    #     status = "Unknown"  # sets status of ping
+    #     serverColorDict['PingColor'] = 'dark'  # sets color to bootstrap black
+    #     serverColorDict['PingIcon'] = 'question'  # sets icon to Font Awesome '?'
 
-    if metric_row.Cpu > 80:
-        serverColorDict['CpuColor'] = 'danger'  # sets color to bootstrap red
-        serverColorDict['CpuIcon'] = 'times'  # sets icon to Font Awesome 'x'
-    elif 50 <= metric_row.Cpu <= 80:
-        serverColorDict['CpuColor'] = 'warning'  # sets color to bootstrap yellowish
-        serverColorDict['CpuIcon'] = 'exclamation-triangle'  # sets icon to Font Awesome warning triangle
-    elif metric_row.Cpu < 50:
-        serverColorDict['CpuColor'] = 'success'  # sets color to bootstrap green
-        serverColorDict['CpuIcon'] = 'check'  # sets icon to Font Awesome check
-    else:
-        serverColorDict['CpuColor'] = 'dark'  # sets color to bootstrap black
-        serverColorDict['CpuIcon'] = 'question'  # sets icon to Font Awesome '?'
-
-    if metric_row.Gpu > 80:
-        serverColorDict['GpuColor'] = 'danger'  # sets color to bootstrap red
-        serverColorDict['GpuIcon'] = 'times'  # sets icon to Font Awesome 'x'
-    elif 50 <= metric_row.Gpu <= 80:
-        serverColorDict['GpuColor'] = 'warning'  # sets color to bootstrap yellowish
-        serverColorDict['GpuIcon'] = 'exclamation-triangle'  # sets icon to Font Awesome warning triangle
-    elif metric_row.Gpu < 50:
-        serverColorDict['GpuColor'] = 'success'  # sets color to bootstrap green
-        serverColorDict['GpuIcon'] = 'check'  # sets icon to Font Awesome check
-    else:
-        serverColorDict['GpuColor'] = 'dark'  # sets color to bootstrap black
-        serverColorDict['GpuIcon'] = 'question'  # sets icon to Font Awesome '?'
-
-    if metric_row.Ram > 80:
-        serverColorDict['RamColor'] = 'danger'  # sets color to bootstrap red
-        serverColorDict['RamIcon'] = 'times'  # sets icon to Font Awesome 'x'
-    elif 50 <= metric_row.Ram <= 80:
-        serverColorDict['RamColor'] = 'warning'  # sets color to bootstrap yellowish
-        serverColorDict['RamIcon'] = 'exclamation-triangle'  # sets icon to Font Awesome warning triangle
-    elif metric_row.Ram < 50:
-        serverColorDict['RamColor'] = 'success'  # sets color to bootstrap green
-        serverColorDict['RamIcon'] = 'check'  # sets icon to Font Awesome check
-    else:
-        serverColorDict['RamColor'] = 'dark'  # sets color to bootstrap black
-        serverColorDict['RamIcon'] = 'question'  # sets icon to Font Awesome '?'
-
-    if metric_row.Disk > 90:
-        serverColorDict['DiskColor'] = 'danger'  # sets color to bootstrap red
-        serverColorDict['DiskIcon'] = 'times'  # sets icon to Font Awesome 'x'
-    elif 70 <= metric_row.Disk <= 90:
-        serverColorDict['DiskColor'] = 'warning'  # sets color to bootstrap yellowish
-        serverColorDict['DiskIcon'] = 'exclamation-triangle'  # sets icon to Font Awesome warning triangle
-    elif metric_row.Disk < 70:
-        serverColorDict['DiskColor'] = 'success'  # sets color to bootstrap green
-        serverColorDict['DiskIcon'] = 'check'  # sets icon to Font Awesome check
-    else:
-        serverColorDict['Disk'] = 'dark'  # sets color to bootstrap black
-        serverColorDict['DiskIcon'] = 'question'  # sets icon to Font Awesome '?'
-
-    if metric_row.PingLatency != null:
-        status = "Responding"  # sets status of ping
-        serverColorDict['PingColor'] = 'success'  # sets color to bootstrap green
-        serverColorDict['PingIcon'] = 'check'  # sets icon to Font Awesome check
-    elif metric_row.PingLatency == null:
-        status = "Not Responding"  # sets status of ping
-        serverColorDict['PingColor'] = 'danger'  # sets color to bootstrap red
-        serverColorDict['PingIcon'] = 'times'  # sets icon to Font Awesome 'x'
-    else:
-        status = "Unknown"  # sets status of ping
-        serverColorDict['PingColor'] = 'dark'  # sets color to bootstrap black
-        serverColorDict['PingIcon'] = 'question'  # sets icon to Font Awesome '?'
+    colorDict = getServerAndMetricColor()
 
     return render_template('RealTimeDataOverviewTemp.html', server=server, metric=metric_row, service=services,
-                           database=databases, runningjob=runningjobs, location=tmpLoc3, rack=tmpLoc2, status=status,
-                           color=serverColorDict)
+                           database=databases, runningjob=runningjobs, location=tmpLoc3, rack=tmpLoc2,
+                           color=colorDict)
     #   returns the template for real time data overview with ^ variables passed to it
 
 
@@ -528,16 +639,17 @@ def CPU(slug):  # Slug is the Server Id
     tmp = Metric.query.order_by(Metric.Time.desc()).filter_by(ServerID=slug).first()
 
     # sets color of metric
-    if tmp.Cpu > 80:
-        color = 'danger'
-    elif 50 <= tmp.Cpu <= 80:
-        color = 'warning'
-    elif tmp.Cpu < 50:
-        color = 'success'
-    else:
-        color = 'dark'
+    # if tmp.Cpu > 80:
+    #     color = 'danger'
+    # elif 50 <= tmp.Cpu <= 80:
+    #     color = 'warning'
+    # elif tmp.Cpu < 50:
+    #     color = 'success'
+    # else:
+    #     color = 'dark'
 
-    server, dateRange, useRange, form, tmpLoc2, maxList, minList, averageList, partUse, parts = usagePages('Cpu', slug)
+    server, dateRange, useRange, form, tmpLoc2, maxList, minList, averageList, partUse, parts, color = usagePages(
+        'Cpu', slug)
 
     # return for default date range
     return render_template('Usage-CPUTemp.html', server=server, ametric=tmp, date=dateRange, usage=useRange,
@@ -557,17 +669,18 @@ def disk(slug):  # Slug is the Server Id
     tmp = Metric.query.order_by(Metric.Time.desc()).filter_by(ServerID=slug).first()
     metric_row = Metric.query.get(tmp.MetricId)  # gets the most recent metrics for server
 
-    # sets color of metric
-    if tmp.Disk > 90:
-        color = 'danger'
-    elif 70 <= tmp.Disk <= 90:
-        color = 'warning'
-    elif tmp.Disk < 70:
-        color = 'success'
-    else:
-        color = 'dark'
+    # # sets color of metric
+    # if tmp.Disk > 90:
+    #     color = 'danger'
+    # elif 70 <= tmp.Disk <= 90:
+    #     color = 'warning'
+    # elif tmp.Disk < 70:
+    #     color = 'success'
+    # else:
+    #     color = 'dark'
 
-    server, dateRange, useRange, form, tmpLoc2, maxList, minList, averageList, partUse, parts = usagePages('Disk', slug)
+    server, dateRange, useRange, form, tmpLoc2, maxList, minList, averageList, partUse, parts, color = usagePages(
+        'Disk', slug)
 
     # server, dateRange, useRange, form, tmpLoc2, maxList, minList, averageList, partUse, parts
 
@@ -585,16 +698,17 @@ def gpu(slug):  # Slug is the Server Id
     metric_row = Metric.query.order_by(Metric.Time.desc()).filter_by(ServerID=slug).first()
 
     # sets color of metric
-    if metric_row.Gpu > 80:
-        color = 'danger'
-    elif 50 <= metric_row.Gpu <= 80:
-        color = 'warning'
-    elif metric_row.Gpu < 50:
-        color = 'success'
-    else:
-        color = 'dark'
+    # if metric_row.Gpu > 80:
+    #     color = 'danger'
+    # elif 50 <= metric_row.Gpu <= 80:
+    #     color = 'warning'
+    # elif metric_row.Gpu < 50:
+    #     color = 'success'
+    # else:
+    #     color = 'dark'
 
-    server, dateRange, useRange, form, tmpLoc2, maxList, minList, averageList, partUse, parts = usagePages('Gpu', slug)
+    server, dateRange, useRange, form, tmpLoc2, maxList, minList, averageList, partUse, parts, color = usagePages(
+        'Gpu', slug)
 
     return render_template('Usage-GPU.html', server=server, ametric=metric_row, date=dateRange, usage=useRange,
                            form=form, rack=tmpLoc2, hi=maxList, lo=minList, avg=averageList, color=color)
@@ -606,21 +720,21 @@ def gpu(slug):  # Slug is the Server Id
 @app.route('/usage-RAM/<slug>', methods=['POST', 'GET'])  # route for cpu usage for a specific server
 def ram(slug):  # Slug is the Server Id
 
-
     tmp = Metric.query.order_by(Metric.Time.desc()).filter_by(ServerID=slug).first()
     metric_row = Metric.query.get(tmp.MetricId)  # gets the most recent metrics for server
 
     # sets color of metric
-    if tmp.Ram > 80:
-        color = 'danger'
-    elif 50 <= tmp.Ram <= 80:
-        color = 'warning'
-    elif tmp.Ram < 50:
-        color = 'success'
-    else:
-        color = 'dark'
+    # if tmp.Ram > 80:
+    #     color = 'danger'
+    # elif 50 <= tmp.Ram <= 80:
+    #     color = 'warning'
+    # elif tmp.Ram < 50:
+    #     color = 'success'
+    # else:
+    #     color = 'dark'
 
-    server, dateRange, useRange, form, tmpLoc2, maxList, minList, averageList, partUse, parts = usagePages('Ram', slug)
+    server, dateRange, useRange, form, tmpLoc2, maxList, minList, averageList, partUse, parts, color = usagePages(
+        'Ram', slug)
 
     return render_template('Usage-RAM.html', server=server, ametric=metric_row, date=dateRange, usage=useRange,
                            form=form, rack=tmpLoc2, hi=maxList, lo=minList, avg=averageList, color=color)
@@ -636,21 +750,21 @@ def ping(slug):  # Slug is the Server Id
     metric_row = Metric.query.get(tmp.MetricId)  # gets the most recent metrics for server
 
     # sets color and status of metric
-    if metric_row.PingLatency != null:
-        color = 'success'
-        status = "Responding"
-    elif metric_row.PingLatency == null:
-        color = 'danger'
-        status = "Not Responding"
-    else:
-        color = 'dark'
-        status = 'Unknown'
+    # if metric_row.PingLatency != null:
+    #     color = 'success'
+    #     status = "Responding"
+    # elif metric_row.PingLatency == null:
+    #     color = 'danger'
+    #     status = "Not Responding"
+    # else:
+    #     color = 'dark'
+    #     status = 'Unknown'
 
-    server, dateRange, useRange, form, tmpLoc2, maxList, minList, averageList, partUse, parts = usagePages(
+    server, dateRange, useRange, form, tmpLoc2, maxList, minList, averageList, partUse, parts, color = usagePages(
         'PingLatency', slug)
 
     return render_template('Usage-Ping.html', server=server, ametric=metric_row, date=dateRange, usage=useRange,
-                           form=form, rack=tmpLoc2, hi=maxList, lo=minList, avg=averageList, status=status, color=color)
+                           form=form, rack=tmpLoc2, hi=maxList, lo=minList, avg=averageList, color=color)
 
 
 # ----------------------------------------------------------------------------------------------------------------------

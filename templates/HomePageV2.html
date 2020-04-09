@@ -51,9 +51,9 @@
                                     <a href="/real-time-data-overview/{{ server.ServerId }}"
                                        data-toggle="tooltip" data-placement="right" data-html="true"
                                        title="{{ metric[server.ServerId] }}"
-                                       class="list-group-item list-group-item-action list-group-item-{{ color[server.ServerId + 'color'] }} text-center">
+                                       class="list-group-item list-group-item-action list-group-item-{{ color[server.ServerId]['ServerColor'] }} text-center">
                                         {{ server.ServerName }}
-                                        <i class="fas fa-{{ color[server.ServerId + 'icon'] }} float-right"></i>
+                                        <i class="fas fa-{{ color[server.ServerId]['ServerIcon'] }} float-right"></i>
                                     </a>
 
                                 {% endif %}

@@ -41,7 +41,8 @@
     {#    </div>#}
     <div class="row text-center m-2"> {# Displays this servers RAM usage #}
         <div class="col-12">
-            <h2 class="text-{{ color }}"> Ping Status: <b>{{ ametric.PingLatency }} ms - {{ status }}</b></h2>
+            <h2 class="text-{{ color[server.ServerId]['PingColor'] }}"> Ping Status: <b>{{ ametric.PingLatency }} ms
+                - {{ color[server.ServerId]['PingStatus'] }}</b></h2>
         </div>
     </div>
 

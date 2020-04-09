@@ -40,7 +40,7 @@
     {#    </div>#}
     <div class="row text-center m-2"> {# Displays this servers Disk usage #}
         <div class="col-12">
-            <h2 class="text-{{ color }}"> Disk Usage: <b>{{ ametric.Disk }}%</b></h2>
+            <h2 class="text-{{ color[server.ServerId]['DiskColor'] }}"> Disk Usage: <b>{{ ametric.Disk }}%</b></h2>
         </div>
     </div>
 

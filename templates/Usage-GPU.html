@@ -40,7 +40,7 @@
     {#    </div>#}
     <div class="row text-center m-2"> {# Displays this servers GPU usage #}
         <div class="col-12">
-            <h2 class="text-{{ color }}"> GPU Usage: <b>{{ ametric.Gpu }}%</b></h2>
+            <h2 class="text-{{ color[server.ServerId]['GpuColor'] }}"> GPU Usage: <b>{{ ametric.Gpu }}%</b></h2>
         </div>
     </div>
 
@@ -105,42 +105,42 @@
                 {# The type of chart we want to create #}
                 type: 'line',
 
-            {% if hi == 'xxx' %}
-                {# The data for our dataset #}
-                data: {
-                    labels: [{% for d in date %} "{{ d }}", {% endfor %}], {# Dates #}
-                    datasets: [{
-                        label: 'usage',
-                        backgroundColor: 'rgb(255,122,0,0.82)',
-                        borderColor: 'rgb(0,0,0)',
-                        data: [{% for u in usage %} "{{ u }}", {% endfor %}] {# Usages #}
-                    }]
-                },
-            {% else %}
-                data: {
-                    labels: [{% for d in date %} "{{ d }}", {% endfor %}], {# Dates #}
-                    datasets: [{
-                        label: 'HIGH',
-                        fill: false,
-                        backgroundColor: 'rgba(255,33,0,0.71)',
-                        borderColor: 'rgb(255,33,0)',
-                        data: [{% for h in hi %} "{{ h }}", {% endfor %}] {# Usages #}
-                    }, {
-                        label: 'LOW',
-                        fill: false,
-                        backgroundColor: 'rgba(64,255,0,0.71)',
-                        borderColor: 'rgb(64,255,0)',
-                        data: [{% for l in lo %} "{{ l }}", {% endfor %}]
-                    }, {
-                        label: 'Average',
-                        fill: false,
-                        backgroundColor: 'rgba(255,223,0,0.71)',
-                        borderColor: 'rgb(255,223,0)',
-                        data: [{% for a in avg %} "{{ a }}", {% endfor %}]
-                    }
-                    ]
-                },
-            {% endif %}
+                {% if hi == 'xxx' %}
+                    {# The data for our dataset #}
+                    data: {
+                        labels: [{% for d in date %} "{{ d }}", {% endfor %}], {# Dates #}
+                        datasets: [{
+                            label: 'usage',
+                            backgroundColor: 'rgb(255,122,0,0.82)',
+                            borderColor: 'rgb(0,0,0)',
+                            data: [{% for u in usage %} "{{ u }}", {% endfor %}] {# Usages #}
+                        }]
+                    },
+                {% else %}
+                    data: {
+                        labels: [{% for d in date %} "{{ d }}", {% endfor %}], {# Dates #}
+                        datasets: [{
+                            label: 'HIGH',
+                            fill: false,
+                            backgroundColor: 'rgba(255,33,0,0.71)',
+                            borderColor: 'rgb(255,33,0)',
+                            data: [{% for h in hi %} "{{ h }}", {% endfor %}] {# Usages #}
+                        }, {
+                            label: 'LOW',
+                            fill: false,
+                            backgroundColor: 'rgba(64,255,0,0.71)',
+                            borderColor: 'rgb(64,255,0)',
+                            data: [{% for l in lo %} "{{ l }}", {% endfor %}]
+                        }, {
+                            label: 'Average',
+                            fill: false,
+                            backgroundColor: 'rgba(255,223,0,0.71)',
+                            borderColor: 'rgb(255,223,0)',
+                            data: [{% for a in avg %} "{{ a }}", {% endfor %}]
+                        }
+                        ]
+                    },
+                {% endif %}
 
 
                 {# Configuration options go here #}
