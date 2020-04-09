@@ -111,7 +111,7 @@
                         labels: [{% for d in date %} "{{ d }}", {% endfor %}], {# Dates #}
                         datasets: [{
                             label: 'usage',
-                            backgroundColor: 'rgb(255,122,0,0.82)',
+                            backgroundColor: 'rgba(164,110,255,0.82)',
                             borderColor: 'rgb(0,0,0)',
                             data: [{% for u in usage %} "{{ u }}", {% endfor %}] {# Usages #}
                         }]
