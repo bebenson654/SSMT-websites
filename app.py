@@ -17,7 +17,7 @@ app._static_folder = 'static'
 app.jinja_env.globals.update(zip=zip)
 fa = FontAwesome(app)
 
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///NewDatabase2.db'  # sets the DB to the stubDB
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///FinalDatabase1Month.db'  # sets the DB to the stubDB
 
 app.config['SECRET_KEY'] = 'secret ssmt'  # secret key used for by WTforms for forms
 
@@ -121,10 +121,10 @@ maxDateMinus12 = datetime.strftime(maxDateMinus12, '%Y-%m-%d %H:%M:%S')  # conve
 # wtforms forms
 
 class ChartForm(FlaskForm):  # form for the chart range
-    defStartDate = datetime.strptime(maxDateMinus12, '%Y-%m-%d %H:%M:%S')
-    defEndDate = datetime.strptime(maxDate, '%Y-%m-%d %H:%M:%S')
-    startdate = DateTimeLocalField(defStartDate, format='%Y-%m-%dT%H:%M')
-    enddate = DateTimeLocalField(defEndDate, format='%Y-%m-%dT%H:%M')
+    defaultStartDate = datetime.strptime(maxDateMinus12, '%Y-%m-%d %H:%M:%S')
+    defaultEndDate = datetime.strptime(maxDate, '%Y-%m-%d %H:%M:%S')
+    startdate = DateTimeLocalField('StartDate', default=defaultStartDate, format='%Y-%m-%dT%H:%M')
+    enddate = DateTimeLocalField('EndDate', default=defaultEndDate, format='%Y-%m-%dT%H:%M')
 
 
 class MasterListForm(FlaskForm):  # form for master list
@@ -373,8 +373,8 @@ def home():
     for s in MasterList.query.all():
         masterList.append(s.Num + '-' + s.Name)  # concatenates strings to make the server id
 
-    rack_table = Rack.query.filter(Rack.RackId == Server.RackId).order_by(
-        Rack.Name)  # Show only racks that have servers on them
+    #rack_table = Rack.query.filter(Rack.RackId == Server.RackId).order_by(Rack.Name)  # Show only racks that have servers on them
+    rack_table = Rack.query.order_by(Rack.Name)  # Shows all racks in database
 
     return render_template('HomePageV2.html',
                            server=server_table, rack=rack_table, form=form, metric=serverMetricsDict,
@@ -605,6 +605,7 @@ def gpu(slug):  # Slug is the Server Id
 
 @app.route('/usage-RAM/<slug>', methods=['POST', 'GET'])  # route for cpu usage for a specific server
 def ram(slug):  # Slug is the Server Id
+
 
     tmp = Metric.query.order_by(Metric.Time.desc()).filter_by(ServerID=slug).first()
     metric_row = Metric.query.get(tmp.MetricId)  # gets the most recent metrics for server

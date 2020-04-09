@@ -25,5 +25,11 @@
       <jdbc-driver>org.sqlite.JDBC</jdbc-driver>
       <jdbc-url>jdbc:sqlite:C:\Users\Roger\PycharmProjects\SSMT-websites\StubServersDB_V6_Text.db</jdbc-url>
     </data-source>
+    <data-source source="LOCAL" name="FinalDatabase1Month" uuid="b776300e-64e1-4fdd-be03-5a9f659c20f4">
+      <driver-ref>sqlite.xerial</driver-ref>
+      <synchronize>true</synchronize>
+      <jdbc-driver>org.sqlite.JDBC</jdbc-driver>
+      <jdbc-url>jdbc:sqlite:C:\Users\Roger\PycharmProjects\SSMT-websites\FinalDatabase1Month.db</jdbc-url>
+    </data-source>
   </component>
 </project>
