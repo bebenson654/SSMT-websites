@@ -1,17 +1,17 @@
-from flask import Flask, render_template, request, redirect, flash, url_for
-from flask_wtf import FlaskForm
-from wtforms import StringField, SelectField, SubmitField, Field
-from wtforms.validators import input_required, length
-from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy import between, null
-from sqlalchemy.sql import func
-from sqlalchemy.orm.exc import FlushError
-from datetime import date, datetime, timedelta
-import pandas as pd
-from wtforms.fields.html5 import DateTimeLocalField
-from flask_fontawesome import FontAwesome
 from _collections import defaultdict
+from datetime import datetime, timedelta
 from itertools import zip_longest
+
+import pandas as pd
+from flask import Flask, render_template, request, redirect, flash, url_for
+from flask_fontawesome import FontAwesome
+from flask_sqlalchemy import SQLAlchemy
+from flask_wtf import FlaskForm
+from sqlalchemy import between, null
+from sqlalchemy.orm.exc import FlushError
+from wtforms import StringField, SelectField, SubmitField
+from wtforms.fields.html5 import DateTimeLocalField
+from wtforms.validators import input_required
 
 app = Flask(__name__)  # something for flask
 app._static_folder = 'static'
@@ -19,7 +19,7 @@ app.jinja_env.globals.update(zip=zip, zip_longest=zip_longest)
 fa = FontAwesome(app)
 
 app.config[
-    'SQLALCHEMY_DATABASE_URI'] = 'sqlite:///NewDatabase2.db'  # sets the DB to the stubDB
+    'SQLALCHEMY_DATABASE_URI'] = 'sqlite:///NewDatabasea.db'  # sets the DB to the stubDB
 
 app.config[
     'SECRET_KEY'] = 'secret ssmt'  # secret key used for by WTforms for forms
