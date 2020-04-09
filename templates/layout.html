@@ -61,22 +61,30 @@
 
 <script>
     $(document).ready(function () {
-        $('#service').DataTable();
+        $('#service').DataTable({
+            "searching": false
+        });
     });
 </script>
 <script>
     $(document).ready(function () {
-        $('#jobs').DataTable();
+        $('#jobs').DataTable({
+            "searching": false
+        });
     });
 </script>
 <script>
     $(document).ready(function () {
-        $('#database').DataTable();
+        $('#database').DataTable({
+            "searching": false
+        });
     });
 </script>
 <script>
     $(document).ready(function () {
-        $('#usage').DataTable();
+        $('#usage').DataTable({
+            "searching": false
+        });
     });
 </script>
 </body>
