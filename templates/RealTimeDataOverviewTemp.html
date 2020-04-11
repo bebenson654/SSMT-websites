@@ -7,20 +7,25 @@
     <meta http-equiv="refresh" content="10" >
 
     <title>Current Data - {{ server.ServerName }}</title> {# Title - shown in tab on browser #}
+    <link rel="icon" href="/static/favicons/health.ico">
 {% endblock title %}
 
 {% block content %}
 
-    <div class="row mt-3 text-center"> {# Page header #}
-        <div class="col-12 ml-auto p-3 mb-2 bg-secondary text-white">
-            <h1>Server System Monitoring Tool</h1>
+
+    <a class="text-decoration-none" href="{{ url_for('home') }}">
+        <div class="row mt-3 text-center"> {# Row for page header #}
+            <div class="col-12 ml-auto p-3 mb-2 bg-secondary text-white">
+                <h1>Server System Monitoring Tool</h1>
+            </div>
         </div>
-    </div>
+    </a>
 
     <div class="mt-3 text-center"> {# Home button & Rack & Server Names #}
         <div class="row card-body border border-dark font-weight-bold">
             <div class="text-left">
-                <a class="btn btn-secondary btn-lg" href="/" role="button">Home</a>
+                <a class="btn btn-secondary btn-lg" href="{{ url_for('home') }}" role="button"><i
+                        class="fa fa-home"></i> Home</a>
             </div>
             <div class="col-10">
                 <h2 class="text-center">Rack: {{ rack.Name }} | Server: {{ server.ServerName }}</h2>
@@ -71,35 +76,35 @@
    <table class="table table-borderless table-hover">
        <tbody>
     <tr>
-      <th scope="row"><h3><i class="fas fa-{{ color['CpuIcon'] }}"></i></h3></th>
+      <th scope="row"><h3><i class="fas fa-{{ color[server.ServerId]['CpuIcon'] }}"></i></h3></th>
         <td><h3 class="text-center">CPU Usage:</h3></td>
         <td><h3 class="text-danger"><a href="/usage-cpu/{{ server.ServerId }}"
-                                       class="text-decoration-none text-{{ color['CpuColor'] }}">{{ metric.Cpu }}%</a></h3></td>
+                                       class="text-decoration-none text-{{ color[server.ServerId]['CpuColor'] }}">{{ metric.Cpu }}%</a></h3></td>
     </tr>
     <tr>
-        <th scope="row"><h3><i class="fas fa-{{ color['RamIcon'] }}"></i></h3></th>
+        <th scope="row"><h3><i class="fas fa-{{ color[server.ServerId]['RamIcon'] }}"></i></h3></th>
          <td><h3>RAM Usage:</h3></td>
         <td><h3 class="text-danger"><a href="/usage-RAM/{{ server.ServerId }}"
-                                       class="text-decoration-none text-{{ color['RamColor'] }}">{{ metric.Ram }}%</a></h3></td>
+                                       class="text-decoration-none text-{{ color[server.ServerId]['RamColor'] }}">{{ metric.Ram }}%</a></h3></td>
 
     </tr>
     <tr>
-        <th scope="row"><h3><i class="fas fa-{{ color['DiskIcon'] }}"></i></h3></th>
+        <th scope="row"><h3><i class="fas fa-{{ color[server.ServerId]['DiskIcon'] }}"></i></h3></th>
         <td><h3>Disk Usage:</h3></td>
         <td><h3 class="text-danger"><a href="/usage-Disk/{{ server.ServerId }}"
-                                       class="text-decoration-none text-{{ color['DiskColor'] }}">{{ metric.Disk }}%</a></h3></td>
+                                       class="text-decoration-none text-{{ color[server.ServerId]['DiskColor'] }}">{{ metric.Disk }}%</a></h3></td>
     </tr>
     <tr>
-      <th scope="row"><h3><i class="fas fa-{{ color['GpuIcon'] }}"></i></h3></th>
+      <th scope="row"><h3><i class="fas fa-{{ color[server.ServerId]['GpuIcon'] }}"></i></h3></th>
       <td><h3>GPU Usage:</h3></td>
         <td><h3 class="text-danger"><a href="/usage-GPU/{{ server.ServerId }}"
-                                       class="text-decoration-none text-{{ color['GpuColor'] }}">{{ metric.Gpu }}%</a></h3></td>
+                                       class="text-decoration-none text-{{ color[server.ServerId]['GpuColor'] }}">{{ metric.Gpu }}%</a></h3></td>
     </tr>
     <tr>
-      <th scope="row"><h3><i class="fas fa-{{ color['PingIcon'] }}"></i></h3></th>
+      <th scope="row"><h3><i class="fas fa-{{ color[server.ServerId]['PingIcon'] }}"></i></h3></th>
        <td><h3>Ping Status:</h3></td>
       <td><h3 class="text-success"><a href="/usage-Ping/{{ server.ServerId }}"
-                                      class="text-decoration-none text-{{ color['PingColor'] }}">{{ metric.PingLatency }} ms - {{ status }} </a> </h3></td>
+                                      class="text-decoration-none text-{{ color[server.ServerId]['PingColor'] }}">{{ metric.PingLatency }} ms - {{ color[server.ServerId]['PingStatus'] }} </a> </h3></td>
 
     </tr>
   </tbody>
