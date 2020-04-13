@@ -1,6 +1,6 @@
 from flask import Flask, render_template, request, redirect, flash, url_for
 from flask_wtf import FlaskForm
-from wtforms import StringField, SelectField, SubmitField, Field
+from wtforms import StringField, SelectField, SubmitField, Field, SelectMultipleField
 from wtforms.validators import input_required, NoneOf, AnyOf, Regexp
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import between, null
@@ -139,8 +139,8 @@ class MasterListForm(FlaskForm):  # form for master list
 
 
 class HomeFilter(FlaskForm):  # filter form on home page
-    filter = SelectField('filter', choices=[(st.TypeId, st.TypeName) for st in ServerType.query.all()],
-                         validators=[input_required()], )
+    myChoicesTwo = [('All', 'All')] + [(st.TypeId, st.TypeName) for st in ServerType.query.all()]
+    filter = SelectField('filter', choices=myChoicesTwo, validators=[input_required()])
     sub = SubmitField('Filter')
 
 
@@ -450,10 +450,11 @@ def home():
                                                 <h6 class="text-{gpuColor}"><b>GPU</b>: {str(metric.Gpu)}%</h6>
                                                 <h6 class="text-{pingColor}"><b>Ping</b>: {str(metric.PingLatency)}ms
                                                 </h6>'''
-
-    if form.validate_on_submit():
-        server_table = Server.query.filter_by(
-            ServerTypeId=form.filter.data)  # query that gets all of the servers in the Server table
+    if form.is_submitted():
+        if form.filter.data == "All":
+            server_table = Server.query.all()
+        else:
+            server_table = Server.query.filter_by(ServerTypeId=form.filter.data) # query that gets all of the servers in the Server table
 
     masterList = []  # used to only display servers on the Master List
     for s in MasterList.query.all():
