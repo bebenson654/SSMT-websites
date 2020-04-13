@@ -1,0 +1,14 @@
+.testimonial-group {
+    overflow-x: auto;
+    white-space: nowrap;
+    overflow-y: hidden;
+}
+
+.testimonial-group > .row {
+    display: block;
+}
+
+.testimonial-group .testimonial-group--box {
+    display: inline-block;
+    float: none;
+}

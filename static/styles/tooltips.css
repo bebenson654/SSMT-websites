@@ -1,0 +1,7 @@
+.tooltip-inner {
+    background-color: #222222;
+}
+
+.tooltip.show {
+    opacity: 1 !important;
+}

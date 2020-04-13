@@ -1,7 +1,7 @@
 from flask import Flask, render_template, request, redirect, flash, url_for
 from flask_wtf import FlaskForm
-from wtforms import StringField, SelectField, SubmitField, Field
-from wtforms.validators import input_required, length
+from wtforms import StringField, SelectField, SubmitField, Field, SelectMultipleField
+from wtforms.validators import input_required, NoneOf, AnyOf, Regexp
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import between, null
 from sqlalchemy.sql import func
@@ -34,7 +34,7 @@ class Server(db.Model):  # Server Table
     __table_args__ = {'extend_existing': True}
     ServerId = db.Column(db.Text, primary_key=True)  # primary key column
     Metrics = db.relationship('Metric', backref='Server', lazy='dynamic')  # pseudo column for relationship
-    ServerID = db.Column(db.Text, db.ForeignKey('server.ServerId'))  # foreign key column? **********************
+    ServerID = db.Column(db.Text, db.ForeignKey('server.ServerId'))  # foreign key column
 
 
 class Metric(db.Model):  # metric table
@@ -130,14 +130,117 @@ class ChartForm(FlaskForm):  # form for the chart range
 class MasterListForm(FlaskForm):  # form for master list
     type = SelectField('type', choices=[(st.TypeId, st.TypeName) for st in ServerType.query.all()],
                        validators=[input_required()])
-    name = StringField('name', validators=[input_required()])
+
+    # only allows alphanumeric and/or '-' and '_'   No spaces either
+    name = StringField('name', validators=[
+        input_required(), Regexp('^(\w|-|_)+$', message='Please only use letters, numbers, "-", or "_"')])
+
     add = SubmitField()
 
 
 class HomeFilter(FlaskForm):  # filter form on home page
-    filter = SelectField('filter', choices=[(st.TypeId, st.TypeName) for st in ServerType.query.all()],
-                         validators=[input_required()], )
+    myChoicesTwo = [('All', 'All')] + [(st.TypeId, st.TypeName) for st in ServerType.query.all()]
+    filter = SelectField('filter', choices=myChoicesTwo, validators=[input_required()])
     sub = SubmitField('Filter')
+
+
+# ----------------------------------------------------------------------------------------------------------------------
+def getServerAndMetricColor():
+    serverColorDict = defaultdict(dict)
+    servers = Server.query.distinct().all()
+
+    for server in servers:
+        tmp = Metric.query.order_by(Metric.Time.desc()).filter_by(ServerId=server.ServerId).first()
+        metric_row = Metric.query.get(tmp.MetricId)  # gets the most recent metrics for server
+
+        if metric_row.Cpu > 80:
+            serverColorDict[server.ServerId]['CpuColor'] = 'danger'  # sets color to bootstrap red
+            serverColorDict[server.ServerId]['CpuIcon'] = 'times'  # sets icon to Font Awesome 'x'
+        elif 50 <= metric_row.Cpu <= 80:
+            serverColorDict[server.ServerId]['CpuColor'] = 'warning'  # sets color to bootstrap yellowish
+            serverColorDict[server.ServerId][
+                'CpuIcon'] = 'exclamation-triangle'  # sets icon to Font Awesome warning triangle
+        elif metric_row.Cpu < 50:
+            serverColorDict[server.ServerId]['CpuColor'] = 'success'  # sets color to bootstrap green
+            serverColorDict[server.ServerId]['CpuIcon'] = 'check'  # sets icon to Font Awesome check
+        else:
+            serverColorDict[server.ServerId]['CpuColor'] = 'dark'  # sets color to bootstrap black
+            serverColorDict[server.ServerId]['CpuIcon'] = 'question'  # sets icon to Font Awesome '?'
+
+        if metric_row.Gpu > 80:
+            serverColorDict[server.ServerId]['GpuColor'] = 'danger'  # sets color to bootstrap red
+            serverColorDict[server.ServerId]['GpuIcon'] = 'times'  # sets icon to Font Awesome 'x'
+        elif 50 <= metric_row.Gpu <= 80:
+            serverColorDict[server.ServerId]['GpuColor'] = 'warning'  # sets color to bootstrap yellowish
+            serverColorDict[server.ServerId][
+                'GpuIcon'] = 'exclamation-triangle'  # sets icon to Font Awesome warning triangle
+        elif metric_row.Gpu < 50:
+            serverColorDict[server.ServerId]['GpuColor'] = 'success'  # sets color to bootstrap green
+            serverColorDict[server.ServerId]['GpuIcon'] = 'check'  # sets icon to Font Awesome check
+        else:
+            serverColorDict[server.ServerId]['GpuColor'] = 'dark'  # sets color to bootstrap black
+            serverColorDict[server.ServerId]['GpuIcon'] = 'question'  # sets icon to Font Awesome '?'
+
+        if metric_row.Ram > 80:
+            serverColorDict[server.ServerId]['RamColor'] = 'danger'  # sets color to bootstrap red
+            serverColorDict[server.ServerId]['RamIcon'] = 'times'  # sets icon to Font Awesome 'x'
+        elif 50 <= metric_row.Ram <= 80:
+            serverColorDict[server.ServerId]['RamColor'] = 'warning'  # sets color to bootstrap yellowish
+            serverColorDict[server.ServerId][
+                'RamIcon'] = 'exclamation-triangle'  # sets icon to Font Awesome warning triangle
+        elif metric_row.Ram < 50:
+            serverColorDict[server.ServerId]['RamColor'] = 'success'  # sets color to bootstrap green
+            serverColorDict[server.ServerId]['RamIcon'] = 'check'  # sets icon to Font Awesome check
+        else:
+            serverColorDict[server.ServerId]['RamColor'] = 'dark'  # sets color to bootstrap black
+            serverColorDict[server.ServerId]['RamIcon'] = 'question'  # sets icon to Font Awesome '?'
+
+        if metric_row.Disk > 90:
+            serverColorDict[server.ServerId]['DiskColor'] = 'danger'  # sets color to bootstrap red
+            serverColorDict[server.ServerId]['DiskIcon'] = 'times'  # sets icon to Font Awesome 'x'
+        elif 70 <= metric_row.Disk <= 90:
+            serverColorDict[server.ServerId]['DiskColor'] = 'warning'  # sets color to bootstrap yellowish
+            serverColorDict[server.ServerId][
+                'DiskIcon'] = 'exclamation-triangle'  # sets icon to Font Awesome warning triangle
+        elif metric_row.Disk < 70:
+            serverColorDict[server.ServerId]['DiskColor'] = 'success'  # sets color to bootstrap green
+            serverColorDict[server.ServerId]['DiskIcon'] = 'check'  # sets icon to Font Awesome check
+        else:
+            serverColorDict[server.ServerId]['Disk'] = 'dark'  # sets color to bootstrap black
+            serverColorDict[server.ServerId]['DiskIcon'] = 'question'  # sets icon to Font Awesome '?'
+
+        if metric_row.PingLatency != null:
+            serverColorDict[server.ServerId]['PingStatus'] = "Responding"  # sets status of ping
+            serverColorDict[server.ServerId]['PingColor'] = 'success'  # sets color to bootstrap green
+            serverColorDict[server.ServerId]['PingIcon'] = 'check'  # sets icon to Font Awesome check
+        elif metric_row.PingLatency == null:
+            serverColorDict[server.ServerId]['PingStatus'] = "Not Responding"  # sets status of ping
+            serverColorDict[server.ServerId]['PingColor'] = 'danger'  # sets color to bootstrap red
+            serverColorDict[server.ServerId]['PingIcon'] = 'times'  # sets icon to Font Awesome 'x'
+        else:
+            serverColorDict[server.ServerId]['PingStatus'] = "Unknown"  # sets status of ping
+            serverColorDict[server.ServerId]['PingColor'] = 'dark'  # sets color to bootstrap black
+            serverColorDict[server.ServerId]['PingIcon'] = 'question'  # sets icon to Font Awesome '?'
+
+        #
+        if metric_row.Cpu > 80 or metric_row.Disk > 90 or metric_row.Ram > 80 or metric_row.Gpu > 90 or \
+                metric_row.PingLatency is None:
+            serverColorDict[server.ServerID]['ServerColor'] = 'danger'
+            serverColorDict[server.ServerID]['ServerIcon'] = 'times'
+
+        elif 50 <= metric_row.Cpu <= 80 or 70 <= metric_row.Disk <= 90 or 50 <= metric_row.Ram <= 80 or \
+                50 <= metric_row.Gpu <= 80:
+            serverColorDict[server.ServerID]['ServerColor'] = 'warning'
+            serverColorDict[server.ServerID]['ServerIcon'] = 'exclamation-triangle'
+        elif metric_row.Cpu < 50 or metric_row.Disk < 70 or metric_row.Ram < 50 or metric_row.Gpu < 50 or \
+                metric_row.PingLatency is not None:
+            serverColorDict[server.ServerID]['ServerColor'] = 'success'
+            serverColorDict[server.ServerID]['ServerIcon'] = 'check'
+        else:
+            serverColorDict[server.ServerID]['ServerColor'] = 'light'
+            serverColorDict[server.ServerID]['ServerIcon'] = 'question'
+
+    return serverColorDict
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -216,88 +319,102 @@ def usagePages(metricName, slug):
 
         difference = eDate - sDate  # calculating the difference between the start and end date
 
-        if difference.total_seconds() <= 86400:  # check to see if the difference is less than 24hrs
-            # Returns list of dates within start and end date
-            dateRange = [metrics.Time for metrics in Metric.query.order_by(Metric.Time).filter_by(ServerId=slug).filter(
-                between(Metric.Time, startDate, endDate))]
+        if difference.total_seconds() < 0:
+            flash('Error: Start date is greater than end date', 'danger')
 
-            # Returns usages that within  start and end date
-            useRange = [getattr(metrics, metricName) for metrics in Metric.query.order_by(Metric.Time).filter_by(
-                ServerId=slug).filter(between(Metric.Time, startDate, endDate))]
+            dateRange = []
+            useRange = []
+        else:
 
-            # ----------------------------------------------------------------------------------------------------------
-            if metricName == 'disk':
-                # resets parts and partUse to update the date range to the one provided.
-                parts = []  # list of all partitions for a server
+            if difference.total_seconds() <= 86400:  # check to see if the difference is less than 24hrs
+                # Returns list of dates within start and end date
+                dateRange = [metrics.Time for metrics in
+                             Metric.query.order_by(Metric.Time).filter_by(ServerId=slug).filter(
+                                 between(Metric.Time, startDate, endDate))]
 
-                # Adds unique partition Ids to the list for given server
-                for p in Partition.query.filter_by(ServerId=slug).order_by(Partition.PartitionId).filter(between(
-                        Partition.Time, startDate, endDate)):
-                    if p.PartitionId not in parts:
-                        parts.append(p.PartitionId)
+                # Returns usages that within  start and end date
+                useRange = [getattr(metrics, metricName) for metrics in Metric.query.order_by(Metric.Time).filter_by(
+                    ServerId=slug).filter(between(Metric.Time, startDate, endDate))]
 
-                partUse = defaultdict(dict)  # dictionary used for disk table with partitions
-                '''PartsUse is a dictionary of dictionaries. The top level dictionary has a key of a Date and Time, and 
-                a value of another dictionary. In that dictionary the keys are 'total' which gives you the total disk 
-                use for that date and time. The other keys are all of the partition IDs for the server, and the values 
-                are that partitions use for that date and time. '''
+                # ----------------------------------------------------------------------------------------------------------
+                if metricName == 'disk':
+                    # resets parts and partUse to update the date range to the one provided.
+                    parts = []  # list of all partitions for a server
 
-                # adds disk use from metrics table to dictionary for total
-                for row in Metric.query.order_by(Metric.Time).filter_by(ServerId=slug).filter(between(
-                        Metric.Time, startDate, endDate)):
-                    partUse[row.Time]['total'] = row.Disk
+                    # Adds unique partition Ids to the list for given server
+                    for p in Partition.query.filter_by(ServerId=slug).order_by(Partition.PartitionId).filter(between(
+                            Partition.Time, startDate, endDate)):
+                        if p.PartitionId not in parts:
+                            parts.append(p.PartitionId)
 
-                # Adds a key for each partition with the values of an empty string
-                for row in Partition.query.filter_by(ServerId=slug).filter(between(
-                        Partition.Time, startDate, endDate)):
-                    for p in parts:
-                        partUse[row.Time][p] = ''
+                    partUse = defaultdict(dict)  # dictionary used for disk table with partitions
+                    '''PartsUse is a dictionary of dictionaries. The top level dictionary has a key of a Date and Time, and 
+                    a value of another dictionary. In that dictionary the keys are 'total' which gives you the total disk 
+                    use for that date and time. The other keys are all of the partition IDs for the server, and the values 
+                    are that partitions use for that date and time. '''
 
-                # Adds the actual usage for each partition if there is one
-                for row in Partition.query.filter_by(ServerId=slug).filter(between(
-                        Partition.Time, startDate, endDate)):
-                    for p in parts:
-                        if p == row.PartitionId:
-                            partUse[row.Time][p] = row.Usage
+                    # adds disk use from metrics table to dictionary for total
+                    for row in Metric.query.order_by(Metric.Time).filter_by(ServerId=slug).filter(between(
+                            Metric.Time, startDate, endDate)):
+                        partUse[row.Time]['total'] = row.Disk
 
-        else:  # if deference is grater than 24hrs
+                    # Adds a key for each partition with the values of an empty string
+                    for row in Partition.query.filter_by(ServerId=slug).filter(between(
+                            Partition.Time, startDate, endDate)):
+                        for p in parts:
+                            partUse[row.Time][p] = ''
 
-            x = sDate  # will be used in iterating the for loop
-            y = timedelta(days=1)  # datetime variable that equals 1 day
+                    # Adds the actual usage for each partition if there is one
+                    for row in Partition.query.filter_by(ServerId=slug).filter(between(
+                            Partition.Time, startDate, endDate)):
+                        for p in parts:
+                            if p == row.PartitionId:
+                                partUse[row.Time][p] = row.Usage
 
-            while x <= eDate:
-                for p in pd.date_range(sDate, eDate):  # for loop starting at the start date and ending on end date
-                    # x = sDate.date()
-                    z = x + y  # z = current value of x plus 1 day
+            else:  # if deference is grater than 24hrs
 
-                    # gets the average for each day also temporarily converts x & z to string for query
-                    avg = db.session.query(db.func.avg(getattr(Metric, metricName)).label('average')).order_by(
-                        Metric.Time).filter_by(ServerId=slug).filter(Metric.Time.between(
-                        x.strftime('%Y-%m-%d'), z.strftime('%Y-%m-%d'))).scalar()
+                x = sDate  # will be used in iterating the for loop
+                y = timedelta(days=1)  # datetime variable that equals 1 day
 
-                    # gets the min for each day also temporarily converts x & z to string for query
-                    minimum = db.session.query(db.func.min(getattr(Metric, metricName)).label('average')).order_by(
-                        Metric.Time).filter_by(ServerId=slug).filter(Metric.Time.between(
-                        x.strftime('%Y-%m-%d'), z.strftime('%Y-%m-%d'))).scalar()
+                while x <= eDate:
+                    for p in pd.date_range(sDate, eDate):  # for loop starting at the start date and ending on end date
+                        # x = sDate.date()
+                        z = x + y  # z = current value of x plus 1 day
 
-                    # gets the max for each day also temporarily converts x & z to string for query
-                    maximum = db.session.query(db.func.max(getattr(Metric, metricName)).label('average')).order_by(
-                        Metric.Time).filter_by(ServerId=slug).filter(Metric.Time.between(
-                        x.strftime('%Y-%m-%d'), z.strftime('%Y-%m-%d'))).scalar()
+                        # gets the average for each day also temporarily converts x & z to string for query
+                        avg = db.session.query(db.func.avg(getattr(Metric, metricName)).label('average')).order_by(
+                            Metric.Time).filter_by(ServerId=slug).filter(Metric.Time.between(
+                            x.strftime('%Y-%m-%d'), z.strftime('%Y-%m-%d'))).scalar()
 
-                    if avg is not None:  # prevents trying to round None and chart from having dates with no data
-                        dateRange.append(x.date().strftime('%Y-%m-%d'))  # reformat x and adds it to date list
-                        averageList.append(round(avg, 1))  # rounds avg to 1 decimal place and adds it to list
-                    minList.append(minimum)  # adds min to list
-                    maxList.append(maximum)  # adds MAX to list
+                        # gets the min for each day also temporarily converts x & z to string for query
+                        minimum = db.session.query(db.func.min(getattr(Metric, metricName)).label('average')).order_by(
+                            Metric.Time).filter_by(ServerId=slug).filter(Metric.Time.between(
+                            x.strftime('%Y-%m-%d'), z.strftime('%Y-%m-%d'))).scalar()
 
-                    x = x + y  # adds 1 day to x to iterate through loop
+                        # gets the max for each day also temporarily converts x & z to string for query
+                        maximum = db.session.query(db.func.max(getattr(Metric, metricName)).label('average')).order_by(
+                            Metric.Time).filter_by(ServerId=slug).filter(Metric.Time.between(
+                            x.strftime('%Y-%m-%d'), z.strftime('%Y-%m-%d'))).scalar()
+
+                        if avg is not None:  # prevents trying to round None and chart from having dates with no data
+                            dateRange.append(x.date().strftime('%Y-%m-%d'))  # reformat x and adds it to date list
+                            averageList.append(round(avg, 1))  # rounds avg to 1 decimal place and adds it to list
+                        minList.append(minimum)  # adds min to list
+                        maxList.append(maximum)  # adds MAX to list
+
+                        x = x + y  # adds 1 day to x to iterate through loop
 
     if len(minList) == 0:  # checks to see if min list is empty | will be empty if date range < 24hrs
         minList = 'xxx'  # sets empty lists to string which will be checked for in the html file
         maxList = 'xxx'
         averageList = 'xxx'
-    return server, dateRange, useRange, form, tmpLoc2, maxList, minList, averageList, partUse, parts
+
+    if not dateRange:
+        flash('There is no data for the given date range', 'info')
+
+    color = getServerAndMetricColor()
+
+    return server, dateRange, useRange, form, tmpLoc2, maxList, minList, averageList, partUse, parts, color
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -311,57 +428,44 @@ def home():
 
     serverMetricsDict = {}  # Dictionary used for tooltips on home page
 
-    serverColorDict = {}  # Dictionary used for Color coding on home page
+    # Dictionary used for Color coding on home page
+    colorDict = getServerAndMetricColor()
 
     for server in server_table:  # loop to add server id with its metrics to dictionary
 
         # gets metrics for each server in loop
         metric = Metric.query.order_by(Metric.Time.desc()).filter_by(ServerId=server.ServerId).first()
 
-        # sets color server in card
-        if metric.Cpu > 80 or metric.Disk > 90 or metric.Ram > 80 \
-                or metric.Gpu > 90 or metric.PingLatency is None:
-            color = 'danger'  # bootstrap Red
-            icon = 'times'  # # Font Awesome icon 'x'
-
-        elif 50 <= metric.Cpu <= 80 or 70 <= metric.Disk <= 90 or \
-                50 <= metric.Ram <= 80 or 50 <= metric.Gpu <= 80:
-            color = 'warning'  # bootstrap Yellowish
-            icon = 'exclamation-triangle'  # # Font Awesome icon warning triangle
-
-        elif metric.Cpu < 50 or metric.Disk < 70 or metric.Ram < \
-                50 or metric.Gpu < 50 or metric.PingLatency is not None:
-            color = 'success'  # bootstrap Green
-            icon = 'check'  # # Font Awesome icon check
-
-        else:
-            color = 'light'  # bootstrap White
-            icon = 'question'  # Font Awesome icon '?'
-
-        serverColorDict[server.ServerID + 'color'] = color  # sets server color to color assigned above
-        serverColorDict[server.ServerID + 'icon'] = icon  # sets server icon to color assigned above
+        cpuColor = colorDict[server.ServerId]['CpuColor']
+        ramColor = colorDict[server.ServerId]['RamColor']
+        gpuColor = colorDict[server.ServerId]['GpuColor']
+        diskColor = colorDict[server.ServerId]['DiskColor']
+        pingColor = colorDict[server.ServerId]['PingColor']
 
         # creates key:value for tool tips
         # key is server id, value is string of metrics as seen below
-        serverMetricsDict[server.ServerID] = 'CPU: ' + str(metric.Cpu) + '%' + ' | RAM:' + str(metric.Ram) + '%' + \
-                                             ' | Disk: ' + str(metric.Disk) + '%' + ' | GPU: ' + str(metric.Gpu) + '%' \
-                                             + ' | Ping:' + str(metric.PingLatency) + 'ms'
-
-    if form.validate_on_submit():
-        server_table = Server.query.filter_by(
-            ServerTypeId=form.filter.data)  # query that gets all of the servers in the Server table
+        serverMetricsDict[server.ServerId] = f'''<h6 class="text-{cpuColor}"><b>CPU</b>: {str(metric.Cpu)}%</h6>
+                                                <h6 class="text-{ramColor}"><b>RAM</b>: {str(metric.Ram)}%</h6>
+                                                <h6 class="text-{diskColor}"><b>Disk</b>: {str(metric.Disk)}%</h6>
+                                                <h6 class="text-{gpuColor}"><b>GPU</b>: {str(metric.Gpu)}%</h6>
+                                                <h6 class="text-{pingColor}"><b>Ping</b>: {str(metric.PingLatency)}ms
+                                                </h6>'''
+    if form.is_submitted():
+        if form.filter.data == "All":
+            server_table = Server.query.all()
+        else:
+            server_table = Server.query.filter_by(ServerTypeId=form.filter.data) # query that gets all of the servers in the Server table
 
     masterList = []  # used to only display servers on the Master List
     for s in MasterList.query.all():
         masterList.append(s.Num + '-' + s.Name)  # concatenates strings to make the server id
 
-    #rack_table = Rack.query.filter(Rack.RackId == Server.RackId).order_by(Rack.Name)  # Show only racks that have servers on them
+    #  rack_table = Rack.query.filter(Rack.RackId == Server.RackId).order_by(Rack.Name)  # Show only racks that have
+    #                                                                                       servers on them
     rack_table = Rack.query.order_by(Rack.Name)  # Shows all racks in database
 
-    return render_template('HomePageV2.html',
-                           server=server_table, rack=rack_table, form=form, metric=serverMetricsDict,
-                           masterList=masterList,
-                           color=serverColorDict)  # returns V2 home page html doc with that variable
+    return render_template('HomePageV2.html', server=server_table, rack=rack_table, form=form, metric=serverMetricsDict,
+                           masterList=masterList, color=colorDict)  # returns V2 home page html doc with that variable
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -377,15 +481,14 @@ def master_list():
         mlType = ServerType.query.get(form.type.data)
 
         try:
-            ML = MasterList(Type=mlType.TypeName, Name=form.name.data, Num=form.type.data)
+            # spaces are removed from the name
+            ML = MasterList(Type=mlType.TypeName, Name=form.name.data.replace(' ', ''), Num=form.type.data)
             db.session.add(ML)
             db.session.commit()
+            flash(mlType.TypeName + '-' + form.name.data.replace(' ', '') + ' was added!', 'success')
         except FlushError:
             db.session.rollback()
-            print('Error 1234')
-        print(form.name.data)
-        print(form.type.data)
-        print(mlType.TypeName)
+            flash('There was an issue adding your server. Make sure the server Id is unique.', 'danger')
         return redirect(url_for('master_list'))
     return render_template('MasterList.html', mList=mList, form=form)  # only returns the hard-coded master list for now
 
@@ -396,7 +499,7 @@ def deleteServer(mlType, mlName):
 
     db.session.delete(tmp)
     db.session.commit()
-    flash('The Server has been deleted!', 'success')
+    flash(mlType + '-' + mlName + ' has been deleted!', 'info')
     return redirect(url_for('master_list'))
 
 
@@ -429,76 +532,11 @@ def RT(slug):  # Slug is the Server Id
     tmp = Metric.query.order_by(Metric.Time.desc()).filter_by(ServerId=slug).first()
     metric_row = Metric.query.get(tmp.MetricId)  # gets the most recent metrics for server
 
-    serverColorDict = {}  # used to to get color and icon for conditional formatting
-
-    if metric_row.Cpu > 80:
-        serverColorDict['CpuColor'] = 'danger'  # sets color to bootstrap red
-        serverColorDict['CpuIcon'] = 'times'  # sets icon to Font Awesome 'x'
-    elif 50 <= metric_row.Cpu <= 80:
-        serverColorDict['CpuColor'] = 'warning'  # sets color to bootstrap yellowish
-        serverColorDict['CpuIcon'] = 'exclamation-triangle'  # sets icon to Font Awesome warning triangle
-    elif metric_row.Cpu < 50:
-        serverColorDict['CpuColor'] = 'success'  # sets color to bootstrap green
-        serverColorDict['CpuIcon'] = 'check'  # sets icon to Font Awesome check
-    else:
-        serverColorDict['CpuColor'] = 'dark'  # sets color to bootstrap black
-        serverColorDict['CpuIcon'] = 'question'  # sets icon to Font Awesome '?'
-
-    if metric_row.Gpu > 80:
-        serverColorDict['GpuColor'] = 'danger'  # sets color to bootstrap red
-        serverColorDict['GpuIcon'] = 'times'  # sets icon to Font Awesome 'x'
-    elif 50 <= metric_row.Gpu <= 80:
-        serverColorDict['GpuColor'] = 'warning'  # sets color to bootstrap yellowish
-        serverColorDict['GpuIcon'] = 'exclamation-triangle'  # sets icon to Font Awesome warning triangle
-    elif metric_row.Gpu < 50:
-        serverColorDict['GpuColor'] = 'success'  # sets color to bootstrap green
-        serverColorDict['GpuIcon'] = 'check'  # sets icon to Font Awesome check
-    else:
-        serverColorDict['GpuColor'] = 'dark'  # sets color to bootstrap black
-        serverColorDict['GpuIcon'] = 'question'  # sets icon to Font Awesome '?'
-
-    if metric_row.Ram > 80:
-        serverColorDict['RamColor'] = 'danger'  # sets color to bootstrap red
-        serverColorDict['RamIcon'] = 'times'  # sets icon to Font Awesome 'x'
-    elif 50 <= metric_row.Ram <= 80:
-        serverColorDict['RamColor'] = 'warning'  # sets color to bootstrap yellowish
-        serverColorDict['RamIcon'] = 'exclamation-triangle'  # sets icon to Font Awesome warning triangle
-    elif metric_row.Ram < 50:
-        serverColorDict['RamColor'] = 'success'  # sets color to bootstrap green
-        serverColorDict['RamIcon'] = 'check'  # sets icon to Font Awesome check
-    else:
-        serverColorDict['RamColor'] = 'dark'  # sets color to bootstrap black
-        serverColorDict['RamIcon'] = 'question'  # sets icon to Font Awesome '?'
-
-    if metric_row.Disk > 90:
-        serverColorDict['DiskColor'] = 'danger'  # sets color to bootstrap red
-        serverColorDict['DiskIcon'] = 'times'  # sets icon to Font Awesome 'x'
-    elif 70 <= metric_row.Disk <= 90:
-        serverColorDict['DiskColor'] = 'warning'  # sets color to bootstrap yellowish
-        serverColorDict['DiskIcon'] = 'exclamation-triangle'  # sets icon to Font Awesome warning triangle
-    elif metric_row.Disk < 70:
-        serverColorDict['DiskColor'] = 'success'  # sets color to bootstrap green
-        serverColorDict['DiskIcon'] = 'check'  # sets icon to Font Awesome check
-    else:
-        serverColorDict['Disk'] = 'dark'  # sets color to bootstrap black
-        serverColorDict['DiskIcon'] = 'question'  # sets icon to Font Awesome '?'
-
-    if metric_row.PingLatency != null:
-        status = "Responding"  # sets status of ping
-        serverColorDict['PingColor'] = 'success'  # sets color to bootstrap green
-        serverColorDict['PingIcon'] = 'check'  # sets icon to Font Awesome check
-    elif metric_row.PingLatency == null:
-        status = "Not Responding"  # sets status of ping
-        serverColorDict['PingColor'] = 'danger'  # sets color to bootstrap red
-        serverColorDict['PingIcon'] = 'times'  # sets icon to Font Awesome 'x'
-    else:
-        status = "Unknown"  # sets status of ping
-        serverColorDict['PingColor'] = 'dark'  # sets color to bootstrap black
-        serverColorDict['PingIcon'] = 'question'  # sets icon to Font Awesome '?'
+    colorDict = getServerAndMetricColor()
 
     return render_template('RealTimeDataOverviewTemp.html', server=server, metric=metric_row, service=services,
-                           database=databases, runningjob=runningjobs, location=tmpLoc3, rack=tmpLoc2, status=status,
-                           color=serverColorDict)
+                           database=databases, runningjob=runningjobs, location=tmpLoc3, rack=tmpLoc2,
+                           color=colorDict)
     #   returns the template for real time data overview with ^ variables passed to it
 
 
@@ -510,17 +548,8 @@ def CPU(slug):  # Slug is the Server Id
 
     tmp = Metric.query.order_by(Metric.Time.desc()).filter_by(ServerID=slug).first()
 
-    # sets color of metric
-    if tmp.Cpu > 80:
-        color = 'danger'
-    elif 50 <= tmp.Cpu <= 80:
-        color = 'warning'
-    elif tmp.Cpu < 50:
-        color = 'success'
-    else:
-        color = 'dark'
-
-    server, dateRange, useRange, form, tmpLoc2, maxList, minList, averageList, partUse, parts = usagePages('Cpu', slug)
+    server, dateRange, useRange, form, tmpLoc2, maxList, minList, averageList, partUse, parts, color = usagePages(
+        'Cpu', slug)
 
     # return for default date range
     return render_template('Usage-CPUTemp.html', server=server, ametric=tmp, date=dateRange, usage=useRange,
@@ -533,26 +562,11 @@ def CPU(slug):  # Slug is the Server Id
 @app.route('/usage-Disk/<slug>', methods=['POST', 'GET'])  # route for Disk usage for a specific server
 def disk(slug):  # Slug is the Server Id
 
-    # gets all disk usages for this server between dates
-    # diskUse = [metrics.Disk for metrics in Metric.query.order_by(Metric.Time).filter_by(ServerId=slug).filter(
-    #     between(Metric.Time, '2020-02-29 11:55:00', '2020-02-29 23:55:00'))]
-
     tmp = Metric.query.order_by(Metric.Time.desc()).filter_by(ServerID=slug).first()
     metric_row = Metric.query.get(tmp.MetricId)  # gets the most recent metrics for server
 
-    # sets color of metric
-    if tmp.Disk > 90:
-        color = 'danger'
-    elif 70 <= tmp.Disk <= 90:
-        color = 'warning'
-    elif tmp.Disk < 70:
-        color = 'success'
-    else:
-        color = 'dark'
-
-    server, dateRange, useRange, form, tmpLoc2, maxList, minList, averageList, partUse, parts = usagePages('Disk', slug)
-
-    # server, dateRange, useRange, form, tmpLoc2, maxList, minList, averageList, partUse, parts
+    server, dateRange, useRange, form, tmpLoc2, maxList, minList, averageList, partUse, parts, color = usagePages(
+        'Disk', slug)
 
     return render_template('Usage-Disk.html', server=server, ametric=tmp, date=dateRange, usage=useRange,
                            form=form, rack=tmpLoc2, hi=maxList, lo=minList, avg=averageList, partuse=partUse,
@@ -567,17 +581,8 @@ def gpu(slug):  # Slug is the Server Id
 
     metric_row = Metric.query.order_by(Metric.Time.desc()).filter_by(ServerID=slug).first()
 
-    # sets color of metric
-    if metric_row.Gpu > 80:
-        color = 'danger'
-    elif 50 <= metric_row.Gpu <= 80:
-        color = 'warning'
-    elif metric_row.Gpu < 50:
-        color = 'success'
-    else:
-        color = 'dark'
-
-    server, dateRange, useRange, form, tmpLoc2, maxList, minList, averageList, partUse, parts = usagePages('Gpu', slug)
+    server, dateRange, useRange, form, tmpLoc2, maxList, minList, averageList, partUse, parts, color = usagePages(
+        'Gpu', slug)
 
     return render_template('Usage-GPU.html', server=server, ametric=metric_row, date=dateRange, usage=useRange,
                            form=form, rack=tmpLoc2, hi=maxList, lo=minList, avg=averageList, color=color)
@@ -589,21 +594,11 @@ def gpu(slug):  # Slug is the Server Id
 @app.route('/usage-RAM/<slug>', methods=['POST', 'GET'])  # route for cpu usage for a specific server
 def ram(slug):  # Slug is the Server Id
 
-
     tmp = Metric.query.order_by(Metric.Time.desc()).filter_by(ServerID=slug).first()
     metric_row = Metric.query.get(tmp.MetricId)  # gets the most recent metrics for server
 
-    # sets color of metric
-    if tmp.Ram > 80:
-        color = 'danger'
-    elif 50 <= tmp.Ram <= 80:
-        color = 'warning'
-    elif tmp.Ram < 50:
-        color = 'success'
-    else:
-        color = 'dark'
-
-    server, dateRange, useRange, form, tmpLoc2, maxList, minList, averageList, partUse, parts = usagePages('Ram', slug)
+    server, dateRange, useRange, form, tmpLoc2, maxList, minList, averageList, partUse, parts, color = usagePages(
+        'Ram', slug)
 
     return render_template('Usage-RAM.html', server=server, ametric=metric_row, date=dateRange, usage=useRange,
                            form=form, rack=tmpLoc2, hi=maxList, lo=minList, avg=averageList, color=color)
@@ -618,22 +613,11 @@ def ping(slug):  # Slug is the Server Id
     tmp = Metric.query.order_by(Metric.Time.desc()).filter_by(ServerID=slug).first()
     metric_row = Metric.query.get(tmp.MetricId)  # gets the most recent metrics for server
 
-    # sets color and status of metric
-    if metric_row.PingLatency != null:
-        color = 'success'
-        status = "Responding"
-    elif metric_row.PingLatency == null:
-        color = 'danger'
-        status = "Not Responding"
-    else:
-        color = 'dark'
-        status = 'Unknown'
-
-    server, dateRange, useRange, form, tmpLoc2, maxList, minList, averageList, partUse, parts = usagePages(
+    server, dateRange, useRange, form, tmpLoc2, maxList, minList, averageList, partUse, parts, color = usagePages(
         'PingLatency', slug)
 
     return render_template('Usage-Ping.html', server=server, ametric=metric_row, date=dateRange, usage=useRange,
-                           form=form, rack=tmpLoc2, hi=maxList, lo=minList, avg=averageList, status=status, color=color)
+                           form=form, rack=tmpLoc2, hi=maxList, lo=minList, avg=averageList, color=color)
 
 
 # ----------------------------------------------------------------------------------------------------------------------
