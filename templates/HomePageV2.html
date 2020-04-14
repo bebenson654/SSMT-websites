@@ -41,7 +41,8 @@
             {% for rack in rack %}
                 <div class="col-3 text-center testimonial-group--box"> {# formats cards into special columns #}
                     <div class="card"> {# card containing a rack #}
-                        <div class="card-header text-center p-3 bg-primary text-white"> {# card header #}
+                        <div class="card-header text-center p-3 text-white" style="background-color: #005288">
+                            {# card header #}
                             {{ rack.Name }}
                         </div>
                         <div class="list-group list-group-flush"> {# lists servers that link to their Real Time page #}
