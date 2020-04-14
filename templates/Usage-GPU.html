@@ -109,40 +109,47 @@
                             label: 'usage',
                             backgroundColor: 'rgb(255,122,0,0.82)',
                             borderColor: 'rgb(0,0,0)',
-                            data: [{% for u in usage %} "{{ u }}", {% endfor %}] {# Usages #}
+                            data: [{% for u in usage %} "{{ u }}", {% endfor %}], {# Usages #}
+                            lineTension: 0
                         }]
                     },
+                    options: {
+                        legend: {display: false}
+                    }
                 {% else %}
                     data: {
                         labels: [{% for d in date %} "{{ d }}", {% endfor %}], {# Dates #}
                         datasets: [{
-                            label: 'HIGH',
+                            label: 'High',
                             fill: false,
                             backgroundColor: 'rgba(255,33,0,0.71)',
                             borderColor: 'rgb(255,33,0)',
-                            data: [{% for h in hi %} "{{ h }}", {% endfor %}] {# Usages #}
-                        }, {
-                            label: 'LOW',
-                            fill: false,
-                            backgroundColor: 'rgba(64,255,0,0.71)',
-                            borderColor: 'rgb(64,255,0)',
-                            data: [{% for l in lo %} "{{ l }}", {% endfor %}]
+                            data: [{% for h in hi %} "{{ h }}", {% endfor %}], {# Usages #}
+                            lineTension: 0
                         }, {
                             label: 'Average',
                             fill: false,
                             backgroundColor: 'rgba(255,223,0,0.71)',
                             borderColor: 'rgb(255,223,0)',
-                            data: [{% for a in avg %} "{{ a }}", {% endfor %}]
+                            data: [{% for a in avg %} "{{ a }}", {% endfor %}],
+                            lineTension: 0
+                        }, {
+                            label: 'Low',
+                            fill: false,
+                            backgroundColor: 'rgba(64,255,0,0.71)',
+                            borderColor: 'rgb(64,255,0)',
+                            data: [{% for l in lo %} "{{ l }}", {% endfor %}],
+                            lineTension: 0
                         }
                         ]
                     },
+                    options: {
+                        legend: {
+                            display: true,
+                            position: 'top',
+                        }
+                    }
                 {% endif %}
-
-
-                {# Configuration options go here #}
-                options: {
-                    legend: {display: false}
-                }
             });
         </script>
     </div>

@@ -109,12 +109,20 @@ class Partition(db.Model):  # Master list table
 # Global date variables
 
 mDate = Metric.query.order_by(Metric.Time.desc()).first()  # gets most recent row from metric
-
-maxDate = mDate.Time  # grabs time from row above^
+maxDate = mDate.Time  # grabs dateTime as string from row above^
 
 maxDateMinus12 = datetime.strptime(maxDate, '%Y-%m-%d %H:%M:%S')  # converts it to date time object
 maxDateMinus12 = maxDateMinus12 - timedelta(hours=12)  # subtracts 12 hrs
 maxDateMinus12 = datetime.strftime(maxDateMinus12, '%Y-%m-%d %H:%M:%S')  # converts back to string
+
+min_Date = Metric.query.order_by(Metric.Time).first()  # gets most recent row from metric
+minDate = min_Date.Time
+
+maxDateAmerican = datetime.strptime(maxDate, '%Y-%m-%d %H:%M:%S')
+maxDateAmerican = datetime.strftime(maxDateAmerican, '%m/%d/%Y %H:%M:%S')  # string of max date in American format
+
+minDateAmerican = datetime.strptime(minDate, '%Y-%m-%d %H:%M:%S')
+minDateAmerican = datetime.strftime(minDateAmerican, '%m/%d/%Y %H:%M:%S')  # string of min date in American format
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -319,7 +327,13 @@ def usagePages(metricName, slug):
 
         difference = eDate - sDate  # calculating the difference between the start and end date
 
-        if difference.total_seconds() < 0:
+        if sDate < datetime.strptime(minDate, '%Y-%m-%d %H:%M:%S'):  # warning message is displayed if start date < min
+            flash('Warning: There is no data for this metric before ' + minDateAmerican, 'warning')
+
+        if eDate > datetime.strptime(maxDate, '%Y-%m-%d %H:%M:%S'):  # warning message is displayed if end date < max
+            flash('Warning: There is no data for this metric after ' + maxDateAmerican, 'warning')
+
+        if difference.total_seconds() < 0:  # error message displayed if the Start date is greater than end date
             flash('Error: Start date is greater than end date', 'danger')
 
             dateRange = []
@@ -382,25 +396,25 @@ def usagePages(metricName, slug):
                         z = x + y  # z = current value of x plus 1 day
 
                         # gets the average for each day also temporarily converts x & z to string for query
-                        avg = db.session.query(db.func.avg(getattr(Metric, metricName)).label('average')).order_by(
+                        avg = db.session.query(db.func.avg(getattr(Metric, metricName))).order_by(
                             Metric.Time).filter_by(ServerId=slug).filter(Metric.Time.between(
                             x.strftime('%Y-%m-%d'), z.strftime('%Y-%m-%d'))).scalar()
 
                         # gets the min for each day also temporarily converts x & z to string for query
-                        minimum = db.session.query(db.func.min(getattr(Metric, metricName)).label('average')).order_by(
+                        minimum = db.session.query(db.func.min(getattr(Metric, metricName))).order_by(
                             Metric.Time).filter_by(ServerId=slug).filter(Metric.Time.between(
                             x.strftime('%Y-%m-%d'), z.strftime('%Y-%m-%d'))).scalar()
 
                         # gets the max for each day also temporarily converts x & z to string for query
-                        maximum = db.session.query(db.func.max(getattr(Metric, metricName)).label('average')).order_by(
+                        maximum = db.session.query(db.func.max(getattr(Metric, metricName))).order_by(
                             Metric.Time).filter_by(ServerId=slug).filter(Metric.Time.between(
                             x.strftime('%Y-%m-%d'), z.strftime('%Y-%m-%d'))).scalar()
 
                         if avg is not None:  # prevents trying to round None and chart from having dates with no data
                             dateRange.append(x.date().strftime('%Y-%m-%d'))  # reformat x and adds it to date list
                             averageList.append(round(avg, 1))  # rounds avg to 1 decimal place and adds it to list
-                        minList.append(minimum)  # adds min to list
-                        maxList.append(maximum)  # adds MAX to list
+                            minList.append(minimum)  # adds min to list
+                            maxList.append(maximum)  # adds MAX to list
 
                         x = x + y  # adds 1 day to x to iterate through loop
 
