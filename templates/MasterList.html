@@ -77,26 +77,27 @@
                         </tr>
                     {% endfor %}
 
-                <tr class="table-light">
-                    <td scope="row"></td>
-                    <form method="post">
+                <form method="post">
+                    {{ form.csrf_token }}
+                    <tr>
                         <td>
-                            <div class="input-group"> {# Server Type dropdown #}
-                                {{ form.csrf_token }}
-
-                                {{ render_field(form.type) }}
+                            <button type="submit" class="btn btn-success btn-sm m-1">ADD</button>
+                        </td>
+                        <td>
+                            <div> {# Server Type dropdown #}
+                                {{ form.type }}
                             </div>
                         </td>
-                        <td class="table-active">
-                            {#                        <form method="post">#}
-                            {#                            {{ form.csrf_token }}#}
-                            <div class="input-group mb-3"> {# Text Box Input #}
-                                {{ render_field(form.name) }}
-                                {{ render_field(form.add) }}
-                            </div>
-                    </form>
-                    </td>
-                </tr>
+                        <td>{# Text Box Input #}
+                            {{ form.name }}
+                            <small class="form-text text-muted">
+                                {% for err in form.name.errors %}
+                                    {{ err }}
+                                {% endfor %}
+                            </small>
+                        </td>
+                    </tr>
+                </form>
                 </tbody>
             </table>
         </div>
