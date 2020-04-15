@@ -118,18 +118,21 @@
 
     <div class="row mt-5 text-center"> {# Services Table #}
         <div class="col-lg-12 ml-auto">
-        <button class="btn btn-light btn-lg btn-block" type="button" data-toggle="collapse" data-target="#collapseService" aria-expanded="false" aria-controls="collapseService">
-            <div class="text-light p-2 h3" style="background-color: #40b3ff">Services</div></button>
+            <button class="btn btn-lg btn-block text-light mb-3" style="background-color: #005288" type="button"
+                    data-toggle="collapse" data-target="#collapseService" aria-expanded="false"
+                    aria-controls="collapseService">
+                <h3>Services</h3>
+            </button>
 
             <div class="collapse" id="collapseService">
-            <table id="service" class="display">
-                <thead>
-                <tr>
-                    <th scope="col">Service ID</th>
-                    <th scope="col">Service Name</th>
-                    <th scope="col">Status</th>
-                </tr>
-                </thead>
+                <table id="service" class="display">
+                    <thead>
+                    <tr>
+                        <th scope="col">Service ID</th>
+                        <th scope="col">Service Name</th>
+                        <th scope="col">Status</th>
+                    </tr>
+                    </thead>
 
                 <tbody>
 
@@ -151,19 +154,22 @@
     <div class="row mt-5 text-center"> {# Database Table #}
         <div class="col-lg-12 ml-auto">
             {% if database != 0 %}
-                 <button class="btn btn-light btn-lg btn-block" type="button" data-toggle="collapse" data-target="#collapseDatabase" aria-expanded="false" aria-controls="collapseDatabase">
-                     <div class="text-light p-2 h3" style="background-color: #40b3ff">Databases</div></button>
+                <button class="btn btn-lg btn-block text-light mb-3" style="background-color: #005288" type="button"
+                        data-toggle="collapse" data-target="#collapseDatabase" aria-expanded="false"
+                        aria-controls="collapseDatabase">
+                    <h3>Databases</h3>
+                </button>
                 <div class="collapse" id="collapseDatabase">
-                <table id="database" class="display">
-                    <thead>
-                    <tr>
-                        <th>Database ID</th>
-                        <th>Database Name</th>
-                        <th>Status</th>
-                    </tr>
-                    </thead>
+                    <table id="database" class="display">
+                        <thead>
+                        <tr>
+                            <th>Database ID</th>
+                            <th>Database Name</th>
+                            <th>Status</th>
+                        </tr>
+                        </thead>
 
-                    <tbody>
+                        <tbody>
 
                     {% for db in database %} {# Gets all databases for this server #}
                         <tr>
@@ -173,27 +179,31 @@
                         </tr>
                     {% endfor %}
 
-                    </tbody>
-                </table></div>
+                        </tbody>
+                    </table>
+                </div>
             {% endif %}
         </div>
     </div>
-    <div class="row mt-5 text-center"> {# Running Job Table #}
+    <div class="row mt-5 mb-5 text-center"> {# Running Job Table #}
         <div class="col-lg-12 ml-auto">
             {% if runningjob != 0 %}
-                <button class="btn btn-light btn-lg btn-block" type="button" data-toggle="collapse" data-target="#collapseJobs" aria-expanded="false" aria-controls="collapseJobs">
-                     <div class="text-light p-2 h3" style="background-color: #40b3ff">Running Jobs</div></button>
+                <button class="btn btn-lg btn-block text-light mb-3" style="background-color: #005288" type="button"
+                        data-toggle="collapse" data-target="#collapseJobs" aria-expanded="false"
+                        aria-controls="collapseJobs">
+                    <h3>Running Jobs</h3>
+                </button>
                 <div class="collapse" id="collapseJobs">
                     <table id="jobs" class="display">
-                    <thead>
-                    <tr>
-                        <th>Job Name</th>
-                        <th>User</th>
-                        <th>Remaining Time</th>
-                    </tr>
-                    </thead>
+                        <thead>
+                        <tr>
+                            <th>Job Name</th>
+                            <th>User</th>
+                            <th>Remaining Time</th>
+                        </tr>
+                        </thead>
 
-                    <tbody>
+                        <tbody>
 
                     {% for rj in runningjob %} {# Gets all databases for this server #}
                         <tr>
