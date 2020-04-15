@@ -141,7 +141,6 @@ class MasterListForm(FlaskForm):  # form for master list
 class HomeFilter(FlaskForm):  # filter form on home page
     myChoicesTwo = [('All', 'All')] + [(st.TypeId, st.TypeName) for st in ServerType.query.all()]
     filter = SelectField('filter', choices=myChoicesTwo, validators=[input_required()])
-    sub = SubmitField('Filter')
 
 
 # ----------------------------------------------------------------------------------------------------------------------
