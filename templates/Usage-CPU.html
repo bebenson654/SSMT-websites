@@ -1,0 +1,203 @@
+{% extends 'layout.html' %} {# inherits format from layout.html #}
+
+{% block title %}{# Overides layout.html default title #}
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@2.8.0"></script> {# Script needed for chart.js #}
+    <title>cpu-Usage - {{ server.ServerName }}</title> {# Title - shown in tab on browser #}
+    <link rel="icon" href="/static/favicons/cpu.ico">
+{% endblock title %}
+
+{% block content %} {# Overides layout.html body section #}
+
+    {# Site title bar #}
+    <a class="text-decoration-none" href="{{ url_for('home') }}">  {# Link to home page #}
+        <div class="row mt-3 text-center">
+            <div class="col-12 ml-auto p-3 mb-2 text-white" style="background-color: #005288">
+                <h1>Server System Monitoring Tool</h1> {# Site Title #}
+            </div>
+        </div>
+    </a>
+
+    <div class="mt-3 text-center">
+        <div class="row card-body border border-dark font-weight-bold">
+            <div class="col-2 text-left">
+                <a class="btn btn-secondary btn-lg" href="{{ url_for('dataOverview', slug=server.ServerId) }}"
+                   role="button"><i
+                        class="fas fa-arrow-alt-circle-left"></i>Back {# Back button #}
+                </a>
+            </div>
+
+            <div class="col-8 text-center">
+                <h2>Rack: {{ rack.Name }} | Server: {{ server.ServerName }}</h2> {# Rack and server #}
+            </div>
+
+            <div class="col-2 text-right">
+                <a class="btn btn-secondary btn-lg" href="{{ url_for('home') }}" role="button"><i
+                        class="fa fa-home"></i> Home {# Home button #}
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="row text-center m-5"> {# this servers cpu usage #}
+        <div class="col-12">
+            <h2 class="text-{{ color[server.ServerId]['CpuColor'] }}"> cpu Usage: <b>{{ ametric.Cpu }}%</b></h2>
+        </div>
+    </div>
+    <hr/>
+
+    <div class="row mt-3 text-center">  {# Displays flash messages if there are any #}
+        <div class="col-12">
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="alert alert-{{ category }} alert-dismissible" role="alert">
+                            <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span
+                                    aria-hidden="true">&times;</span></button>
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+        </div>
+    </div>
+
+    <div class="row text-center mt-5 ml-auto">  {# form for start and end date #}
+        <div class="col">
+            <form method="post">
+                <div class="form-row">
+                    {{ form.csrf_token }} {# cross site request forgery token #}
+                    <div class="col-5">
+                        <h6>Start Date: {{ form.startDate }}</h6> {# Start input #}
+                    </div>
+                    <div class="col-5">
+                        <h6>End Date: {{ form.endDate }}</h6> {# End date input #}
+                    </div>
+                    <div class="col-2">
+                        <button type="submit" class="btn btn-success btn-sm">Update</button>
+                        {# Submit button #}
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="row text-center m-5">{# Chart for usage #}
+        <div class="col">
+            <canvas id="myChart"></canvas>
+        </div>
+
+        <script>  {# script for usage chart #}
+        var ctx = document.getElementById('myChart').getContext('2d');
+        var chart = new Chart(ctx, {
+            {# The type of chart we want to create #}
+            type: 'line',
+
+            {% if hi == 'xxx' %}  {# if the dae range is less than 24 hrs #}
+                {# The data for our dataset #}
+                data: {
+                    labels: [{% for d in date %} "{{ d }}", {% endfor %}], {# Dates #}
+                    datasets: [{
+                        label: 'usage',
+                        backgroundColor: 'rgb(173, 216, 230)',
+                        borderColor: 'rgb(0,0,0)',
+                        data: [{% for u in usage %} "{{ u }}", {% endfor %}], {# Usages #}
+                        lineTension: 0  {# Makes line less curvy #}
+                    }]
+                },
+                options: {
+                    legend: {display: false}
+                }
+            {% else %}  {# if date range is greater than 24 hrs #}
+                data: {
+                    labels: [{% for d in date %} "{{ d }}", {% endfor %}], {# Dates #}
+                    datasets: [{
+                        label: 'High',
+                        fill: false,
+                        backgroundColor: 'rgba(255,33,0,0.71)',
+                        borderColor: 'rgb(255,33,0)',
+                        data: [{% for h in hi %} "{{ h }}", {% endfor %}], {# Usages #}
+                        lineTension: 0  {# Makes line less curvy #}
+                    }, {
+                        label: 'Average',
+                        fill: false,
+                        backgroundColor: 'rgba(255,223,0,0.71)',
+                        borderColor: 'rgb(255,223,0)',
+                        data: [{% for a in avg %} "{{ a }}", {% endfor %}],
+                        lineTension: 0
+                    }, {
+                        label: 'Low',
+                        fill: false,
+                        backgroundColor: 'rgba(64,255,0,0.71)',
+                        borderColor: 'rgb(64,255,0)',
+                        data: [{% for l in lo %} "{{ l }}", {% endfor %}],
+                        lineTension: 0
+                    }
+                    ]
+                },
+                options: {
+                    legend: {
+                        display: true, {# add legend #}
+                        position: 'top',
+                    }
+                }
+            {% endif %}
+        });
+        </script>
+    </div>
+
+    {% if lo == 'xxx' %}  {# if date range is less tha  24 hrs #}
+        <div class="row"> {# cpu Usage table #}
+            <div class="col mt-5 mb-5">
+                <table id="usage" class="display">
+                    <thead>
+                    <tr>
+                        <th>Date/Time</th>
+                        <th>cpu Usage (%):</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {% for d, u in zip(date, usage) %}
+                        <tr>
+                            <td>{{ d }}</td>
+                            {# dates #}
+                            <td>{{ u }}%</td>
+                            {# usages #}
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    {% else %}  {# if date range greater than 24 hrs #}
+        <div class="row"> {# cpu Usage table #}
+            <div class="col mt-5 mb-5">
+                <table id="usage" class="display">
+                    <thead>
+                    <tr>
+                        <th>Date/Time</th>
+                        <th>High</th>
+                        <th>Average</th>
+                        <th>Low</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {% for d, h, a, l in zip(date, hi, avg, lo) %}
+                        <tr>
+                            <td>{{ d }}</td>
+                            {# Dates #}
+                            <td class="table-danger">{{ h }}%</td>
+                            {# High #}
+                            <td class="table-warning">{{ a }}%</td>
+                            {# Average #}
+                            <td class="table-success">{{ l }}%</td>
+                            {# Low #}
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    {% endif %}
+
+{% endblock content %}

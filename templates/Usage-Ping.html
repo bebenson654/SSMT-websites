@@ -1,6 +1,4 @@
 
-{# NEW NON HARD-CODED VERSION #}
-
 {% from '_formhelpers.html' import render_field %} {# import neede for chard range forms #}
 
 {% extends 'layout.html' %} {# inherits format from layout.html #}
@@ -16,7 +14,7 @@
 
     <a class="text-decoration-none" href="{{ url_for('home') }}">
         <div class="row mt-3 text-center"> {# Row for page header #}
-            <div class="col-12 ml-auto p-3 mb-2 bg-secondary text-white">
+            <div class="col-12 ml-auto p-3 mb-2 text-white" style="background-color: #005288">
                 <h1>Server System Monitoring Tool</h1>
             </div>
         </div>
@@ -25,7 +23,8 @@
     <div class="mt-3 text-center"> {# Home button & Rack & Server Names #}
         <div class="row card-body border border-dark font-weight-bold">
             <div class="col-2 text-left">
-                <a class="btn btn-secondary btn-lg" href="{{ url_for('RT', slug=server.ServerId) }}" role="button"><i
+                <a class="btn btn-secondary btn-lg" href="{{ url_for('dataOverview', slug=server.ServerId) }}"
+                   role="button"><i
                         class="fas fa-arrow-alt-circle-left"></i> Back</a>
             </div>
             <div class="col-8 text-center">
@@ -70,10 +69,10 @@
                 <div class="form-row">
                     {{ form.csrf_token }}
                     <div class="col-5">
-                        <h6>Start Date: {{ form.startdate }}</h6>
+                        <h6>Start Date: {{ form.startDate }}</h6>
                     </div>
                     <div class="col-5">
-                        <h6>End Date: {{ form.enddate }}</h6>
+                        <h6>End Date: {{ form.endDate }}</h6>
                     </div>
                     <div class="col-2">
                         <button type="submit" class="btn btn-success btn-sm">Update</button>
@@ -179,7 +178,7 @@
             </div>
         </div>
     {% else %}
-        <div class="row"> {# CPU Usage table #}
+        <div class="row"> {# cpu Usage table #}
             <div class="col mt-5 mb-5">
                 <table id="usage" class="display">
                     <thead>
