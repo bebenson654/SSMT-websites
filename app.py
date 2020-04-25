@@ -1,5 +1,4 @@
-from flask import Flask, render_template, request, redirect, flash, \
-    url_for
+from flask import Flask, render_template, request, redirect, flash, url_for
 from flask_wtf import FlaskForm
 from wtforms import StringField, SelectField, SubmitField
 from wtforms.validators import input_required, Regexp
@@ -410,15 +409,12 @@ def usagePages(metricName, slug):
                     parts = []  # list of all partitions for a server
 
                     # Adds unique partition Ids to the list for given server
-                    for p in Partition.query.filter_by(
-                            ServerId=slug).order_by(
-                            Partition.PartitionId).filter(between(
+                    for p in Partition.query.filter_by(ServerId=slug).order_by(Partition.PartitionId).filter(between(
                             Partition.Time, startDate, endDate)):
                         if p.PartitionId not in parts:
                             parts.append(p.PartitionId)
 
-                    partUse = defaultdict(
-                        dict)  # dictionary used for disk table with partitions
+                    partUse = defaultdict(dict)  # dictionary used for disk table with partitions
                     '''PartsUse is a dictionary of dictionaries. The top level dictionary has a key of a Date and Time, and 
                     a value of another dictionary. In that dictionary the keys are 'total' which gives you the total disk 
                     use for that date and time. The other keys are all of the partition IDs for the server, and the values 

@@ -22,7 +22,7 @@
             <div class="col-2 text-left">
                 <a class="btn btn-secondary btn-lg" href="{{ url_for('dataOverview', slug=server.ServerId) }}"
                    role="button"><i
-                        class="fas fa-arrow-alt-circle-left"></i>Back {# Back button #}
+                        class="fas fa-arrow-alt-circle-left"></i> Back {# Back button #}
                 </a>
             </div>
 
@@ -73,8 +73,8 @@
                         <h6>End Date: {{ form.endDate }}</h6> {# End date input #}
                     </div>
                     <div class="col-2">
-                        <button type="submit" class="btn btn-success btn-sm">Update</button>
                         {# Submit button #}
+                        <button type="submit" class="btn btn-success btn-sm">Update</button>
                     </div>
                 </div>
             </form>
@@ -86,62 +86,63 @@
             <canvas id="myChart"></canvas>
         </div>
 
-        <script>  {# script for usage chart #}
-        var ctx = document.getElementById('myChart').getContext('2d');
-        var chart = new Chart(ctx, {
-            {# The type of chart we want to create #}
-            type: 'line',
+        {# script for usage chart #}
+        <script>
+            var ctx = document.getElementById('myChart').getContext('2d');
+            var chart = new Chart(ctx, {
+                type: 'line',
 
-            {% if hi == 'xxx' %}  {# if the dae range is less than 24 hrs #}
-                {# The data for our dataset #}
-                data: {
-                    labels: [{% for d in date %} "{{ d }}", {% endfor %}], {# Dates #}
-                    datasets: [{
-                        label: 'usage',
-                        backgroundColor: 'rgb(173, 216, 230)',
-                        borderColor: 'rgb(0,0,0)',
-                        data: [{% for u in usage %} "{{ u }}", {% endfor %}], {# Usages #}
-                        lineTension: 0  {# Makes line less curvy #}
-                    }]
-                },
-                options: {
-                    legend: {display: false}
-                }
-            {% else %}  {# if date range is greater than 24 hrs #}
-                data: {
-                    labels: [{% for d in date %} "{{ d }}", {% endfor %}], {# Dates #}
-                    datasets: [{
-                        label: 'High',
-                        fill: false,
-                        backgroundColor: 'rgba(255,33,0,0.71)',
-                        borderColor: 'rgb(255,33,0)',
-                        data: [{% for h in hi %} "{{ h }}", {% endfor %}], {# Usages #}
-                        lineTension: 0  {# Makes line less curvy #}
-                    }, {
-                        label: 'Average',
-                        fill: false,
-                        backgroundColor: 'rgba(255,223,0,0.71)',
-                        borderColor: 'rgb(255,223,0)',
-                        data: [{% for a in avg %} "{{ a }}", {% endfor %}],
-                        lineTension: 0
-                    }, {
-                        label: 'Low',
-                        fill: false,
-                        backgroundColor: 'rgba(64,255,0,0.71)',
-                        borderColor: 'rgb(64,255,0)',
-                        data: [{% for l in lo %} "{{ l }}", {% endfor %}],
-                        lineTension: 0
+                {% if hi == 'xxx' %}  {# if the dae range is less than 24 hrs #}
+                    {# The data for our dataset #}
+                    data: {
+                        labels: [{% for d in date %} "{{ d }}", {% endfor %}], {# Dates #}
+                        datasets: [{
+                            label: 'usage',
+                            backgroundColor: 'rgb(173, 216, 230)',
+                            borderColor: 'rgb(0,0,0)',
+                            data: [{% for u in usage %} "{{ u }}", {% endfor %}], {# Usages #}
+                            lineTension: 0  {# Makes line less curvy #}
+                        }]
+                    },
+                    options: {
+                        legend: {display: false}
                     }
-                    ]
-                },
-                options: {
-                    legend: {
-                        display: true, {# add legend #}
-                        position: 'top',
+
+                {% else %}  {# if date range is greater than 24 hrs #}
+                    data: {
+                        labels: [{% for d in date %} "{{ d }}", {% endfor %}], {# Dates #}
+                        datasets: [{
+                            label: 'High',
+                            fill: false,
+                            backgroundColor: 'rgba(255,33,0,0.71)',
+                            borderColor: 'rgb(255,33,0)',
+                            data: [{% for h in hi %} "{{ h }}", {% endfor %}], {# High #}
+                            lineTension: 0  {# Makes line less curvy #}
+                        }, {
+                            label: 'Average',
+                            fill: false,
+                            backgroundColor: 'rgba(255,223,0,0.71)',
+                            borderColor: 'rgb(255,223,0)',
+                            data: [{% for a in avg %} "{{ a }}", {% endfor %}], {# Average #}
+                            lineTension: 0  {# Makes line less curvy #}
+                        }, {
+                            label: 'Low',
+                            fill: false,
+                            backgroundColor: 'rgba(64,255,0,0.71)',
+                            borderColor: 'rgb(64,255,0)',
+                            data: [{% for l in lo %} "{{ l }}", {% endfor %}], {# low #}
+                            lineTension: 0  {# Makes line less curvy #}
+                        }
+                        ]
+                    },
+                    options: {
+                        legend: {
+                            display: true, {# add legend #}
+                            position: 'top',
+                        }
                     }
-                }
-            {% endif %}
-        });
+                {% endif %}
+            });
         </script>
     </div>
 
