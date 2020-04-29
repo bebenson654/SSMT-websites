@@ -525,11 +525,11 @@ def home():
         # creates key:value for tool tips
         # key is server id, value is string of metrics as seen below
         serverMetricsDict[
-            server.ServerId] = f'''<h6 class="text-{cpuColor}"><b>cpu</b>: {str(metric.Cpu)}%</h6>
+            server.ServerId] = f'''<h6 class="text-{cpuColor}"><b>CPU</b>: {str(metric.Cpu)}%</h6>
                                                 <h6 class="text-{ramColor}"><b>RAM</b>: {str(metric.Ram)}%</h6>
                                                 <h6 class="text-{diskColor}"><b>Disk</b>: {str(metric.Disk)}%</h6>
                                                 <h6 class="text-{gpuColor}"><b>GPU</b>: {str(metric.Gpu)}%</h6>
-                                                <h6 class="text-{pingColor}"><b>Ping</b>: {str(metric.PingLatency)}ms
+                                                <h6 class="text-{pingColor}"><b>Ping</b>: {str(metric.PingLatency)} ms
                                                 </h6>'''
 
     # filters which servers are shown on home page
