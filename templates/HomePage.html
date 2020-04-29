@@ -1,0 +1,79 @@
+{# New Home Page #}
+
+{% extends 'layout.html' %} {# inherits format from layout.html #}
+
+{% block title %} {# Overides layout.html default title #}
+    <meta http-equiv="refresh" content="10">
+    <title>System Monitoring Tool</title> {# Title - shown in tab on browser #}
+    <link rel="icon" href="/static/favicons/home.ico">
+{% endblock title %}
+
+{% block content %} {# Overides layout.html body section #}
+
+    {# Title bar #}
+    <a class="text-decoration-none" href="{{ url_for('home') }}">  {# links to home page #}
+        <div class="row mt-3 text-center"> {# Row for page header #}
+            <div class="col-12 ml-auto p-3 mb-2 text-white" style="background-color: #005288">
+                <h1>Server System Monitoring Tool</h1>
+            </div>
+        </div>
+    </a>
+
+    <div class="row mt-3 text-center"> {# Row for Master list button and dropdown #}
+        <div class="col-2 text-left">
+            {# master list button #}
+            <a class="btn btn-secondary btn-lg" href="{{ url_for('master_list') }}" role="button"><i
+                    class="fas fa-list"></i> Master List</a>
+        </div>
+        <div class="col-10 text-right">
+            {# dropdown for filter #}
+            <form name="filterForm" method="post">
+                <label><h6>{{ "Server Type: " }}</h6></label>
+                <a onchange="filterForm.submit()">
+                    {{ form.filter }} {# Dropdown form #}
+                    {{ form.csrf_token }} {# cross site request forgery token #}
+                </a>
+            </form>
+        </div>
+    </div>
+
+    {# Racks == Cards #}
+    {# class testimonial group allows for horizantal scrolling #}
+    <div class="testimonial-group mt-3 mb-3">
+        <div class="row p-5">
+            {% for rack in rack %}
+                <div class="col-3 text-center testimonial-group--box">
+                    <div class="card"> {# card containing a rack #}
+                        <div class="card-header text-center p-3 text-white" style="background-color: #005288">
+                            {# card header is rack name #}
+                            {{ rack.Name }}
+                        </div>
+
+                        <div class="list-group list-group-flush">
+                            {# lists servers that link to their data overview page #}
+                            {% for server in server %}
+                                {# adds server to list if it is in tha rack and on the master list #}
+                                {% if server.RackId == rack.RackId and server.ServerId in masterList %}
+
+                                    <a href="{{ url_for('dataOverview', slug=server.ServerId) }}"
+                                            {# link to data overview page #}
+                                            {# adds tooltip which contain data on the metrics #}
+                                       data-toggle="tooltip" data-placement="right" data-html="true"
+                                            {# allows use of html tags in tooltip #}
+                                       title="{{ metric[server.ServerId] }}"
+                                            {# gets the metric data for the server's tooltip  #}
+                                       class="list-group-item list-group-item-action list-group-item-{{ color[server.ServerId]['ServerColor'] }} text-center">
+                                        {{ server.ServerName }} {# ^ sets color of the server #}
+                                        <i class="fas fa-{{ color[server.ServerId]['ServerIcon'] }} float-right"></i>
+                                        {#  icon for server #}
+                                    </a>
+
+                                {% endif %}
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+{% endblock content %}
