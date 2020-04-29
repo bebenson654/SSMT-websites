@@ -2,7 +2,7 @@
 
 {% block title %}{# Overides layout.html default title #}
     <script src="https://cdn.jsdelivr.net/npm/chart.js@2.8.0"></script> {# Script needed for chart.js #}
-    <title>cpu-Usage - {{ server.ServerName }}</title> {# Title - shown in tab on browser #}
+    <title>CPU-Usage - {{ server.ServerName }}</title> {# Title - shown in tab on browser #}
     <link rel="icon" href="/static/favicons/cpu.ico">
 {% endblock title %}
 
@@ -40,7 +40,7 @@
 
     <div class="row text-center m-5"> {# this servers cpu usage #}
         <div class="col-12">
-            <h2 class="text-{{ color[server.ServerId]['CpuColor'] }}"> cpu Usage: <b>{{ ametric.Cpu }}%</b></h2>
+            <h2 class="text-{{ color[server.ServerId]['CpuColor'] }}"> CPU Usage: <b>{{ ametric.Cpu }}%</b></h2>
         </div>
     </div>
     <hr/>
@@ -153,7 +153,7 @@
                     <thead>
                     <tr>
                         <th>Date/Time</th>
-                        <th>cpu Usage (%):</th>
+                        <th>CPU Usage (%):</th>
                     </tr>
                     </thead>
                     <tbody>
