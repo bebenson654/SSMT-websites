@@ -361,6 +361,7 @@ def usagePages(metricName, slug):
     if form.validate_on_submit():  # true if user provides valid date range for chart & table
 
         dateRange = []  # empties dates to be refilled by code below
+        useRange = []
 
         form = ChartForm(request.form)  # gets provided info from form
 

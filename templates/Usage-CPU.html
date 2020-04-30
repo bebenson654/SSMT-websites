@@ -92,7 +92,7 @@
             var chart = new Chart(ctx, {
                 type: 'line',
 
-                {% if hi == 'xxx' %}  {# if the dae range is less than 24 hrs #}
+                {% if hi == 'xxx' %}  {# if the date range is less than 24 hrs #}
                     {# The data for our dataset #}
                     data: {
                         labels: [{% for d in date %} "{{ d }}", {% endfor %}], {# Dates #}
